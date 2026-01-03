@@ -112,6 +112,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 strict_equality = true
+explicit_package_bases = true
 
 # Allow dynamic typing for now (can tighten gradually)
 disallow_any_generics = false
@@ -147,6 +148,7 @@ exclude = [
     "dist",
     "solutions",
     "conversations",
+    "tests/harness",  # Avoid duplicate module detection
 ]
 
 [build-system]

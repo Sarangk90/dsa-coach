@@ -86,3 +86,82 @@ def populated_progress(mock_workspace):
         json.dump(data, f)
 
     return progress_path
+
+
+# =============================================================================
+# AGENT TEST HARNESS FIXTURES
+# =============================================================================
+
+
+@pytest.fixture
+async def coach_harness(tmp_path):
+    """
+    Async fixture that provides an initialized CoachTestHarness.
+
+    The harness uses an isolated temp database and is automatically
+    cleaned up after the test.
+
+    Usage:
+        async def test_something(coach_harness):
+            response = await coach_harness.send("Hello!")
+            assert "hello" in response.content.lower()
+    """
+    from tests.harness import CoachTestHarness
+
+    db_path = tmp_path / "test_coach.db"
+    harness = CoachTestHarness(db_path=db_path)
+    await harness.setup()
+
+    yield harness
+
+    await harness.cleanup()
+
+
+@pytest.fixture
+async def hydrated_harness(tmp_path):
+    """
+    Async fixture that provides a CoachTestHarness pre-populated with test data.
+
+    Includes:
+    - User profile with some progress
+    - Pattern progress at various levels
+    - Completed quests
+    - Some mistakes and milestones
+
+    Usage:
+        async def test_progress(hydrated_harness):
+            patterns = await hydrated_harness.inspect_patterns()
+            assert len(patterns) > 0
+    """
+    from tests.harness import CoachTestHarness
+
+    db_path = tmp_path / "test_coach.db"
+    harness = CoachTestHarness(db_path=db_path, auto_hydrate=True)
+    await harness.setup()
+
+    yield harness
+
+    await harness.cleanup()
+
+
+@pytest.fixture
+def sync_coach_harness(tmp_path):
+    """
+    Synchronous fixture that provides a SyncCoachTestHarness.
+
+    Useful for tests that don't want to deal with async.
+
+    Usage:
+        def test_something(sync_coach_harness):
+            response = sync_coach_harness.send("Hello!")
+            assert "hello" in response.content.lower()
+    """
+    from tests.harness.coach_harness import SyncCoachTestHarness
+
+    db_path = tmp_path / "test_coach.db"
+    harness = SyncCoachTestHarness(db_path=db_path)
+    harness.__enter__()
+
+    yield harness
+
+    harness.__exit__(None, None, None)
