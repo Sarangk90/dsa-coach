@@ -1,11 +1,14 @@
 """Adaptive hint generation for DSA Coach."""
 
-from typing import Dict, Any
+from typing import Any
+
 from .client import get_ai_response
-from .prompts import HINT_PROMPT_TEMPLATE, DIVE_FRAMEWORK, get_mentor_system_prompt
+from .prompts import DIVE_FRAMEWORK, HINT_PROMPT_TEMPLATE, get_mentor_system_prompt
 
 
-def get_adaptive_hint(quest: Dict[str, Any], progress: Dict[str, Any], hint_level: str) -> str:
+def get_adaptive_hint(
+    quest: dict[str, Any], progress: dict[str, Any], hint_level: str
+) -> str:
     """Get an adaptive hint based on student's level and pattern proficiency.
 
     Args:

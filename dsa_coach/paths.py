@@ -16,7 +16,3 @@ QUESTS_FILE: Path = BASE_DIR / "quests.json"
 PROGRESS_FILE: Path = BASE_DIR / "progress.json"
 SOLUTIONS_DIR: Path = BASE_DIR / "solutions"
 CONVERSATIONS_DIR: Path = BASE_DIR / "conversations"
-
-
-
-

@@ -21,7 +21,7 @@ PATTERN_SEQUENCE = [
     "topological_sort",
     "union_find",
     "dijkstra",
-    "dynamic_programming"
+    "dynamic_programming",
 ]
 
 # Pattern Metadata updates
@@ -29,98 +29,121 @@ PATTERN_METADATA = {
     "hash_map": {
         "title": "Hash Map",
         "description": "Key-value lookups for O(1) access. Essential for counting, caching, and quick checks.",
-        "concepts": ["Hash Function", "Collisions", "Counting", "Index Mapping"]
+        "concepts": ["Hash Function", "Collisions", "Counting", "Index Mapping"],
     },
     "two_pointers": {
         "title": "Two Pointers",
         "description": "Two cursors moving through a data structure (usually array/string) to satisfy constraints.",
-        "concepts": ["Opposite Ends (Sorted)", "Same Direction (Merge/Remove)", "Partitioning"]
+        "concepts": [
+            "Opposite Ends (Sorted)",
+            "Same Direction (Merge/Remove)",
+            "Partitioning",
+        ],
     },
     "sliding_window": {
         "title": "Sliding Window",
         "description": "A window that slides over data to find a subarray satisfying a condition.",
-        "concepts": ["Fixed Size", "Variable Size", "Auxiliary Structure", "Shrinking Condition"]
+        "concepts": [
+            "Fixed Size",
+            "Variable Size",
+            "Auxiliary Structure",
+            "Shrinking Condition",
+        ],
     },
     "prefix_sum": {
         "title": "Prefix Sum",
         "description": "Pre-computing cumulative sums to answer range queries in O(1).",
-        "concepts": ["Range Sum", "Running Total", "Subarray Sum Equals K"]
+        "concepts": ["Range Sum", "Running Total", "Subarray Sum Equals K"],
     },
     "stack": {
         "title": "Stack",
         "description": "LIFO (Last-In-First-Out) structure. Good for parsing, nested structures, and backtracking.",
-        "concepts": ["LIFO", "Monotonic Stack", "Parentheses Matching", "DFS Helper"]
+        "concepts": ["LIFO", "Monotonic Stack", "Parentheses Matching", "DFS Helper"],
     },
     "linked_list": {
         "title": "Linked List",
         "description": "Nodes with pointers. Mastery requires pointer manipulation without losing references.",
-        "concepts": ["Dummy Node", "Fast/Slow Pointers", "Reversal", "Merge"]
+        "concepts": ["Dummy Node", "Fast/Slow Pointers", "Reversal", "Merge"],
     },
     "fast_slow_pointers": {
         "title": "Fast & Slow Pointers",
         "description": "Cycle detection and finding middle elements in linked lists or arrays.",
-        "concepts": ["Cycle Detection (Floyd's)", "Middle Finding", "Happy Number"]
+        "concepts": ["Cycle Detection (Floyd's)", "Middle Finding", "Happy Number"],
     },
     "binary_search": {
         "title": "Binary Search",
         "description": "O(log N) search on sorted data or search spaces.",
-        "concepts": ["Search Space Reduction", "Lower/Upper Bound", "Rotated Arrays", "Answer Range"]
+        "concepts": [
+            "Search Space Reduction",
+            "Lower/Upper Bound",
+            "Rotated Arrays",
+            "Answer Range",
+        ],
     },
     "heap": {
         "title": "Heap / Priority Queue",
         "description": "O(1) access to min/max element. O(log N) insert/delete.",
-        "concepts": ["Min/Max Heap", "Top K Elements", "K-way Merge"]
+        "concepts": ["Min/Max Heap", "Top K Elements", "K-way Merge"],
     },
     "two_heaps": {
         "title": "Two Heaps",
         "description": "Using a Min-Heap and Max-Heap together, often to track median.",
-        "concepts": ["Median Finding", "Balancing Heaps"]
+        "concepts": ["Median Finding", "Balancing Heaps"],
     },
     "bfs": {
         "title": "Breadth-First Search",
         "description": "Level-by-level traversal. Best for shortest paths in unweighted graphs.",
-        "concepts": ["Queue", "Level Tracking", "Shortest Path", "Connected Components"]
+        "concepts": [
+            "Queue",
+            "Level Tracking",
+            "Shortest Path",
+            "Connected Components",
+        ],
     },
     "dfs": {
         "title": "Depth-First Search",
         "description": "Deep traversal. Best for exhaustive search, tree properties, and backtracking.",
-        "concepts": ["Recursion", "Stack", "Path Finding", "Tree Properties"]
+        "concepts": ["Recursion", "Stack", "Path Finding", "Tree Properties"],
     },
     "backtracking": {
         "title": "Backtracking",
         "description": "DFS with state management (Choose-Explore-Unchoose). Generates all possibilities.",
-        "concepts": ["Combinations", "Permutations", "Subsets", "Pruning"]
+        "concepts": ["Combinations", "Permutations", "Subsets", "Pruning"],
     },
     "merge_intervals": {
         "title": "Merge Intervals",
         "description": "Handling overlapping intervals. Usually requires sorting by start time first.",
-        "concepts": ["Sorting", "Overlap Detection", "Merging", "Insertion"]
+        "concepts": ["Sorting", "Overlap Detection", "Merging", "Insertion"],
     },
     "cyclic_sort": {
         "title": "Cyclic Sort",
         "description": "Sorting arrays containing numbers in range 1 to N in O(N) time.",
-        "concepts": ["In-place Swap", "Missing Number", "Duplicate Finding"]
+        "concepts": ["In-place Swap", "Missing Number", "Duplicate Finding"],
     },
     "topological_sort": {
         "title": "Topological Sort",
         "description": "Linear ordering of vertices in a DAG. Used for dependency resolution.",
-        "concepts": ["Kahn's Algorithm (BFS)", "DFS Post-order", "Cycle Detection"]
+        "concepts": ["Kahn's Algorithm (BFS)", "DFS Post-order", "Cycle Detection"],
     },
     "union_find": {
         "title": "Union Find (Disjoint Set)",
         "description": "Efficiently tracking connected components and cycles.",
-        "concepts": ["Find with Path Compression", "Union by Rank", "Connected Components"]
+        "concepts": [
+            "Find with Path Compression",
+            "Union by Rank",
+            "Connected Components",
+        ],
     },
     "dijkstra": {
         "title": "Dijkstra's Algorithm",
         "description": "Shortest path in weighted graphs.",
-        "concepts": ["Priority Queue", "Relaxation", "Shortest Path"]
+        "concepts": ["Priority Queue", "Relaxation", "Shortest Path"],
     },
     "dynamic_programming": {
         "title": "Dynamic Programming",
         "description": "Breaking problems into overlapping subproblems with optimal substructure.",
-        "concepts": ["Memoization", "Tabulation", "1D Recurrence", "2D Grid/Sequence"]
-    }
+        "concepts": ["Memoization", "Tabulation", "1D Recurrence", "2D Grid/Sequence"],
+    },
 }
 
 # New Quests to Add
@@ -137,9 +160,9 @@ NEW_QUESTS = [
         "hints": {
             "low": "Use a hash set to store elements you've seen.",
             "medium": "Iterate through the array. If element is in set, return true. Else add it.",
-            "high": "Time O(N), Space O(N)."
+            "high": "Time O(N), Space O(N).",
         },
-        "template": "def contains_duplicate(nums: list[int]) -> bool:\n    # Your code here\n    pass"
+        "template": "def contains_duplicate(nums: list[int]) -> bool:\n    # Your code here\n    pass",
     },
     {
         "id": "valid_anagram",
@@ -152,11 +175,10 @@ NEW_QUESTS = [
         "hints": {
             "low": "Count character frequencies for both strings.",
             "medium": "Use a hash map or fixed-size array (26 chars). Increment for s, decrement for t.",
-            "high": "If counts match (all zero at end), they are anagrams."
+            "high": "If counts match (all zero at end), they are anagrams.",
         },
-        "template": "def is_anagram(s: str, t: str) -> bool:\n    # Your code here\n    pass"
+        "template": "def is_anagram(s: str, t: str) -> bool:\n    # Your code here\n    pass",
     },
-
     # Two Pointers
     {
         "id": "valid_palindrome",
@@ -169,9 +191,9 @@ NEW_QUESTS = [
         "hints": {
             "low": "Use two pointers, one at start, one at end.",
             "medium": "Move inward, skipping non-alphanumeric chars. Compare characters case-insensitively.",
-            "high": "If chars mismatch, not a palindrome."
+            "high": "If chars mismatch, not a palindrome.",
         },
-        "template": "def is_palindrome(s: str) -> bool:\n    # Your code here\n    pass"
+        "template": "def is_palindrome(s: str) -> bool:\n    # Your code here\n    pass",
     },
     {
         "id": "container_with_most_water",
@@ -184,9 +206,9 @@ NEW_QUESTS = [
         "hints": {
             "low": "Area = width * min(height_left, height_right). Start pointers at edges.",
             "medium": "Move the pointer with the SMALLER height to try and find a taller line.",
-            "high": "Greedy approach works because width decreases, so we need higher lines."
+            "high": "Greedy approach works because width decreases, so we need higher lines.",
         },
-        "template": "def max_area(height: list[int]) -> int:\n    # Your code here\n    pass"
+        "template": "def max_area(height: list[int]) -> int:\n    # Your code here\n    pass",
     },
     {
         "id": "3sum",
@@ -199,11 +221,10 @@ NEW_QUESTS = [
         "hints": {
             "low": "Sort the array first. Iterate i, then use 2-sum (sorted) on the rest.",
             "medium": "Fix nums[i], then find pairs (l, r) that sum to -nums[i].",
-            "high": "Skip duplicates carefully to avoid repeating triplets."
+            "high": "Skip duplicates carefully to avoid repeating triplets.",
         },
-        "template": "def three_sum(nums: list[int]) -> list[list[int]]:\n    # Your code here\n    pass"
+        "template": "def three_sum(nums: list[int]) -> list[list[int]]:\n    # Your code here\n    pass",
     },
-
     # Sliding Window
     {
         "id": "best_time_stock",
@@ -216,9 +237,9 @@ NEW_QUESTS = [
         "hints": {
             "low": "Track the minimum price seen so far.",
             "medium": "Profit = current_price - min_price_so_far.",
-            "high": "One pass O(N). Update max_profit at each step."
+            "high": "One pass O(N). Update max_profit at each step.",
         },
-        "template": "def max_profit(prices: list[int]) -> int:\n    # Your code here\n    pass"
+        "template": "def max_profit(prices: list[int]) -> int:\n    # Your code here\n    pass",
     },
     {
         "id": "longest_repeating_char_replacement",
@@ -231,11 +252,10 @@ NEW_QUESTS = [
         "hints": {
             "low": "Valid window: length - max_count <= k. Expand right.",
             "medium": "Track frequency of chars in window. 'max_count' is freq of most common char in window.",
-            "high": "If invalid, shrink left. Maximize window size."
+            "high": "If invalid, shrink left. Maximize window size.",
         },
-        "template": "def character_replacement(s: str, k: int) -> int:\n    # Your code here\n    pass"
+        "template": "def character_replacement(s: str, k: int) -> int:\n    # Your code here\n    pass",
     },
-
     # Stack
     {
         "id": "daily_temperatures",
@@ -248,11 +268,10 @@ NEW_QUESTS = [
         "hints": {
             "low": "Monotonic decreasing stack. Store indices.",
             "medium": "When current temp > stack top temp, we found a warmer day for stack top.",
-            "high": "Pop from stack and calculate difference in indices."
+            "high": "Pop from stack and calculate difference in indices.",
         },
-        "template": "def daily_temperatures(temperatures: list[int]) -> list[int]:\n    # Your code here\n    pass"
+        "template": "def daily_temperatures(temperatures: list[int]) -> list[int]:\n    # Your code here\n    pass",
     },
-
     # Binary Search
     {
         "id": "find_min_rotated_sorted_array",
@@ -265,11 +284,10 @@ NEW_QUESTS = [
         "hints": {
             "low": "Binary search. Compare mid with right neighbor or end.",
             "medium": "If nums[mid] > nums[right], min is to the right.",
-            "high": "Otherwise, min is at mid or left."
+            "high": "Otherwise, min is at mid or left.",
         },
-        "template": "def find_min(nums: list[int]) -> int:\n    # Your code here\n    pass"
+        "template": "def find_min(nums: list[int]) -> int:\n    # Your code here\n    pass",
     },
-
     # Cyclic Sort
     {
         "id": "find_duplicate_number",
@@ -282,11 +300,10 @@ NEW_QUESTS = [
         "hints": {
             "low": "Treat array values as pointers to indices.",
             "medium": "Use Floyd's Cycle Detection (Fast/Slow pointers) on the array indices.",
-            "high": "Or modify array (negate values) if modification allowed."
+            "high": "Or modify array (negate values) if modification allowed.",
         },
-        "template": "def find_duplicate(nums: list[int]) -> int:\n    # Your code here\n    pass"
+        "template": "def find_duplicate(nums: list[int]) -> int:\n    # Your code here\n    pass",
     },
-
     # Two Heaps
     {
         "id": "sliding_window_median",
@@ -299,11 +316,10 @@ NEW_QUESTS = [
         "hints": {
             "low": "Maintain two heaps: max-heap for lower half, min-heap for upper half.",
             "medium": "Balance heaps as window slides. Removing from heap is O(N) or O(log N) with lazy removal.",
-            "high": "Lazy removal: keep track of invalid elements in a map."
+            "high": "Lazy removal: keep track of invalid elements in a map.",
         },
-        "template": "def median_sliding_window(nums: list[int], k: int) -> list[float]:\n    # Your code here\n    pass"
+        "template": "def median_sliding_window(nums: list[int], k: int) -> list[float]:\n    # Your code here\n    pass",
     },
-
     # BFS
     {
         "id": "word_ladder",
@@ -316,11 +332,10 @@ NEW_QUESTS = [
         "hints": {
             "low": "Shortest path in unweighted graph -> BFS.",
             "medium": "Nodes are words. Edges if words differ by 1 char.",
-            "high": "Pre-process words with wildcard pattern for O(1) neighbor lookup."
+            "high": "Pre-process words with wildcard pattern for O(1) neighbor lookup.",
         },
-        "template": "def ladder_length(begin_word: str, end_word: str, word_list: list[str]) -> int:\n    # Your code here\n    pass"
+        "template": "def ladder_length(begin_word: str, end_word: str, word_list: list[str]) -> int:\n    # Your code here\n    pass",
     },
-
     # DFS
     {
         "id": "diameter_binary_tree",
@@ -333,9 +348,9 @@ NEW_QUESTS = [
         "hints": {
             "low": "DFS. For each node, longest path is left_depth + right_depth.",
             "medium": "Return max depth from each recursive call.",
-            "high": "Update global maximum diameter at each node."
+            "high": "Update global maximum diameter at each node.",
         },
-        "template": "def diameter_of_binary_tree(root: Optional[TreeNode]) -> int:\n    # Your code here\n    pass"
+        "template": "def diameter_of_binary_tree(root: Optional[TreeNode]) -> int:\n    # Your code here\n    pass",
     },
     {
         "id": "path_sum_ii",
@@ -348,11 +363,10 @@ NEW_QUESTS = [
         "hints": {
             "low": "DFS with current path list and current sum.",
             "medium": "At leaf: check if sum == target. Add path to results.",
-            "high": "Backtrack: pop from path list after visiting children."
+            "high": "Backtrack: pop from path list after visiting children.",
         },
-        "template": "def path_sum(root: Optional[TreeNode], target_sum: int) -> list[list[int]]:\n    # Your code here\n    pass"
+        "template": "def path_sum(root: Optional[TreeNode], target_sum: int) -> list[list[int]]:\n    # Your code here\n    pass",
     },
-
     # Union Find
     {
         "id": "number_of_provinces",
@@ -365,9 +379,9 @@ NEW_QUESTS = [
         "hints": {
             "low": "Each city is a node. 'isConnected' is adjacency matrix.",
             "medium": "Union connected cities. Count distinct parents at the end.",
-            "high": "Can also use DFS/BFS to count components."
+            "high": "Can also use DFS/BFS to count components.",
         },
-        "template": "def find_circle_num(is_connected: list[list[int]]) -> int:\n    # Your code here\n    pass"
+        "template": "def find_circle_num(is_connected: list[list[int]]) -> int:\n    # Your code here\n    pass",
     },
     {
         "id": "redundant_connection",
@@ -380,11 +394,10 @@ NEW_QUESTS = [
         "hints": {
             "low": "Iterate edges. Use Union-Find.",
             "medium": "If two nodes are already in same set (find(u) == find(v)), this edge creates a cycle.",
-            "high": "Return the first edge that creates a cycle."
+            "high": "Return the first edge that creates a cycle.",
         },
-        "template": "def find_redundant_connection(edges: list[list[int]]) -> list[int]:\n    # Your code here\n    pass"
+        "template": "def find_redundant_connection(edges: list[list[int]]) -> list[int]:\n    # Your code here\n    pass",
     },
-
     # Intervals
     {
         "id": "insert_interval",
@@ -397,11 +410,10 @@ NEW_QUESTS = [
         "hints": {
             "low": "List is sorted. Iterate and add non-overlapping intervals.",
             "medium": "Merge overlapping intervals with the new one: min(start), max(end).",
-            "high": "Add remaining intervals after."
+            "high": "Add remaining intervals after.",
         },
-        "template": "def insert(intervals: list[list[int]], new_interval: list[int]) -> list[list[int]]:\n    # Your code here\n    pass"
+        "template": "def insert(intervals: list[list[int]], new_interval: list[int]) -> list[list[int]]:\n    # Your code here\n    pass",
     },
-    
     # Heap
     {
         "id": "k_closest_points",
@@ -414,11 +426,12 @@ NEW_QUESTS = [
         "hints": {
             "low": "Calculate distances. Need K smallest.",
             "medium": "Max-Heap of size K. If new point is smaller than heap top, pop and push.",
-            "high": "Or Min-Heap with all points (O(N log N)). Max-heap is O(N log K)."
+            "high": "Or Min-Heap with all points (O(N log N)). Max-heap is O(N log K).",
         },
-        "template": "def k_closest(points: list[list[int]], k: int) -> list[list[int]]:\n    # Your code here\n    pass"
-    }
+        "template": "def k_closest(points: list[list[int]], k: int) -> list[list[int]]:\n    # Your code here\n    pass",
+    },
 ]
+
 
 def hydrate():
     # Load existing
@@ -427,19 +440,19 @@ def hydrate():
         print("quests.json not found")
         return
 
-    with open(quests_path, "r") as f:
+    with quests_path.open() as f:
         data = json.load(f)
 
     # Update metadata
     data["metadata"]["patterns"] = PATTERN_METADATA
-    
+
     # Add sequences for sorting
     pattern_order_map = {p: i for i, p in enumerate(PATTERN_SEQUENCE)}
     difficulty_map = {"easy": 1, "medium": 2, "hard": 3}
 
     # Merge quests
     existing_quests = {q["id"]: q for q in data.get("quests", [])}
-    
+
     # Add new quests if not exist
     added_count = 0
     for q in NEW_QUESTS:
@@ -464,15 +477,15 @@ def hydrate():
     data["quests"] = final_quests
     data["metadata"]["total_quests"] = len(final_quests)
     data["metadata"]["total_xp"] = sum(q.get("xp", 0) for q in final_quests)
-    
+
     # Save
-    with open(quests_path, "w") as f:
+    with quests_path.open("w") as f:
         json.dump(data, f, indent=2)
-    
-    print(f"Hydrated quests.json. Added {added_count} new quests. Total: {len(final_quests)}")
+
+    print(
+        f"Hydrated quests.json. Added {added_count} new quests. Total: {len(final_quests)}"
+    )
+
 
 if __name__ == "__main__":
     hydrate()
-
-
-

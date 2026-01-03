@@ -65,4 +65,3 @@ def test_get_user_prompt_defaults_to_discord_style() -> None:
 
     assert "─" not in s
     assert "🧑 You" in s
-

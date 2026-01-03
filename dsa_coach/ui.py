@@ -28,12 +28,8 @@ class UI:
             # type: ignore[union-attr]
             self.console.print(Panel(content, title=title, border_style=style))
         else:
-            print(f"\n{'='*50}")
+            print(f"\n{'=' * 50}")
             print(f" {title}")
-            print(f"{'='*50}")
+            print(f"{'=' * 50}")
             print(content)
-            print(f"{'='*50}\n")
-
-
-
-
+            print(f"{'=' * 50}\n")

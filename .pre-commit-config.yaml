@@ -1,0 +1,78 @@
+# Pre-commit hooks configuration
+# See https://pre-commit.com for more information
+
+repos:
+  # Ruff - Fast Python linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.10
+    hooks:
+      # Run the linter
+      - id: ruff
+        args: [--fix]
+        # Only run on Python files
+        types_or: [python, pyi]
+
+      # Run the formatter
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # Mypy - Static type checker
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.19.1
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - pydantic>=2.0.0
+          - pydantic-ai==0.3.0
+          - types-aiofiles
+        # Only check files in dsa_coach package and tests
+        files: ^(dsa_coach|tests)/.*\.py$
+        # Allow mypy to fail without blocking commit (warning mode)
+        verbose: true
+
+  # Additional useful pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # Prevent committing large files
+      - id: check-added-large-files
+        args: [--maxkb=500]
+
+      # Check for files that would conflict in case-insensitive filesystems
+      - id: check-case-conflict
+
+      # Check JSON files are valid
+      - id: check-json
+        files: \.(json)$
+
+      # Check YAML files are valid
+      - id: check-yaml
+        files: \.(yaml|yml)$
+
+      # Check for merge conflict markers
+      - id: check-merge-conflict
+
+      # Check for debugger imports
+      - id: debug-statements
+
+      # Ensure files end with newline
+      - id: end-of-file-fixer
+        exclude: \.json$
+
+      # Trim trailing whitespace
+      - id: trailing-whitespace
+        exclude: \.md$
+
+      # Fix mixed line endings
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+# Global configuration
+default_language_version:
+  python: python3.11
+
+# Run hooks on all files or only staged files
+default_stages: [pre-commit]
+
+# Fail fast - stop running hooks after first failure
+fail_fast: false

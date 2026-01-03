@@ -5,6 +5,7 @@ from dsa_coach.ui import UI
 
 try:
     from rich.console import Console
+
     _console = Console()
     _ui = UI(rich_available=True, console=_console)
 except ImportError:
@@ -43,11 +44,12 @@ def cmd_mistakes():
         _ui.print_styled("\n⚠️  Recurring Mistake Patterns:", "red")
         for r in recurring:
             # DB query returns "type" not "mistake_type"
-            mtype = r.get("type", r.get("mistake_type", "unknown")).replace("_", " ").title()
+            mtype = (
+                r.get("type", r.get("mistake_type", "unknown"))
+                .replace("_", " ")
+                .title()
+            )
             count = r.get("count", 0)
             patterns = r.get("patterns", [])
             pattern_str = ", ".join(p.replace("_", " ").title() for p in patterns[:3])
             _ui.print_styled(f"   • {mtype} (x{count}) - seen in: {pattern_str}", "red")
-
-
-

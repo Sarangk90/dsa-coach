@@ -1,28 +1,27 @@
 from datetime import datetime
-from typing import Optional
-from dsa_coach.ui import UI
-from dsa_coach.storage.sync import SyncDatabase
-from dsa_coach.storage.models import QuestCompletion, PatternProgress
-from dsa_coach.quests import get_all_quests
+
 from dsa_coach.curriculum import (
-    get_active_mode,
-    get_problem_by_id,
-    get_pattern_by_id,
+    check_all_problems_complete,
     check_concept_complete,
     check_pattern_mastery,
-    check_all_problems_complete,
+    get_active_mode,
+    get_pattern_by_id,
+    get_problem_by_id,
     unlock_dependent_patterns,
 )
+from dsa_coach.quests import get_all_quests
+from dsa_coach.storage.models import PatternProgress, QuestCompletion
+from dsa_coach.storage.sync import SyncDatabase
+from dsa_coach.ui import UI
 
 
-
-
-def cmd_done(success: bool = True, time_mins: Optional[int] = None):
+def cmd_done(success: bool = True, time_mins: int | None = None):
     """Mark current quest as complete."""
     # Setup UI
     ui = UI(rich_available=False, console=None)
     try:
         from rich.console import Console
+
         ui = UI(rich_available=True, console=Console())
     except ImportError:
         pass
@@ -32,7 +31,9 @@ def cmd_done(success: bool = True, time_mins: Optional[int] = None):
         current_id = session.current_quest if session else None
 
         if not current_id:
-            ui.print_styled("No active quest. Run 'python coach.py next' to get one.", "yellow")
+            ui.print_styled(
+                "No active quest. Run 'python coach.py next' to get one.", "yellow"
+            )
             return
 
         # Build compatibility dict for curriculum functions
@@ -43,7 +44,14 @@ def cmd_done(success: bool = True, time_mins: Optional[int] = None):
         quest = get_problem_by_id(current_id, mode)
         if not quest:
             all_quests = get_all_quests()
-            quest = next((q for q in all_quests if q.get("id") == current_id or q.get("problem_id") == current_id), None)
+            quest = next(
+                (
+                    q
+                    for q in all_quests
+                    if q.get("id") == current_id or q.get("problem_id") == current_id
+                ),
+                None,
+            )
 
         if not quest:
             ui.print_styled("Quest not found. Something went wrong.", "red")
@@ -63,8 +71,8 @@ def cmd_done(success: bool = True, time_mins: Optional[int] = None):
                 time_mins = 30
 
         # Extract problem/pattern info with V1 fallback
-        problem_id = quest.get("problem_id", quest.get("id"))
-        problem_name = quest.get("problem_name", quest.get("title", "Unknown"))
+        quest.get("problem_id", quest.get("id"))
+        quest.get("problem_name", quest.get("title", "Unknown"))
         pattern_id = quest.get("pattern_id", quest.get("pattern"))
         pattern_name = quest.get("pattern_name", pattern_id)
         concept_id = quest.get("concept_id")
@@ -76,10 +84,11 @@ def cmd_done(success: bool = True, time_mins: Optional[int] = None):
         # Create/update QuestCompletion in database
         existing_completion = db.get_quest_completion("default", current_id)
         if existing_completion:
-            # Re-completed (review)
             existing_completion.review_count += 1
             existing_completion.last_reviewed = datetime.now()
-            existing_completion.time_minutes = (existing_completion.time_minutes or 0) + (time_mins or 0)
+            existing_completion.time_minutes = (
+                existing_completion.time_minutes or 0
+            ) + (time_mins or 0)
             db.upsert_quest_completion(existing_completion)
         else:
             # First completion
@@ -98,7 +107,9 @@ def cmd_done(success: bool = True, time_mins: Optional[int] = None):
             db.upsert_quest_completion(completion)
 
         # Update pattern progress
-        pattern_progress = db.get_pattern_progress("default", pattern_id) if pattern_id else None
+        pattern_progress = (
+            db.get_pattern_progress("default", pattern_id) if pattern_id else None
+        )
         if pattern_progress:
             pattern_progress.quests_completed += 1
             pattern_progress.last_practiced = datetime.now()
@@ -146,15 +157,24 @@ def cmd_done(success: bool = True, time_mins: Optional[int] = None):
         # V2: Check concept completion
         concept_complete = False
         if pattern_id and concept_id:
-            concept_complete = check_concept_complete(pattern_id, concept_id, progress_compat, mode)
+            concept_complete = check_concept_complete(
+                pattern_id, concept_id, progress_compat, mode
+            )
             if concept_complete:
-                ui.print_styled(f"\n✅ Concept complete: {quest.get('concept_name', concept_id)}", "bold green")
+                ui.print_styled(
+                    f"\n✅ Concept complete: {quest.get('concept_name', concept_id)}",
+                    "bold green",
+                )
 
         # V2: Check pattern completion
         pattern_complete = False
         if pattern_id:
-            all_problems_done = check_all_problems_complete(pattern_id, progress_compat, mode)
-            is_mastered, unmet_criteria = check_pattern_mastery(pattern_id, progress_compat, mode)
+            all_problems_done = check_all_problems_complete(
+                pattern_id, progress_compat, mode
+            )
+            is_mastered, unmet_criteria = check_pattern_mastery(
+                pattern_id, progress_compat, mode
+            )
 
             if all_problems_done and is_mastered:
                 pattern_complete = True
@@ -180,17 +200,23 @@ def cmd_done(success: bool = True, time_mins: Optional[int] = None):
                 if pattern_data:
                     sys_conn = pattern_data.get("system_design_connections", [])
                     if sys_conn:
-                        ui.print_styled(f"\n🏗️  You now understand:", "bold magenta")
+                        ui.print_styled("\n🏗️  You now understand:", "bold magenta")
                         for conn in sys_conn[:3]:
                             ui.print_styled(f"   • {conn}", "magenta")
 
                 # Unlock dependent patterns (updates progress_compat in place)
-                newly_unlocked = unlock_dependent_patterns(pattern_id, progress_compat, mode)
+                newly_unlocked = unlock_dependent_patterns(
+                    pattern_id, progress_compat, mode
+                )
                 if newly_unlocked:
-                    ui.print_styled(f"\n🔓 Unlocked {len(newly_unlocked)} new patterns!", "yellow")
+                    ui.print_styled(
+                        f"\n🔓 Unlocked {len(newly_unlocked)} new patterns!", "yellow"
+                    )
 
             elif all_problems_done and not is_mastered:
-                ui.print_styled(f"\n⚠️ All problems complete, but mastery criteria not met:", "yellow")
+                ui.print_styled(
+                    "\n⚠️ All problems complete, but mastery criteria not met:", "yellow"
+                )
                 for criterion in unmet_criteria:
                     ui.print_styled(f"   • {criterion}", "dim")
 
@@ -203,12 +229,14 @@ def cmd_done(success: bool = True, time_mins: Optional[int] = None):
 
             # Show confidence gain
             if pattern_id and confidence > 0:
-                ui.console.print(f"[cyan]{pattern_name} confidence: {confidence:.0f}%[/cyan]")
+                ui.console.print(
+                    f"[cyan]{pattern_name} confidence: {confidence:.0f}%[/cyan]"
+                )
 
             if hints_used == 0:
                 ui.console.print("[green]✓ No hints used![/green]")
         else:
-            print(f"\n🎉 VICTORY!")
+            print("\n🎉 VICTORY!")
 
             # Show confidence gain
             if pattern_id and confidence > 0:
@@ -220,10 +248,17 @@ def cmd_done(success: bool = True, time_mins: Optional[int] = None):
         # Auto-transition: Offer next problem
         if not pattern_complete:
             from dsa_coach.selection import get_next_quest_for_pattern
-            next_in_pattern = get_next_quest_for_pattern(pattern_id, progress_compat) if pattern_id else None
+
+            next_in_pattern = (
+                get_next_quest_for_pattern(pattern_id, progress_compat)
+                if pattern_id
+                else None
+            )
 
             if next_in_pattern:
-                next_name = next_in_pattern.get("problem_name", next_in_pattern.get("title", "Unknown"))
+                next_name = next_in_pattern.get(
+                    "problem_name", next_in_pattern.get("title", "Unknown")
+                )
 
                 print()
                 ui.print_styled("  👉 What's next?", "bold white")
@@ -236,14 +271,17 @@ def cmd_done(success: bool = True, time_mins: Optional[int] = None):
 
                 if choice == "1":
                     from dsa_coach.commands.next_quest import start_quest
+
                     start_quest(next_in_pattern, progress_compat, ui)
                     return
-                elif choice == "2":
+                if choice == "2":
                     from dsa_coach.commands.learn import cmd_learn
+
                     cmd_learn(pattern_id)
                     return
-                elif choice == "3":
+                if choice == "3":
                     from dsa_coach.commands.learn import cmd_learn
+
                     cmd_learn(None)
                     return
 

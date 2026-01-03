@@ -6,7 +6,6 @@ This script removes old V1 quest and pattern records that have been migrated to 
 
 import asyncio
 
-
 # V1 pattern IDs to remove
 V1_PATTERN_IDS = [
     "hash_map",
@@ -70,7 +69,8 @@ async def cleanup_database():
 
             # Remove if it's in the V1 list or doesn't start with ft_
             if quest_id in V1_QUEST_IDS_TO_REMOVE or (
-                not quest_id.startswith("ft_") and quest_id not in ["max_consecutive_ones", "two_sum_ii"]
+                not quest_id.startswith("ft_")
+                and quest_id not in ["max_consecutive_ones", "two_sum_ii"]
             ):
                 await db.conn.execute(
                     "DELETE FROM quest_completions WHERE user_id = ? AND quest_id = ?",

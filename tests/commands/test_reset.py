@@ -50,7 +50,7 @@ def test_reset_all_patterns(populated_progress, monkeypatch):
     cmd_reset(["patterns", "--yes"])
 
     updated = load_progress()
-    for pat, prof in updated["pattern_proficiency"].items():
+    for _pat, prof in updated["pattern_proficiency"].items():
         assert prof["attempts"] == 0
         assert prof["successes"] == 0
         assert prof["avg_time_mins"] is None
@@ -73,7 +73,3 @@ def test_reset_requires_confirmation_when_interactive(monkeypatch, populated_pro
 
     updated = load_progress()
     assert updated["pattern_proficiency"]["sliding_window"]["attempts"] == 2
-
-
-
-

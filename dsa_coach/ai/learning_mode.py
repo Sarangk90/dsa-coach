@@ -6,7 +6,8 @@ reused from the CLI/mentor layers.
 
 from __future__ import annotations
 
-from typing import Callable, Literal
+from collections.abc import Callable
+from typing import Literal
 
 LearningStartMode = Literal["teach_first", "diagnose_first"]
 LearningModeRequest = Literal[
@@ -67,9 +68,12 @@ def choose_learning_start_mode(
             mode = llm_decider()
         except Exception:
             return heuristic_learning_start_mode(confidence)
-        return mode if mode in ("teach_first", "diagnose_first") else heuristic_learning_start_mode(confidence)
+        return (
+            mode
+            if mode in ("teach_first", "diagnose_first")
+            else heuristic_learning_start_mode(confidence)
+        )
 
-    # request == "ask"
     if not interactive:
         return heuristic_learning_start_mode(confidence)
 
@@ -100,10 +104,10 @@ def choose_learning_start_mode(
                 mode = llm_decider()
             except Exception:
                 return heuristic_learning_start_mode(confidence)
-            return mode if mode in ("teach_first", "diagnose_first") else heuristic_learning_start_mode(confidence)
+            return (
+                mode
+                if mode in ("teach_first", "diagnose_first")
+                else heuristic_learning_start_mode(confidence)
+            )
         if raw in ("q", "quit", "exit"):
             return None
-
-
-
-

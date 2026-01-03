@@ -4,11 +4,10 @@ Tools for managing user profile, learning history, and spaced repetition.
 """
 
 from datetime import datetime, timedelta
-from typing import Optional
 
-from .registry import tool, ToolResult
+from ..curriculum import get_pattern_name, get_problem_name
 from ..storage.db import Database
-from ..curriculum import get_problem_name, get_pattern_name
+from .registry import ToolResult, tool
 
 
 @tool(
@@ -49,7 +48,7 @@ async def get_session_state(
 ) -> ToolResult:
     """
     Get current session state.
-    
+
     :return: Session info including current quest and pattern
     """
     session = await db.get_latest_session(user_id)
@@ -64,7 +63,7 @@ async def get_session_state(
             },
             message="No active session",
         )
-    
+
     return ToolResult(
         success=True,
         data={
@@ -90,36 +89,38 @@ async def get_learning_history(
 ) -> ToolResult:
     """
     Get learning history for recent days.
-    
+
     :param days: Number of days to look back
     :return: List of completed quests and activity summary
     """
     # Get all completed quests
     completions = await db.get_completed_quests(user_id)
-    
+
     # Filter to recent days
     cutoff = datetime.now() - timedelta(days=days)
     recent = [c for c in completions if c.completed_at >= cutoff]
-    
+
     # Group by day
     by_day = {}
     for c in recent:
         day_key = c.completed_at.date().isoformat()
         if day_key not in by_day:
             by_day[day_key] = []
-        by_day[day_key].append({
-            "quest_id": c.quest_id,
-            "quest_name": get_problem_name(c.quest_id),
-            "pattern": c.pattern_id,
-            "pattern_name": get_pattern_name(c.pattern_id),
-            "hints_used": c.hints_used,
-            "time_minutes": c.time_minutes,
-        })
+        by_day[day_key].append(
+            {
+                "quest_id": c.quest_id,
+                "quest_name": get_problem_name(c.quest_id),
+                "pattern": c.pattern_id,
+                "pattern_name": get_pattern_name(c.pattern_id),
+                "hints_used": c.hints_used,
+                "time_minutes": c.time_minutes,
+            }
+        )
 
     # Calculate summary
     patterns_worked = [
         {"pattern_id": p, "pattern_name": get_pattern_name(p)}
-        for p in set(c.pattern_id for c in recent)
+        for p in {c.pattern_id for c in recent}
     ]
 
     return ToolResult(
@@ -145,27 +146,33 @@ async def get_due_reviews(
 ) -> ToolResult:
     """
     Get quests due for review based on spaced repetition schedule.
-    
+
     :return: List of quests due for review
     """
     due = await db.get_due_reviews(user_id)
 
     reviews = []
     for completion in due:
-        reviews.append({
-            "quest_id": completion.quest_id,
-            "quest_name": get_problem_name(completion.quest_id),
-            "pattern": completion.pattern_id,
-            "pattern_name": get_pattern_name(completion.pattern_id),
-            "last_reviewed": completion.last_reviewed.isoformat() if completion.last_reviewed else None,
-            "review_count": completion.review_count,
-            "original_completion": completion.completed_at.isoformat(),
-        })
+        reviews.append(
+            {
+                "quest_id": completion.quest_id,
+                "quest_name": get_problem_name(completion.quest_id),
+                "pattern": completion.pattern_id,
+                "pattern_name": get_pattern_name(completion.pattern_id),
+                "last_reviewed": completion.last_reviewed.isoformat()
+                if completion.last_reviewed
+                else None,
+                "review_count": completion.review_count,
+                "original_completion": completion.completed_at.isoformat(),
+            }
+        )
 
     return ToolResult(
         success=True,
         data=reviews,
-        message=f"{len(reviews)} quests due for review" if reviews else "No reviews due today!",
+        message=f"{len(reviews)} quests due for review"
+        if reviews
+        else "No reviews due today!",
     )
 
 
@@ -182,7 +189,7 @@ async def record_review(
 ) -> ToolResult:
     """
     Record a spaced repetition review.
-    
+
     :param quest_id: The quest that was reviewed
     :param success: Whether the review was successful
     :return: Updated review schedule
@@ -193,10 +200,10 @@ async def record_review(
             success=False,
             error=f"Quest '{quest_id}' not found in completions",
         )
-    
+
     completion.review_count += 1
     completion.last_reviewed = datetime.now()
-    
+
     # Calculate next review interval (spaced repetition)
     if success:
         # Increase interval: 1 -> 3 -> 7 -> 14 -> 30
@@ -206,11 +213,11 @@ async def record_review(
     else:
         # Reset to shorter interval
         completion.next_review_in = 1
-    
+
     await db.upsert_quest_completion(completion)
-    
+
     next_review_date = datetime.now() + timedelta(days=completion.next_review_in)
-    
+
     return ToolResult(
         success=True,
         data={
@@ -224,5 +231,3 @@ async def record_review(
 
 
 # Note: update_streak function removed - no longer tracking streaks
-
-

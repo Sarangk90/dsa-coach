@@ -10,11 +10,11 @@ Usage:
     python migrate_remove_gamification.py --dry-run  # Preview changes without saving
 """
 
+import argparse
 import json
 import sys
-import argparse
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 
 def migrate_progress_json(progress_path: Path, dry_run: bool = False) -> dict:
@@ -34,7 +34,7 @@ def migrate_progress_json(progress_path: Path, dry_run: bool = False) -> dict:
         print(f"Error: File not found: {progress_path}")
         sys.exit(1)
 
-    with open(progress_path, 'r') as f:
+    with progress_path.open() as f:
         progress = json.load(f)
 
     # Track what we're removing
@@ -68,21 +68,25 @@ def migrate_progress_json(progress_path: Path, dry_run: bool = False) -> dict:
 
     # Verify learning data is preserved
     print("\n  Preserving learning data:")
-    print(f"    ✓ Pattern proficiency: {len(progress.get('pattern_proficiency', {}))} patterns")
+    print(
+        f"    ✓ Pattern proficiency: {len(progress.get('pattern_proficiency', {}))} patterns"
+    )
     print(f"    ✓ Completed quests: {len(progress.get('completed_quests', {}))} quests")
-    print(f"    ✓ Spaced repetition queue: {len(progress.get('spaced_repetition_queue', []))} items")
+    print(
+        f"    ✓ Spaced repetition queue: {len(progress.get('spaced_repetition_queue', []))} items"
+    )
     print(f"    ✓ Problems solved: {len(progress.get('problems_solved', {}))} problems")
 
     # Save if not dry run
     if not dry_run:
         # Backup original
-        backup_path = progress_path.with_suffix('.json.backup')
-        with open(backup_path, 'w') as f:
+        backup_path = progress_path.with_suffix(".json.backup")
+        with backup_path.open("w") as f:
             json.dump(progress, f, indent=2)
         print(f"\n  ✓ Backup saved: {backup_path}")
 
         # Save migrated version
-        with open(progress_path, 'w') as f:
+        with progress_path.open("w") as f:
             json.dump(progress, f, indent=2)
         print(f"  ✓ Migrated file saved: {progress_path}")
     else:
@@ -100,27 +104,25 @@ def main():
         "--path",
         type=Path,
         default=Path("progress.json"),
-        help="Path to progress.json file (default: ./progress.json)"
+        help="Path to progress.json file (default: ./progress.json)",
     )
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Preview changes without saving"
+        "--dry-run", action="store_true", help="Preview changes without saving"
     )
 
     args = parser.parse_args()
 
-    print("="*70)
+    print("=" * 70)
     print("DSA Coach - Remove Gamification Migration")
-    print("="*70)
+    print("=" * 70)
     print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     # Run migration
     migrate_progress_json(args.path, dry_run=args.dry_run)
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Migration complete!")
-    print("="*70)
+    print("=" * 70)
 
     if args.dry_run:
         print("\nTo apply changes, run without --dry-run flag:")

@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 def load_quests_v2() -> dict:
     """Load V2 quests.json."""
     quests_path = Path(__file__).parent / "quests.json"
-    with open(quests_path, "r") as f:
+    with quests_path.open() as f:
         return json.load(f)
 
 
@@ -25,7 +25,7 @@ def load_quests_v1_backup() -> dict:
     """Load V1 backup for reference."""
     backup_path = Path(__file__).parent / "quests_v1_backup.json"
     if backup_path.exists():
-        with open(backup_path, "r") as f:
+        with backup_path.open() as f:
             return json.load(f)
     return {}
 
@@ -35,7 +35,7 @@ def normalize_url(url: str) -> str:
     if not url:
         return ""
     # Remove trailing slash, convert to lowercase
-    parsed = urlparse(url.lower().rstrip('/'))
+    parsed = urlparse(url.lower().rstrip("/"))
     # Extract just the path (e.g., /problems/two-sum)
     return parsed.path
 
@@ -157,7 +157,9 @@ async def migrate_database():
                 if v2_pattern != v1_pattern_id:
                     completion.pattern_id = v2_pattern
                     await db.upsert_quest_completion(completion)
-                    print(f"  ✓ Pattern only: {v1_pattern_id} → {v2_pattern} (quest: {v1_quest_id})")
+                    print(
+                        f"  ✓ Pattern only: {v1_pattern_id} → {v2_pattern} (quest: {v1_quest_id})"
+                    )
                     pattern_updates += 1
                 else:
                     unmapped.append(v1_quest_id)
@@ -182,12 +184,16 @@ async def migrate_database():
                 if existing_v2:
                     # Merge: keep the one with more progress
                     if progress.quests_completed > existing_v2.quests_completed:
-                        print(f"  ⚠️  {v1_pattern_id} → {v2_pattern_id} (V2 exists, keeping V1 data)")
+                        print(
+                            f"  ⚠️  {v1_pattern_id} → {v2_pattern_id} (V2 exists, keeping V1 data)"
+                        )
                         progress.pattern_id = v2_pattern_id
                         progress.id = f"default_{v2_pattern_id}"
                         await db.upsert_pattern_progress(progress)
                     else:
-                        print(f"  ✓ {v1_pattern_id} → {v2_pattern_id} (V2 exists, keeping V2 data)")
+                        print(
+                            f"  ✓ {v1_pattern_id} → {v2_pattern_id} (V2 exists, keeping V2 data)"
+                        )
 
                     # Delete old V1 record manually (not automatic)
                     # We'll leave this for now to be safe

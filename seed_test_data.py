@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from dsa_coach.storage.db import Database
-from dsa_coach.storage.models import UserProfile, PatternProgress, QuestCompletion
+from dsa_coach.storage.models import PatternProgress, QuestCompletion, UserProfile
 
 
 async def seed_test_data():
@@ -38,8 +38,8 @@ async def seed_test_data():
         # 2. Add pattern progress
         patterns = [
             ("sliding_window", 35, 3),  # Low confidence, 3 quests done
-            ("two_pointers", 55, 2),     # Medium confidence, 2 quests done
-            ("hash_map", 10, 1),         # Very low confidence, 1 quest
+            ("two_pointers", 55, 2),  # Medium confidence, 2 quests done
+            ("hash_map", 10, 1),  # Very low confidence, 1 quest
         ]
 
         for pattern_id, confidence, quests_done in patterns:
@@ -52,7 +52,9 @@ async def seed_test_data():
                 last_practiced=now - timedelta(days=2),
             )
             await db.upsert_pattern_progress(progress)
-            print(f"✅ Pattern: {pattern_id} - {confidence}% confidence, {quests_done} quests")
+            print(
+                f"✅ Pattern: {pattern_id} - {confidence}% confidence, {quests_done} quests"
+            )
 
         # 3. Add completed quests with different review statuses
         completed_quests = [
@@ -142,16 +144,20 @@ async def seed_test_data():
             is_due = days_since_review >= quest_data["next_review_in"]
             status = "🔴 DUE" if is_due else "⏰ Not due yet"
 
-            print(f"✅ Quest: {quest_data['quest_id'][:30]:30} | {quest_data['pattern_id']:15} | {status}")
+            print(
+                f"✅ Quest: {quest_data['quest_id'][:30]:30} | {quest_data['pattern_id']:15} | {status}"
+            )
 
-        print(f"\n📊 Summary:")
+        print("\n📊 Summary:")
         print(f"   • Total quests completed: {len(completed_quests)}")
         print(f"   • Patterns with progress: {len(patterns)}")
-        print(f"   • Items due for review: 3 (sliding_window x2, hash_map x1)")
+        print("   • Items due for review: 3 (sliding_window x2, hash_map x1)")
 
         # Get due reviews to verify
         due_reviews = await db.get_due_reviews(user_id)
-        print(f"\n🔍 Verified {len(due_reviews)} items due for spaced repetition review:")
+        print(
+            f"\n🔍 Verified {len(due_reviews)} items due for spaced repetition review:"
+        )
         for review in due_reviews:
             print(f"   • {review.quest_id} ({review.pattern_id})")
 
@@ -162,7 +168,9 @@ async def seed_test_data():
     print("\nYou can now test:")
     print("  • 'Show me items for review' - should show 3+ items")
     print("  • 'Let's review sliding window' - should find 2 problems")
-    print("  • 'What are my weak patterns?' - should show hash_map (10%) and sliding_window (35%)")
+    print(
+        "  • 'What are my weak patterns?' - should show hash_map (10%) and sliding_window (35%)"
+    )
 
 
 if __name__ == "__main__":

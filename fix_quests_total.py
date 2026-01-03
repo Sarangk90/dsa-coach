@@ -13,7 +13,7 @@ from pathlib import Path
 def load_quests() -> dict:
     """Load quests.json data."""
     quests_path = Path(__file__).parent / "quests.json"
-    with open(quests_path, "r") as f:
+    with quests_path.open() as f:
         return json.load(f)
 
 
@@ -25,7 +25,7 @@ def count_total_quests_for_pattern(quests_data: dict, pattern_id: str) -> int:
     total = 0
 
     # Legacy pattern name mappings (old name -> V2 pattern_id)
-    LEGACY_PATTERN_MAP = {
+    legacy_pattern_map = {
         "hash_map": "ft_02",  # Arrays & Hashing
         "sliding_window": "ft_04",  # Sliding Window
         "two_pointers": "ft_03",  # Two Pointers
@@ -36,7 +36,7 @@ def count_total_quests_for_pattern(quests_data: dict, pattern_id: str) -> int:
     }
 
     # Check if pattern_id is a legacy name that needs mapping
-    mapped_pattern_id = LEGACY_PATTERN_MAP.get(pattern_id, pattern_id)
+    mapped_pattern_id = legacy_pattern_map.get(pattern_id, pattern_id)
 
     # Helper to slugify pattern names for matching
     def slugify(text: str) -> str:
@@ -48,9 +48,11 @@ def count_total_quests_for_pattern(quests_data: dict, pattern_id: str) -> int:
         for pattern in curriculum:
             # Match by pattern_id (e.g., 'ft_04'), mapped ID, or by slugified pattern_name (e.g., 'sliding_window')
             pattern_name_slug = slugify(pattern.get("pattern_name", ""))
-            if (pattern.get("pattern_id") == pattern_id or
-                pattern.get("pattern_id") == mapped_pattern_id or
-                pattern_name_slug == pattern_id):
+            if (
+                pattern.get("pattern_id") == pattern_id
+                or pattern.get("pattern_id") == mapped_pattern_id
+                or pattern_name_slug == pattern_id
+            ):
                 for concept in pattern.get("concepts", []):
                     total += len(concept.get("practice_problems", []))
                 return total  # Return early once pattern found
@@ -86,7 +88,9 @@ async def migrate():
         updated = 0
         for progress in all_progress:
             # Calculate correct total
-            correct_total = count_total_quests_for_pattern(quests_data, progress.pattern_id)
+            correct_total = count_total_quests_for_pattern(
+                quests_data, progress.pattern_id
+            )
 
             # Check if update needed
             if progress.quests_total != correct_total:
@@ -97,13 +101,17 @@ async def migrate():
                 print(f"✓ Updated {progress.pattern_id}:")
                 print(f"  - quests_total: {old_total} → {correct_total}")
                 print(f"  - quests_completed: {progress.quests_completed}")
-                print(f"  - completion: {progress.quests_completed}/{correct_total} "
-                      f"({100 * progress.quests_completed // correct_total if correct_total > 0 else 0}%)")
+                print(
+                    f"  - completion: {progress.quests_completed}/{correct_total} "
+                    f"({100 * progress.quests_completed // correct_total if correct_total > 0 else 0}%)"
+                )
                 print(f"  - confidence: {progress.confidence}%")
                 print()
                 updated += 1
             else:
-                print(f"✓ {progress.pattern_id} already correct (total={correct_total})")
+                print(
+                    f"✓ {progress.pattern_id} already correct (total={correct_total})"
+                )
 
         print()
         print(f"Migration complete! Updated {updated} records.")

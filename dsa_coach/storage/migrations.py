@@ -6,45 +6,46 @@ Handles migration from JSON files to SQLite and schema upgrades.
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from .db import Database
-from .models import UserProfile, PatternProgress, QuestCompletion
+from .models import PatternProgress, QuestCompletion, UserProfile
 
 
 async def migrate_from_json(
     db: Database,
-    progress_json_path: Optional[Path] = None,
+    progress_json_path: Path | None = None,
     user_id: str = "default",
 ) -> dict:
     """
     Migrate data from progress.json to SQLite database.
-    
+
     Returns a summary of migrated records.
     """
     if progress_json_path is None:
         progress_json_path = Path(__file__).parent.parent.parent / "progress.json"
-    
+
     if not progress_json_path.exists():
         return {"status": "skipped", "reason": "progress.json not found"}
-    
+
     try:
-        with open(progress_json_path, "r") as f:
+        with progress_json_path.open() as f:
             data = json.load(f)
     except json.JSONDecodeError as e:
         return {"status": "error", "reason": f"Invalid JSON: {e}"}
-    
+
     summary = {
         "status": "success",
         "profile_migrated": False,
         "patterns_migrated": 0,
         "quests_migrated": 0,
     }
-    
+
     # Migrate user profile
     profile_data = data.get("profile", {})
     if profile_data:
-        created_at = datetime.fromisoformat(profile_data.get("created_at", datetime.now().isoformat()))
+        created_at = datetime.fromisoformat(
+            profile_data.get("created_at", datetime.now().isoformat())
+        )
         profile = UserProfile(
             id=user_id,
             name=profile_data.get("name", "DSA Learner"),
@@ -52,14 +53,14 @@ async def migrate_from_json(
             created_at=created_at,
             last_active=datetime.now(),
         )
-        
+
         # Check if profile already exists
         existing = await db.get_or_create_profile(user_id)
         if existing.quests_completed < profile.quests_completed:
             # Only update if JSON has more progress
             await db.update_profile(profile)
             summary["profile_migrated"] = True
-    
+
     # Migrate pattern confidence
     pattern_confidence = data.get("pattern_confidence", {})
     for pattern_id, confidence in pattern_confidence.items():
@@ -73,17 +74,17 @@ async def migrate_from_json(
         if not existing or existing.confidence < confidence:
             await db.upsert_pattern_progress(progress)
             summary["patterns_migrated"] += 1
-    
+
     # Migrate completed quests
     completed_quests = data.get("completed_quests", {})
     for quest_id, quest_data in completed_quests.items():
         # Determine pattern from quest data or default
         pattern_id = quest_data.get("pattern", "unknown")
-        
+
         completed_at = datetime.fromisoformat(
             quest_data.get("completed_at", datetime.now().isoformat())
         )
-        
+
         completion = QuestCompletion(
             id=f"{user_id}_{quest_id}",
             user_id=user_id,
@@ -94,46 +95,48 @@ async def migrate_from_json(
             xp_earned=quest_data.get("xp", 0),
             success=True,
             review_count=quest_data.get("review_count", 0),
-            last_reviewed=datetime.fromisoformat(quest_data["last_reviewed"]) if quest_data.get("last_reviewed") else None,
+            last_reviewed=datetime.fromisoformat(quest_data["last_reviewed"])
+            if quest_data.get("last_reviewed")
+            else None,
             next_review_in=quest_data.get("next_review_in", 1),
         )
-        
+
         existing = await db.get_quest_completion(user_id, quest_id)
         if not existing:
             await db.upsert_quest_completion(completion)
             summary["quests_migrated"] += 1
-    
+
     return summary
 
 
 async def check_migration_needed(
     db: Database,
-    progress_json_path: Optional[Path] = None,
+    progress_json_path: Path | None = None,
     user_id: str = "default",
 ) -> bool:
     """Check if migration from JSON is needed."""
     if progress_json_path is None:
         progress_json_path = Path(__file__).parent.parent.parent / "progress.json"
-    
+
     if not progress_json_path.exists():
         return False
-    
+
     # Check if database has data
     profile = await db.get_or_create_profile(user_id)
     if profile.quests_completed > 0:
         # Already has data, compare with JSON
         try:
-            with open(progress_json_path, "r") as f:
+            with progress_json_path.open() as f:
                 data = json.load(f)
             json_quests = len(data.get("completed_quests", {}))
             # Only migrate if JSON has more progress
             return json_quests > profile.quests_completed
         except Exception:
             return False
-    
+
     # No data in database, check if JSON has data
     try:
-        with open(progress_json_path, "r") as f:
+        with progress_json_path.open() as f:
             data = json.load(f)
         return bool(data.get("profile") or data.get("completed_quests"))
     except Exception:
@@ -195,15 +198,18 @@ async def migrate_remove_gamification_v3(db: Database) -> dict:
         """)
 
         await cursor.execute("DROP TABLE quest_completions")
-        await cursor.execute("ALTER TABLE quest_completions_new RENAME TO quest_completions")
+        await cursor.execute(
+            "ALTER TABLE quest_completions_new RENAME TO quest_completions"
+        )
 
         # Recreate indexes
-        await cursor.execute("CREATE INDEX IF NOT EXISTS idx_quest_completions_user ON quest_completions(user_id)")
-        await cursor.execute("CREATE INDEX IF NOT EXISTS idx_quest_completions_pattern ON quest_completions(pattern_id)")
+        await cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_quest_completions_user ON quest_completions(user_id)"
+        )
+        await cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_quest_completions_pattern ON quest_completions(pattern_id)"
+        )
 
         await db.conn.commit()
 
     return {"status": "success", "migration": "remove_gamification_v3"}
-
-
-

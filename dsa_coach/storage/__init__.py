@@ -18,27 +18,27 @@ Legacy CLI commands use JSON for simplicity and backward compatibility.
 Agent mode uses SQLite for better concurrency and querying.
 """
 
+import contextlib
 import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from .db import Database
 from .models import (
-    Session,
+    ConceptUnderstanding,
     Message,
-    UserProfile,
     PatternProgress,
     QuestCompletion,
-    ConceptUnderstanding,
+    Session,
+    UserProfile,
 )
-
 
 # ==================== JSON Storage (Legacy & Static Data) ====================
 
 
-def load_json(filepath: Path) -> Dict[str, Any]:
+def load_json(filepath: Path) -> dict[str, Any]:
     """Load JSON from disk; return empty dict if file does not exist.
 
     Used for:
@@ -53,12 +53,12 @@ def load_json(filepath: Path) -> Dict[str, Any]:
         Parsed JSON data or empty dict if file doesn't exist
     """
     if filepath.exists():
-        with open(filepath, "r", encoding="utf-8") as f:
+        with filepath.open(encoding="utf-8") as f:
             return json.load(f)
     return {}
 
 
-def save_json(filepath: Path, data: Dict[str, Any]) -> None:
+def save_json(filepath: Path, data: dict[str, Any]) -> None:
     """Atomically save JSON to disk.
 
     Writes to a temp file in the same directory then replaces the target path.
@@ -76,18 +76,19 @@ def save_json(filepath: Path, data: Dict[str, Any]) -> None:
         OSError: If file operations fail
     """
     filepath.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp_path = tempfile.mkstemp(prefix=f".{filepath.name}.", dir=str(filepath.parent))
+    fd, tmp_path = tempfile.mkstemp(
+        prefix=f".{filepath.name}.", dir=str(filepath.parent)
+    )
+    tmp_path_obj = Path(tmp_path)
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, default=str)
             f.flush()
             os.fsync(f.fileno())
-        os.replace(tmp_path, filepath)
+        tmp_path_obj.replace(filepath)
     finally:
-        try:
-            os.unlink(tmp_path)
-        except FileNotFoundError:
-            pass
+        with contextlib.suppress(FileNotFoundError):
+            tmp_path_obj.unlink()
 
 
 __all__ = [
@@ -103,4 +104,3 @@ __all__ = [
     "load_json",
     "save_json",
 ]
-

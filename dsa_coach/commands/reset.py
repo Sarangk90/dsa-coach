@@ -61,7 +61,9 @@ def cmd_reset(argv: list[str] | None = None) -> None:
         pattern_ids = {p.pattern_id for p in all_patterns}
 
         if args[0] == "patterns":
-            if not _confirm_or_abort("This will reset ALL pattern progress to 0.", yes=yes):
+            if not _confirm_or_abort(
+                "This will reset ALL pattern progress to 0.", yes=yes
+            ):
                 return
             for pattern in all_patterns:
                 _reset_pattern_progress(db, pattern.pattern_id)
@@ -70,14 +72,18 @@ def cmd_reset(argv: list[str] | None = None) -> None:
 
         if args[0] == "pattern":
             if len(args) < 2:
-                print("Missing pattern name. Example: python coach.py reset pattern sliding_window")
+                print(
+                    "Missing pattern name. Example: python coach.py reset pattern sliding_window"
+                )
                 return
             pattern = _normalize_pattern(args[1])
             if pattern not in pattern_ids:
                 print(f"Pattern not found: {pattern}")
                 print(f"Available patterns: {', '.join(sorted(pattern_ids))}")
                 return
-            if not _confirm_or_abort(f"This will reset progress for '{pattern}'.", yes=yes):
+            if not _confirm_or_abort(
+                f"This will reset progress for '{pattern}'.", yes=yes
+            ):
                 return
             _reset_pattern_progress(db, pattern)
             print(f"✅ Reset pattern progress: {pattern}")
@@ -86,7 +92,9 @@ def cmd_reset(argv: list[str] | None = None) -> None:
         # Convenience: allow `python coach.py reset <pattern> [--yes]`
         pattern = _normalize_pattern(args[0])
         if pattern in pattern_ids:
-            if not _confirm_or_abort(f"This will reset progress for '{pattern}'.", yes=yes):
+            if not _confirm_or_abort(
+                f"This will reset progress for '{pattern}'.", yes=yes
+            ):
                 return
             _reset_pattern_progress(db, pattern)
             print(f"✅ Reset pattern progress: {pattern}")
@@ -95,7 +103,3 @@ def cmd_reset(argv: list[str] | None = None) -> None:
     print("Unknown reset target. Use one of:")
     print("  python coach.py reset pattern <pattern> [--yes]")
     print("  python coach.py reset patterns [--yes]")
-
-
-
-

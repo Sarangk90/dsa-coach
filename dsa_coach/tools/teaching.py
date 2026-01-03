@@ -6,15 +6,13 @@ Tools for diagnosing understanding, recording concept mastery, and finding knowl
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
-from .registry import tool, ToolResult
 from ..storage.db import Database
 from ..storage.models import ConceptUnderstanding, PatternProgress
-
+from .registry import ToolResult, tool
 
 # Cache for quests.json data
-_quests_cache: Optional[dict] = None
+_quests_cache: dict | None = None
 
 
 def _load_quests() -> dict:
@@ -22,7 +20,7 @@ def _load_quests() -> dict:
     global _quests_cache
     if _quests_cache is None:
         quests_path = Path(__file__).parent.parent.parent / "quests.json"
-        with open(quests_path, "r") as f:
+        with quests_path.open() as f:
             _quests_cache = json.load(f)
     return _quests_cache
 
@@ -46,7 +44,7 @@ async def diagnose_pattern_understanding(
 ) -> ToolResult:
     """
     Begin diagnosis of pattern understanding.
-    
+
     :param pattern_id: The pattern to diagnose
     :return: Concepts to quiz and current state
     """
@@ -56,22 +54,24 @@ async def diagnose_pattern_understanding(
             success=False,
             error=f"No concepts defined for pattern '{pattern_id}'",
         )
-    
+
     # Get current understanding state
     existing = await db.get_pattern_concepts(user_id, pattern_id)
     understood_map = {c.concept: c.understood for c in existing}
-    
+
     concepts_state = []
     for concept in concepts:
-        concepts_state.append({
-            "concept": concept,
-            "understood": understood_map.get(concept, False),
-            "needs_diagnosis": concept not in understood_map,
-        })
-    
+        concepts_state.append(
+            {
+                "concept": concept,
+                "understood": understood_map.get(concept, False),
+                "needs_diagnosis": concept not in understood_map,
+            }
+        )
+
     # Find concepts that need diagnosis or are marked as not understood
     gaps = [c for c in concepts_state if not c["understood"]]
-    
+
     return ToolResult(
         success=True,
         data={
@@ -103,7 +103,7 @@ async def record_concept_understanding(
 ) -> ToolResult:
     """
     Record understanding of a concept.
-    
+
     :param pattern_id: The pattern this concept belongs to
     :param concept: The concept name/description
     :param understood: Whether the user understands it
@@ -119,12 +119,12 @@ async def record_concept_understanding(
         diagnosed_at=datetime.now(),
         notes=notes,
     )
-    
+
     if understood:
         understanding.taught_at = datetime.now()
-    
+
     await db.upsert_concept_understanding(understanding)
-    
+
     # Update pattern progress concepts_understood list
     pattern_progress = await db.get_pattern_progress(user_id, pattern_id)
     if pattern_progress:
@@ -133,7 +133,7 @@ async def record_concept_understanding(
         pattern_progress.concepts_understood = understood_list
         pattern_progress.concepts_total = len(_get_pattern_concepts(pattern_id))
         await db.upsert_pattern_progress(pattern_progress)
-    
+
     return ToolResult(
         success=True,
         data={
@@ -158,7 +158,7 @@ async def get_concept_gaps(
 ) -> ToolResult:
     """
     Find gaps in concept understanding.
-    
+
     :param pattern_id: The pattern to check
     :return: List of concepts that need teaching
     """
@@ -169,19 +169,21 @@ async def get_concept_gaps(
             data=[],
             message=f"No concepts defined for pattern '{pattern_id}'",
         )
-    
+
     # Get recorded understanding
     recorded = await db.get_pattern_concepts(user_id, pattern_id)
     understood_concepts = {c.concept for c in recorded if c.understood}
-    
+
     gaps = []
     for concept in all_concepts:
         if concept not in understood_concepts:
-            gaps.append({
-                "concept": concept,
-                "recorded": concept in {c.concept for c in recorded},
-            })
-    
+            gaps.append(
+                {
+                    "concept": concept,
+                    "recorded": concept in {c.concept for c in recorded},
+                }
+            )
+
     return ToolResult(
         success=True,
         data={
@@ -207,13 +209,13 @@ async def mark_concept_taught(
 ) -> ToolResult:
     """
     Mark a concept as taught and understood.
-    
+
     :param pattern_id: The pattern this concept belongs to
     :param concept: The concept that was taught
     :return: Updated state
     """
     understanding = await db.get_concept_understanding(user_id, pattern_id, concept)
-    
+
     if understanding:
         understanding.understood = True
         understanding.taught_at = datetime.now()
@@ -226,9 +228,9 @@ async def mark_concept_taught(
             understood=True,
             taught_at=datetime.now(),
         )
-    
+
     await db.upsert_concept_understanding(understanding)
-    
+
     # Update pattern progress
     pattern_progress = await db.get_pattern_progress(user_id, pattern_id)
     if not pattern_progress:
@@ -237,14 +239,14 @@ async def mark_concept_taught(
             user_id=user_id,
             pattern_id=pattern_id,
         )
-    
+
     all_concepts = await db.get_pattern_concepts(user_id, pattern_id)
     understood_list = [c.concept for c in all_concepts if c.understood]
     pattern_progress.concepts_understood = understood_list
     pattern_progress.concepts_total = len(_get_pattern_concepts(pattern_id))
-    
+
     await db.upsert_pattern_progress(pattern_progress)
-    
+
     return ToolResult(
         success=True,
         data={
@@ -270,26 +272,26 @@ async def get_teaching_context(
 ) -> ToolResult:
     """
     Get context for teaching a concept.
-    
+
     :param pattern_id: The pattern this concept belongs to
     :param concept: The concept to teach
     :return: Teaching context with related info
     """
     quests = _load_quests()
     pattern_meta = quests.get("metadata", {}).get("patterns", {}).get(pattern_id, {})
-    
+
     all_concepts = pattern_meta.get("concepts", [])
     description = pattern_meta.get("description", "")
-    
+
     # Get user's current understanding
     understanding = await db.get_concept_understanding(user_id, pattern_id, concept)
     all_understanding = await db.get_pattern_concepts(user_id, pattern_id)
     understood = [c.concept for c in all_understanding if c.understood]
-    
+
     # Find concept index to determine prerequisites
     concept_index = all_concepts.index(concept) if concept in all_concepts else 0
     prerequisites = all_concepts[:concept_index]
-    
+
     return ToolResult(
         success=True,
         data={
@@ -320,7 +322,7 @@ async def record_mistake(
     pattern_id: str,
     mistake_type: str,
     description: str,
-    lesson_learned: Optional[str] = None,
+    lesson_learned: str | None = None,
     user_id: str = "default",
 ) -> ToolResult:
     """
@@ -333,7 +335,15 @@ async def record_mistake(
     :param lesson_learned: Optional insight the student gained from this mistake
     :return: Confirmation and updated mistake stats
     """
-    valid_types = {"off_by_one", "edge_case", "wrong_pattern", "complexity", "syntax", "logic", "other"}
+    valid_types = {
+        "off_by_one",
+        "edge_case",
+        "wrong_pattern",
+        "complexity",
+        "syntax",
+        "logic",
+        "other",
+    }
     if mistake_type not in valid_types:
         mistake_type = "other"
 
@@ -366,7 +376,11 @@ async def record_mistake(
             "recurrence_count": this_type_count,
         },
         message=f"Recorded {mistake_type} mistake. "
-        + (f"This has happened {this_type_count} times - worth extra attention!" if this_type_count > 1 else ""),
+        + (
+            f"This has happened {this_type_count} times - worth extra attention!"
+            if this_type_count > 1
+            else ""
+        ),
     )
 
 
@@ -409,7 +423,9 @@ async def record_teaching(
             this_concept_history = h
             break
 
-    explanation_count = this_concept_history["explanation_count"] if this_concept_history else 1
+    explanation_count = (
+        this_concept_history["explanation_count"] if this_concept_history else 1
+    )
 
     # Provide coaching advice if we've explained this multiple times
     advice = None
@@ -470,7 +486,7 @@ async def log_session_activity(
     problems_delta: int = 0,
     time_delta_mins: int = 0,
     hints_delta: int = 0,
-    pattern_worked: Optional[str] = None,
+    pattern_worked: str | None = None,
     user_id: str = "default",
 ) -> ToolResult:
     """
@@ -517,8 +533,8 @@ async def add_milestone(
     db: Database,
     milestone_type: str,
     description: str,
-    pattern_id: Optional[str] = None,
-    quest_id: Optional[str] = None,
+    pattern_id: str | None = None,
+    quest_id: str | None = None,
     user_id: str = "default",
 ) -> ToolResult:
     """
@@ -530,7 +546,15 @@ async def add_milestone(
     :param quest_id: Associated quest (if applicable)
     :return: Milestone ID and recent milestones
     """
-    valid_types = {"pattern_mastered", "streak", "no_hints", "speed_improvement", "first_solve", "concept_mastered", "other"}
+    valid_types = {
+        "pattern_mastered",
+        "streak",
+        "no_hints",
+        "speed_improvement",
+        "first_solve",
+        "concept_mastered",
+        "other",
+    }
     if milestone_type not in valid_types:
         milestone_type = "other"
 
@@ -605,6 +629,3 @@ async def get_teaching_history_for_pattern(
         },
         message=f"Found {len(history)} concepts taught for {pattern_id}",
     )
-
-
-

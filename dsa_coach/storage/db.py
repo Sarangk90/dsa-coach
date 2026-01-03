@@ -5,18 +5,18 @@ Provides async database operations with automatic migrations.
 
 import json
 import uuid
-import aiosqlite
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+
+import aiosqlite
 
 from .models import (
-    Session,
+    ConceptUnderstanding,
     Message,
-    UserProfile,
     PatternProgress,
     QuestCompletion,
-    ConceptUnderstanding,
+    Session,
+    UserProfile,
 )
 
 # Default database path
@@ -28,37 +28,37 @@ SCHEMA_VERSION = 4  # v4: Added deep student model (mistakes, daily_logs, milest
 
 class Database:
     """Async SQLite database wrapper with connection pooling."""
-    
+
     def __init__(self, db_path: Path | str = DEFAULT_DB_PATH):
         self.db_path = Path(db_path)
-        self._connection: Optional[aiosqlite.Connection] = None
-    
+        self._connection: aiosqlite.Connection | None = None
+
     async def connect(self) -> None:
         """Open database connection and ensure schema exists."""
         self._connection = await aiosqlite.connect(self.db_path)
         self._connection.row_factory = aiosqlite.Row
         await self._ensure_schema()
-    
+
     async def close(self) -> None:
         """Close database connection."""
         if self._connection:
             await self._connection.close()
             self._connection = None
-    
+
     async def __aenter__(self) -> "Database":
         await self.connect()
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         await self.close()
-    
+
     @property
     def conn(self) -> aiosqlite.Connection:
         """Get active connection, raising if not connected."""
         if not self._connection:
             raise RuntimeError("Database not connected. Call connect() first.")
         return self._connection
-    
+
     async def _ensure_schema(self) -> None:
         """Create tables if they don't exist."""
         await self.conn.executescript("""
@@ -75,7 +75,7 @@ class Database:
             );
             CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
             CREATE INDEX IF NOT EXISTS idx_sessions_updated ON sessions(updated_at DESC);
-            
+
             -- Messages table
             CREATE TABLE IF NOT EXISTS messages (
                 id TEXT PRIMARY KEY,
@@ -89,7 +89,7 @@ class Database:
             );
             CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id);
             CREATE INDEX IF NOT EXISTS idx_messages_created ON messages(created_at);
-            
+
             -- User profiles table
             CREATE TABLE IF NOT EXISTS user_profiles (
                 id TEXT PRIMARY KEY,
@@ -98,7 +98,7 @@ class Database:
                 created_at TEXT NOT NULL,
                 last_active TEXT NOT NULL
             );
-            
+
             -- Pattern progress table
             CREATE TABLE IF NOT EXISTS pattern_progress (
                 id TEXT PRIMARY KEY,
@@ -116,7 +116,7 @@ class Database:
             );
             CREATE INDEX IF NOT EXISTS idx_pattern_progress_user ON pattern_progress(user_id);
             CREATE INDEX IF NOT EXISTS idx_pattern_progress_confidence ON pattern_progress(confidence);
-            
+
             -- Quest completions table
             CREATE TABLE IF NOT EXISTS quest_completions (
                 id TEXT PRIMARY KEY,
@@ -134,7 +134,7 @@ class Database:
             );
             CREATE INDEX IF NOT EXISTS idx_quest_completions_user ON quest_completions(user_id);
             CREATE INDEX IF NOT EXISTS idx_quest_completions_pattern ON quest_completions(pattern_id);
-            
+
             -- Concept understanding table
             CREATE TABLE IF NOT EXISTS concept_understanding (
                 id TEXT PRIMARY KEY,
@@ -212,15 +212,15 @@ class Database:
             );
         """)
         await self.conn.commit()
-    
+
     # ==================== Session Operations ====================
-    
+
     async def create_session(
         self,
         user_id: str = "default",
         session_type: str = "general",
-        current_pattern: Optional[str] = None,
-        current_quest: Optional[str] = None,
+        current_pattern: str | None = None,
+        current_quest: str | None = None,
     ) -> Session:
         """Create a new coaching session."""
         now = datetime.now()
@@ -251,8 +251,8 @@ class Database:
         )
         await self.conn.commit()
         return session
-    
-    async def get_session(self, session_id: str) -> Optional[Session]:
+
+    async def get_session(self, session_id: str) -> Session | None:
         """Get a session by ID."""
         async with self.conn.execute(
             "SELECT * FROM sessions WHERE id = ?", (session_id,)
@@ -261,8 +261,8 @@ class Database:
             if row:
                 return self._row_to_session(row)
             return None
-    
-    async def get_latest_session(self, user_id: str = "default") -> Optional[Session]:
+
+    async def get_latest_session(self, user_id: str = "default") -> Session | None:
         """Get the most recent session for a user."""
         async with self.conn.execute(
             "SELECT * FROM sessions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1",
@@ -272,13 +272,13 @@ class Database:
             if row:
                 return self._row_to_session(row)
             return None
-    
+
     async def update_session(self, session: Session) -> None:
         """Update a session."""
         session.updated_at = datetime.now()
         await self.conn.execute(
             """
-            UPDATE sessions SET 
+            UPDATE sessions SET
                 updated_at = ?, current_pattern = ?, current_quest = ?,
                 session_type = ?, metadata = ?
             WHERE id = ?
@@ -293,7 +293,7 @@ class Database:
             ),
         )
         await self.conn.commit()
-    
+
     def _row_to_session(self, row: aiosqlite.Row) -> Session:
         """Convert a database row to a Session model."""
         return Session(
@@ -306,16 +306,16 @@ class Database:
             session_type=row["session_type"],
             metadata=json.loads(row["metadata"]),
         )
-    
+
     # ==================== Message Operations ====================
-    
+
     async def add_message(
         self,
         session_id: str,
         role: str,
         content: str,
-        tool_name: Optional[str] = None,
-        tool_args: Optional[dict] = None,
+        tool_name: str | None = None,
+        tool_args: dict | None = None,
     ) -> Message:
         """Add a message to a session."""
         message = Message(
@@ -344,16 +344,16 @@ class Database:
         )
         await self.conn.commit()
         return message
-    
+
     async def get_messages(
-        self, session_id: str, limit: Optional[int] = None
+        self, session_id: str, limit: int | None = None
     ) -> list[Message]:
         """Get messages for a session, ordered by creation time."""
         query = "SELECT * FROM messages WHERE session_id = ? ORDER BY created_at"
         if limit:
             query += f" DESC LIMIT {limit}"
             query = f"SELECT * FROM ({query}) ORDER BY created_at"
-        
+
         messages = []
         async with self.conn.execute(query, (session_id,)) as cursor:
             async for row in cursor:
@@ -364,14 +364,16 @@ class Database:
                         role=row["role"],
                         content=row["content"],
                         tool_name=row["tool_name"],
-                        tool_args=json.loads(row["tool_args"]) if row["tool_args"] else None,
+                        tool_args=json.loads(row["tool_args"])
+                        if row["tool_args"]
+                        else None,
                         created_at=datetime.fromisoformat(row["created_at"]),
                     )
                 )
         return messages
-    
+
     # ==================== User Profile Operations ====================
-    
+
     async def get_or_create_profile(self, user_id: str = "default") -> UserProfile:
         """Get user profile, creating if it doesn't exist."""
         async with self.conn.execute(
@@ -386,7 +388,7 @@ class Database:
                     created_at=datetime.fromisoformat(row["created_at"]),
                     last_active=datetime.fromisoformat(row["last_active"]),
                 )
-        
+
         # Create new profile
         now = datetime.now()
         profile = UserProfile(id=user_id, created_at=now, last_active=now)
@@ -405,7 +407,7 @@ class Database:
         )
         await self.conn.commit()
         return profile
-    
+
     async def update_profile(self, profile: UserProfile) -> None:
         """Update user profile."""
         profile.last_active = datetime.now()
@@ -423,12 +425,12 @@ class Database:
             ),
         )
         await self.conn.commit()
-    
+
     # ==================== Pattern Progress Operations ====================
-    
+
     async def get_pattern_progress(
         self, user_id: str, pattern_id: str
-    ) -> Optional[PatternProgress]:
+    ) -> PatternProgress | None:
         """Get progress for a specific pattern."""
         async with self.conn.execute(
             "SELECT * FROM pattern_progress WHERE user_id = ? AND pattern_id = ?",
@@ -438,8 +440,10 @@ class Database:
             if row:
                 return self._row_to_pattern_progress(row)
             return None
-    
-    async def get_all_pattern_progress(self, user_id: str = "default") -> list[PatternProgress]:
+
+    async def get_all_pattern_progress(
+        self, user_id: str = "default"
+    ) -> list[PatternProgress]:
         """Get progress for all patterns for a user."""
         progress_list = []
         async with self.conn.execute(
@@ -449,7 +453,7 @@ class Database:
             async for row in cursor:
                 progress_list.append(self._row_to_pattern_progress(row))
         return progress_list
-    
+
     async def upsert_pattern_progress(self, progress: PatternProgress) -> None:
         """Create or update pattern progress."""
         progress.id = f"{progress.user_id}_{progress.pattern_id}"
@@ -476,13 +480,15 @@ class Database:
                 progress.quests_total,
                 json.dumps(progress.concepts_understood),
                 progress.concepts_total,
-                progress.last_practiced.isoformat() if progress.last_practiced else None,
+                progress.last_practiced.isoformat()
+                if progress.last_practiced
+                else None,
                 progress.next_review.isoformat() if progress.next_review else None,
                 1 if progress.mastered else 0,
             ),
         )
         await self.conn.commit()
-    
+
     def _row_to_pattern_progress(self, row: aiosqlite.Row) -> PatternProgress:
         """Convert database row to PatternProgress model."""
         return PatternProgress(
@@ -494,16 +500,20 @@ class Database:
             quests_total=row["quests_total"],
             concepts_understood=json.loads(row["concepts_understood"]),
             concepts_total=row["concepts_total"],
-            last_practiced=datetime.fromisoformat(row["last_practiced"]) if row["last_practiced"] else None,
-            next_review=datetime.fromisoformat(row["next_review"]) if row["next_review"] else None,
+            last_practiced=datetime.fromisoformat(row["last_practiced"])
+            if row["last_practiced"]
+            else None,
+            next_review=datetime.fromisoformat(row["next_review"])
+            if row["next_review"]
+            else None,
             mastered=bool(row["mastered"]),
         )
-    
+
     # ==================== Quest Completion Operations ====================
-    
+
     async def get_quest_completion(
         self, user_id: str, quest_id: str
-    ) -> Optional[QuestCompletion]:
+    ) -> QuestCompletion | None:
         """Get completion record for a quest."""
         async with self.conn.execute(
             "SELECT * FROM quest_completions WHERE user_id = ? AND quest_id = ?",
@@ -513,9 +523,9 @@ class Database:
             if row:
                 return self._row_to_quest_completion(row)
             return None
-    
+
     async def get_completed_quests(
-        self, user_id: str = "default", pattern_id: Optional[str] = None
+        self, user_id: str = "default", pattern_id: str | None = None
     ) -> list[QuestCompletion]:
         """Get all completed quests, optionally filtered by pattern."""
         query = "SELECT * FROM quest_completions WHERE user_id = ?"
@@ -524,13 +534,13 @@ class Database:
             query += " AND pattern_id = ?"
             params.append(pattern_id)
         query += " ORDER BY completed_at DESC"
-        
+
         completions = []
         async with self.conn.execute(query, params) as cursor:
             async for row in cursor:
                 completions.append(self._row_to_quest_completion(row))
         return completions
-    
+
     async def get_due_reviews(self, user_id: str = "default") -> list[QuestCompletion]:
         """Get quests due for spaced repetition review.
 
@@ -557,7 +567,7 @@ class Database:
             async for row in cursor:
                 completions.append(self._row_to_quest_completion(row))
         return completions
-    
+
     async def upsert_quest_completion(self, completion: QuestCompletion) -> None:
         """Create or update quest completion."""
         completion.id = f"{completion.user_id}_{completion.quest_id}"
@@ -584,12 +594,14 @@ class Database:
                 completion.hints_used,
                 1 if completion.success else 0,
                 completion.review_count,
-                completion.last_reviewed.isoformat() if completion.last_reviewed else None,
+                completion.last_reviewed.isoformat()
+                if completion.last_reviewed
+                else None,
                 completion.next_review_in,
             ),
         )
         await self.conn.commit()
-    
+
     def _row_to_quest_completion(self, row: aiosqlite.Row) -> QuestCompletion:
         """Convert database row to QuestCompletion model."""
         return QuestCompletion(
@@ -602,15 +614,17 @@ class Database:
             hints_used=row["hints_used"],
             success=bool(row["success"]),
             review_count=row["review_count"],
-            last_reviewed=datetime.fromisoformat(row["last_reviewed"]) if row["last_reviewed"] else None,
+            last_reviewed=datetime.fromisoformat(row["last_reviewed"])
+            if row["last_reviewed"]
+            else None,
             next_review_in=row["next_review_in"],
         )
-    
+
     # ==================== Concept Understanding Operations ====================
-    
+
     async def get_concept_understanding(
         self, user_id: str, pattern_id: str, concept: str
-    ) -> Optional[ConceptUnderstanding]:
+    ) -> ConceptUnderstanding | None:
         """Get understanding record for a specific concept."""
         async with self.conn.execute(
             "SELECT * FROM concept_understanding WHERE user_id = ? AND pattern_id = ? AND concept = ?",
@@ -620,7 +634,7 @@ class Database:
             if row:
                 return self._row_to_concept_understanding(row)
             return None
-    
+
     async def get_pattern_concepts(
         self, user_id: str, pattern_id: str
     ) -> list[ConceptUnderstanding]:
@@ -633,7 +647,7 @@ class Database:
             async for row in cursor:
                 concepts.append(self._row_to_concept_understanding(row))
         return concepts
-    
+
     async def upsert_concept_understanding(self, concept: ConceptUnderstanding) -> None:
         """Create or update concept understanding."""
         concept.id = f"{concept.user_id}_{concept.pattern_id}_{concept.concept}"
@@ -659,7 +673,7 @@ class Database:
             ),
         )
         await self.conn.commit()
-    
+
     def _row_to_concept_understanding(self, row: aiosqlite.Row) -> ConceptUnderstanding:
         """Convert database row to ConceptUnderstanding model."""
         return ConceptUnderstanding(
@@ -668,8 +682,12 @@ class Database:
             pattern_id=row["pattern_id"],
             concept=row["concept"],
             understood=bool(row["understood"]),
-            diagnosed_at=datetime.fromisoformat(row["diagnosed_at"]) if row["diagnosed_at"] else None,
-            taught_at=datetime.fromisoformat(row["taught_at"]) if row["taught_at"] else None,
+            diagnosed_at=datetime.fromisoformat(row["diagnosed_at"])
+            if row["diagnosed_at"]
+            else None,
+            taught_at=datetime.fromisoformat(row["taught_at"])
+            if row["taught_at"]
+            else None,
             notes=row["notes"],
         )
 
@@ -682,7 +700,7 @@ class Database:
         pattern_id: str,
         mistake_type: str,
         description: str,
-        lesson_learned: Optional[str] = None,
+        lesson_learned: str | None = None,
     ) -> str:
         """Add a mistake, incrementing recurrence if same type exists for pattern."""
         # Check for existing mistake of same type for this pattern
@@ -737,16 +755,18 @@ class Database:
             (user_id, limit),
         ) as cursor:
             async for row in cursor:
-                mistakes.append({
-                    "id": row["id"],
-                    "quest_id": row["quest_id"],
-                    "pattern_id": row["pattern_id"],
-                    "mistake_type": row["mistake_type"],
-                    "description": row["description"],
-                    "lesson_learned": row["lesson_learned"],
-                    "logged_at": row["logged_at"],
-                    "recurrence_count": row["recurrence_count"],
-                })
+                mistakes.append(
+                    {
+                        "id": row["id"],
+                        "quest_id": row["quest_id"],
+                        "pattern_id": row["pattern_id"],
+                        "mistake_type": row["mistake_type"],
+                        "description": row["description"],
+                        "lesson_learned": row["lesson_learned"],
+                        "logged_at": row["logged_at"],
+                        "recurrence_count": row["recurrence_count"],
+                    }
+                )
         return mistakes
 
     async def get_recurring_mistake_types(self, user_id: str) -> list[dict]:
@@ -764,11 +784,15 @@ class Database:
             (user_id,),
         ) as cursor:
             async for row in cursor:
-                mistakes.append({
-                    "type": row["mistake_type"],
-                    "count": row["total_count"],
-                    "patterns": row["patterns"].split(",") if row["patterns"] else [],
-                })
+                mistakes.append(
+                    {
+                        "type": row["mistake_type"],
+                        "count": row["total_count"],
+                        "patterns": row["patterns"].split(",")
+                        if row["patterns"]
+                        else [],
+                    }
+                )
         return mistakes
 
     # ==================== Daily Logs Operations ====================
@@ -779,7 +803,7 @@ class Database:
         problems_delta: int = 0,
         time_delta_mins: int = 0,
         hints_delta: int = 0,
-        pattern_worked: Optional[str] = None,
+        pattern_worked: str | None = None,
     ) -> None:
         """Update or create today's daily log."""
         today = datetime.now().date().isoformat()
@@ -790,10 +814,7 @@ class Database:
             "SELECT patterns_worked FROM daily_logs WHERE id = ?", (log_id,)
         ) as cursor:
             row = await cursor.fetchone()
-            if row:
-                patterns = json.loads(row["patterns_worked"])
-            else:
-                patterns = []
+            patterns = json.loads(row["patterns_worked"]) if row else []
 
         if pattern_worked and pattern_worked not in patterns:
             patterns.append(pattern_worked)
@@ -809,8 +830,17 @@ class Database:
                 patterns_worked = ?
             """,
             (
-                log_id, user_id, today, problems_delta, time_delta_mins, hints_delta, json.dumps(patterns),
-                problems_delta, time_delta_mins, hints_delta, json.dumps(patterns),
+                log_id,
+                user_id,
+                today,
+                problems_delta,
+                time_delta_mins,
+                hints_delta,
+                json.dumps(patterns),
+                problems_delta,
+                time_delta_mins,
+                hints_delta,
+                json.dumps(patterns),
             ),
         )
         await self.conn.commit()
@@ -819,9 +849,15 @@ class Database:
         """Get activity summary for current week."""
         # Get date 7 days ago
         from datetime import timedelta
+
         week_ago = (datetime.now() - timedelta(days=7)).date().isoformat()
 
-        totals = {"sessions": 0, "problems_solved": 0, "time_mins": 0, "patterns": set()}
+        totals = {
+            "sessions": 0,
+            "problems_solved": 0,
+            "time_mins": 0,
+            "patterns": set(),
+        }
 
         async with self.conn.execute(
             """
@@ -848,8 +884,8 @@ class Database:
         user_id: str,
         milestone_type: str,
         description: str,
-        pattern_id: Optional[str] = None,
-        quest_id: Optional[str] = None,
+        pattern_id: str | None = None,
+        quest_id: str | None = None,
     ) -> str:
         """Add a milestone achievement."""
         milestone_id = str(uuid.uuid4())
@@ -874,6 +910,7 @@ class Database:
     async def get_recent_milestones(self, user_id: str, days: int = 7) -> list[dict]:
         """Get milestones achieved in last N days."""
         from datetime import timedelta
+
         cutoff = (datetime.now() - timedelta(days=days)).isoformat()
 
         milestones = []
@@ -886,14 +923,16 @@ class Database:
             (user_id, cutoff),
         ) as cursor:
             async for row in cursor:
-                milestones.append({
-                    "id": row["id"],
-                    "type": row["milestone_type"],
-                    "pattern_id": row["pattern_id"],
-                    "quest_id": row["quest_id"],
-                    "description": row["description"],
-                    "achieved_at": row["achieved_at"],
-                })
+                milestones.append(
+                    {
+                        "id": row["id"],
+                        "type": row["milestone_type"],
+                        "pattern_id": row["pattern_id"],
+                        "quest_id": row["quest_id"],
+                        "description": row["description"],
+                        "achieved_at": row["achieved_at"],
+                    }
+                )
         return milestones
 
     # ==================== Teaching History Operations ====================
@@ -918,11 +957,22 @@ class Database:
                 last_explained = ?,
                 student_response = ?
             """,
-            (record_id, user_id, pattern_id, concept, now, student_response, now, student_response),
+            (
+                record_id,
+                user_id,
+                pattern_id,
+                concept,
+                now,
+                student_response,
+                now,
+                student_response,
+            ),
         )
         await self.conn.commit()
 
-    async def get_teaching_history(self, user_id: str, pattern_id: Optional[str] = None) -> list[dict]:
+    async def get_teaching_history(
+        self, user_id: str, pattern_id: str | None = None
+    ) -> list[dict]:
         """Get teaching history, optionally filtered by pattern."""
         query = "SELECT * FROM teaching_history WHERE user_id = ?"
         params: list = [user_id]
@@ -934,13 +984,15 @@ class Database:
         history = []
         async with self.conn.execute(query, params) as cursor:
             async for row in cursor:
-                history.append({
-                    "pattern_id": row["pattern_id"],
-                    "concept": row["concept"],
-                    "explanation_count": row["explanation_count"],
-                    "last_explained": row["last_explained"],
-                    "student_response": row["student_response"],
-                })
+                history.append(
+                    {
+                        "pattern_id": row["pattern_id"],
+                        "concept": row["concept"],
+                        "explanation_count": row["explanation_count"],
+                        "last_explained": row["last_explained"],
+                        "student_response": row["student_response"],
+                    }
+                )
         return history
 
     # ==================== Student Context Query Methods ====================
@@ -958,12 +1010,14 @@ class Database:
             (user_id,),
         ) as cursor:
             async for row in cursor:
-                concepts.append({
-                    "pattern_id": row["pattern_id"],
-                    "concept": row["concept"],
-                    "source": "not_understood",
-                    "notes": row["notes"],
-                })
+                concepts.append(
+                    {
+                        "pattern_id": row["pattern_id"],
+                        "concept": row["concept"],
+                        "source": "not_understood",
+                        "notes": row["notes"],
+                    }
+                )
 
         # From teaching_history: explained 2+ times
         async with self.conn.execute(
@@ -975,13 +1029,19 @@ class Database:
         ) as cursor:
             async for row in cursor:
                 # Avoid duplicates
-                if not any(c["pattern_id"] == row["pattern_id"] and c["concept"] == row["concept"] for c in concepts):
-                    concepts.append({
-                        "pattern_id": row["pattern_id"],
-                        "concept": row["concept"],
-                        "source": "multiple_explanations",
-                        "explanation_count": row["explanation_count"],
-                    })
+                if not any(
+                    c["pattern_id"] == row["pattern_id"]
+                    and c["concept"] == row["concept"]
+                    for c in concepts
+                ):
+                    concepts.append(
+                        {
+                            "pattern_id": row["pattern_id"],
+                            "concept": row["concept"],
+                            "source": "multiple_explanations",
+                            "explanation_count": row["explanation_count"],
+                        }
+                    )
 
         return concepts
 
@@ -996,11 +1056,13 @@ class Database:
             (user_id,),
         ) as cursor:
             async for row in cursor:
-                concepts.append({
-                    "pattern_id": row["pattern_id"],
-                    "concept": row["concept"],
-                    "taught_at": row["taught_at"],
-                })
+                concepts.append(
+                    {
+                        "pattern_id": row["pattern_id"],
+                        "concept": row["concept"],
+                        "taught_at": row["taught_at"],
+                    }
+                )
         return concepts
 
     async def build_progress_compat(self, user_id: str = "default") -> dict:
@@ -1034,15 +1096,14 @@ class Database:
 
         # Derive patterns_in_progress (has quests but not mastered)
         patterns_in_progress = [
-            p.pattern_id for p in patterns
-            if p.quests_completed > 0 and not p.mastered
+            p.pattern_id for p in patterns if p.quests_completed > 0 and not p.mastered
         ]
 
         return {
             "profile": {
                 "name": profile.name,
                 "current_quest": session.current_quest if session else None,
-                "active_mode": getattr(profile, 'active_mode', None) or "fast_track",
+                "active_mode": getattr(profile, "active_mode", None) or "fast_track",
             },
             "pattern_proficiency": pattern_prof,
             "completed_quests": {c.quest_id: True for c in completed},
@@ -1050,6 +1111,3 @@ class Database:
             "patterns_completed": patterns_completed,
             "patterns_in_progress": patterns_in_progress,
         }
-
-
-

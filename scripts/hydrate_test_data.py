@@ -30,24 +30,22 @@ Note: CLI commands (coach.py, coach-menu.py) use "default" user by default.
       Test data under "test" user won't interfere with your real progress.
 """
 
-import sys
-import json
 import argparse
+import json
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from dsa_coach.storage.sync import SyncDatabase
 from dsa_coach.storage.models import (
-    UserProfile,
+    ConceptUnderstanding,
     PatternProgress,
     QuestCompletion,
-    ConceptUnderstanding,
-    Session,
+    UserProfile,
 )
-
+from dsa_coach.storage.sync import SyncDatabase
 
 # =============================================================================
 # TEST DATA DEFINITIONS
@@ -56,9 +54,11 @@ from dsa_coach.storage.models import (
 # Base timestamp for consistent relative dates
 NOW = datetime.now()
 
+
 def days_ago(n: int) -> datetime:
     """Helper to get datetime N days ago."""
     return NOW - timedelta(days=n)
+
 
 def hours_ago(n: int) -> datetime:
     """Helper to get datetime N hours ago."""
@@ -84,7 +84,11 @@ PATTERN_PROGRESS = [
         "confidence": 85,
         "quests_completed": 6,
         "quests_total": 6,
-        "concepts_understood": ["hash_map_fundamentals", "collision_handling", "two_sum_pattern"],
+        "concepts_understood": [
+            "hash_map_fundamentals",
+            "collision_handling",
+            "two_sum_pattern",
+        ],
         "last_practiced": days_ago(3),
         "next_review": days_ago(-4),  # Due in 4 days
         "mastered": True,
@@ -283,13 +287,55 @@ QUEST_COMPLETIONS = [
 
 # Daily Logs - Last 7 days of activity
 DAILY_LOGS = [
-    {"date": days_ago(0).strftime("%Y-%m-%d"), "problems_solved": 1, "time_spent_mins": 35, "hints_used": 0, "patterns_worked": ["ft_03"]},
-    {"date": days_ago(1).strftime("%Y-%m-%d"), "problems_solved": 2, "time_spent_mins": 60, "hints_used": 1, "patterns_worked": ["ft_03", "ft_04"]},
-    {"date": days_ago(2).strftime("%Y-%m-%d"), "problems_solved": 1, "time_spent_mins": 40, "hints_used": 2, "patterns_worked": ["ft_04"]},
-    {"date": days_ago(3).strftime("%Y-%m-%d"), "problems_solved": 1, "time_spent_mins": 45, "hints_used": 1, "patterns_worked": ["ft_03"]},
-    {"date": days_ago(4).strftime("%Y-%m-%d"), "problems_solved": 1, "time_spent_mins": 50, "hints_used": 3, "patterns_worked": ["ft_04"]},
-    {"date": days_ago(5).strftime("%Y-%m-%d"), "problems_solved": 2, "time_spent_mins": 55, "hints_used": 0, "patterns_worked": ["ft_03"]},
-    {"date": days_ago(6).strftime("%Y-%m-%d"), "problems_solved": 1, "time_spent_mins": 35, "hints_used": 1, "patterns_worked": ["ft_03"]},
+    {
+        "date": days_ago(0).strftime("%Y-%m-%d"),
+        "problems_solved": 1,
+        "time_spent_mins": 35,
+        "hints_used": 0,
+        "patterns_worked": ["ft_03"],
+    },
+    {
+        "date": days_ago(1).strftime("%Y-%m-%d"),
+        "problems_solved": 2,
+        "time_spent_mins": 60,
+        "hints_used": 1,
+        "patterns_worked": ["ft_03", "ft_04"],
+    },
+    {
+        "date": days_ago(2).strftime("%Y-%m-%d"),
+        "problems_solved": 1,
+        "time_spent_mins": 40,
+        "hints_used": 2,
+        "patterns_worked": ["ft_04"],
+    },
+    {
+        "date": days_ago(3).strftime("%Y-%m-%d"),
+        "problems_solved": 1,
+        "time_spent_mins": 45,
+        "hints_used": 1,
+        "patterns_worked": ["ft_03"],
+    },
+    {
+        "date": days_ago(4).strftime("%Y-%m-%d"),
+        "problems_solved": 1,
+        "time_spent_mins": 50,
+        "hints_used": 3,
+        "patterns_worked": ["ft_04"],
+    },
+    {
+        "date": days_ago(5).strftime("%Y-%m-%d"),
+        "problems_solved": 2,
+        "time_spent_mins": 55,
+        "hints_used": 0,
+        "patterns_worked": ["ft_03"],
+    },
+    {
+        "date": days_ago(6).strftime("%Y-%m-%d"),
+        "problems_solved": 1,
+        "time_spent_mins": 35,
+        "hints_used": 1,
+        "patterns_worked": ["ft_03"],
+    },
 ]
 
 # Milestones - Achievements
@@ -465,11 +511,13 @@ CONCEPT_UNDERSTANDING = [
 # HYDRATION FUNCTIONS
 # =============================================================================
 
+
 def reset_database() -> None:
     """Clear all data from the database using direct SQL."""
     print("🗑️  Resetting database...")
 
     import sqlite3
+
     from dsa_coach.paths import BASE_DIR
 
     db_path = BASE_DIR / "coach.db"
@@ -571,6 +619,7 @@ def hydrate_daily_logs(db: SyncDatabase, user_id: str = "test") -> None:
     # Use direct SQL to insert historical daily logs
     # (upsert_daily_log only supports "today")
     import sqlite3
+
     from dsa_coach.paths import BASE_DIR
 
     db_path = BASE_DIR / "coach.db"
@@ -581,14 +630,26 @@ def hydrate_daily_logs(db: SyncDatabase, user_id: str = "test") -> None:
         log_id = f"{user_id}_{log['date']}"
         patterns_json = json.dumps(log["patterns_worked"])
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO daily_logs
             (id, user_id, date, problems_solved, time_spent_mins, patterns_worked, hints_used)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (log_id, user_id, log["date"], log["problems_solved"],
-              log["time_spent_mins"], patterns_json, log["hints_used"]))
+        """,
+            (
+                log_id,
+                user_id,
+                log["date"],
+                log["problems_solved"],
+                log["time_spent_mins"],
+                patterns_json,
+                log["hints_used"],
+            ),
+        )
 
-        print(f"   {log['date']}: {log['problems_solved']} problems, {log['time_spent_mins']}min")
+        print(
+            f"   {log['date']}: {log['problems_solved']} problems, {log['time_spent_mins']}min"
+        )
 
     conn.commit()
     conn.close()
@@ -624,7 +685,7 @@ def hydrate_mistakes(db: SyncDatabase, user_id: str = "test") -> None:
                 description=m["description"],
                 lesson_learned=m.get("lesson_learned"),
             )
-        recur = f" (x{m['recurrence_count']})" if m['recurrence_count'] > 1 else ""
+        recur = f" (x{m['recurrence_count']})" if m["recurrence_count"] > 1 else ""
         print(f"   {m['mistake_type']}{recur}: {m['description'][:40]}...")
 
 
@@ -639,7 +700,9 @@ def hydrate_teaching_history(db: SyncDatabase, user_id: str = "test") -> None:
             concept=th["concept"],
             student_response=th["student_response"],
         )
-        status_icon = {"understood": "✓", "partially": "~", "confused": "✗"}.get(th["student_response"], "?")
+        status_icon = {"understood": "✓", "partially": "~", "confused": "✗"}.get(
+            th["student_response"], "?"
+        )
         print(f"   {status_icon} {th['pattern_id']}/{th['concept']}")
 
 
@@ -648,7 +711,6 @@ def hydrate_concept_understanding(db: SyncDatabase, user_id: str = "test") -> No
     print("🧠 Hydrating concept understanding...")
 
     for cu in CONCEPT_UNDERSTANDING:
-        from dsa_coach.storage.models import ConceptUnderstanding
         concept_obj = ConceptUnderstanding(
             id=f"{user_id}_{cu['pattern_id']}_{cu['concept']}",
             user_id=user_id,
@@ -690,7 +752,9 @@ def verify_data(db: SyncDatabase, user_id: str = "test") -> None:
     print(f"\n📊 Pattern Progress: {len(patterns)} patterns")
     for p in patterns:
         status = "MASTERED" if p.mastered else f"{p.confidence}%"
-        print(f"   {p.pattern_id}: {status} ({p.quests_completed}/{p.quests_total} quests)")
+        print(
+            f"   {p.pattern_id}: {status} ({p.quests_completed}/{p.quests_total} quests)"
+        )
 
     # Quest completions
     completions = db.get_completed_quests(user_id)
@@ -712,7 +776,7 @@ def verify_data(db: SyncDatabase, user_id: str = "test") -> None:
     # Weekly activity
     weekly = db.get_weekly_activity(user_id)
     if weekly:
-        print(f"\n📅 This Week:")
+        print("\n📅 This Week:")
         print(f"   Problems: {weekly.get('problems_solved', 0)}")
         print(f"   Time: {weekly.get('time_spent_mins', 0)} minutes")
         print(f"   Hints: {weekly.get('hints_used', 0)}")
@@ -723,7 +787,7 @@ def verify_data(db: SyncDatabase, user_id: str = "test") -> None:
 
     # build_progress_compat test
     compat = db.build_progress_compat(user_id)
-    print(f"\n🔄 build_progress_compat():")
+    print("\n🔄 build_progress_compat():")
     print(f"   patterns_completed: {compat['patterns_completed']}")
     print(f"   patterns_in_progress: {compat['patterns_in_progress']}")
     print(f"   problems_solved: {len(compat['problems_solved'])} quests")
@@ -733,11 +797,13 @@ def verify_data(db: SyncDatabase, user_id: str = "test") -> None:
 # MAIN
 # =============================================================================
 
+
 def clear_user_data(user_id: str) -> None:
     """Clear all data for a specific user (preserves other users)."""
     print(f"🗑️  Clearing data for user: {user_id}")
 
     import sqlite3
+
     from dsa_coach.paths import BASE_DIR
 
     db_path = BASE_DIR / "coach.db"
@@ -746,11 +812,14 @@ def clear_user_data(user_id: str) -> None:
 
     # Delete messages first (linked to sessions via session_id)
     try:
-        cursor.execute("""
+        cursor.execute(
+            """
             DELETE FROM messages WHERE session_id IN (
                 SELECT id FROM sessions WHERE user_id = ?
             )
-        """, (user_id,))
+        """,
+            (user_id,),
+        )
         if cursor.rowcount > 0:
             print(f"   Cleared {cursor.rowcount} rows from messages")
     except Exception as e:
@@ -791,10 +860,22 @@ def clear_user_data(user_id: str) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Hydrate test data into DSA Coach database")
-    parser.add_argument("--reset", action="store_true", help="Clear existing data first (for specified user only)")
-    parser.add_argument("--user", default="test", help="User ID for test data (default: 'test'). Use 'default' to affect your real data.")
-    parser.add_argument("--clear-only", action="store_true", help="Only clear data, don't hydrate")
+    parser = argparse.ArgumentParser(
+        description="Hydrate test data into DSA Coach database"
+    )
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Clear existing data first (for specified user only)",
+    )
+    parser.add_argument(
+        "--user",
+        default="test",
+        help="User ID for test data (default: 'test'). Use 'default' to affect your real data.",
+    )
+    parser.add_argument(
+        "--clear-only", action="store_true", help="Only clear data, don't hydrate"
+    )
     args = parser.parse_args()
 
     user_id = args.user
@@ -814,7 +895,6 @@ def main():
         return
 
     with SyncDatabase() as db:
-
         # Hydrate all tables
         hydrate_user_profile(db, user_id)
         hydrate_pattern_progress(db, user_id)

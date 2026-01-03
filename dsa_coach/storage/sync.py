@@ -11,15 +11,14 @@ Usage:
 
 import asyncio
 from pathlib import Path
-from typing import Optional
 
-from .db import Database, DEFAULT_DB_PATH
+from .db import DEFAULT_DB_PATH, Database
 from .models import (
-    UserProfile,
+    ConceptUnderstanding,
     PatternProgress,
     QuestCompletion,
-    ConceptUnderstanding,
     Session,
+    UserProfile,
 )
 
 
@@ -62,7 +61,7 @@ class SyncDatabase:
 
     # ==================== Session Operations ====================
 
-    def get_latest_session(self, user_id: str = "default") -> Optional[Session]:
+    def get_latest_session(self, user_id: str = "default") -> Session | None:
         """Get the most recent session for a user."""
         return self._run(self._db.get_latest_session(user_id))
 
@@ -70,11 +69,15 @@ class SyncDatabase:
         self,
         user_id: str = "default",
         session_type: str = "general",
-        current_pattern: Optional[str] = None,
-        current_quest: Optional[str] = None,
+        current_pattern: str | None = None,
+        current_quest: str | None = None,
     ) -> Session:
         """Create a new coaching session."""
-        return self._run(self._db.create_session(user_id, session_type, current_pattern, current_quest))
+        return self._run(
+            self._db.create_session(
+                user_id, session_type, current_pattern, current_quest
+            )
+        )
 
     def update_session(self, session: Session) -> None:
         """Update a session."""
@@ -82,11 +85,15 @@ class SyncDatabase:
 
     # ==================== Pattern Progress Operations ====================
 
-    def get_pattern_progress(self, user_id: str, pattern_id: str) -> Optional[PatternProgress]:
+    def get_pattern_progress(
+        self, user_id: str, pattern_id: str
+    ) -> PatternProgress | None:
         """Get progress for a specific pattern."""
         return self._run(self._db.get_pattern_progress(user_id, pattern_id))
 
-    def get_all_pattern_progress(self, user_id: str = "default") -> list[PatternProgress]:
+    def get_all_pattern_progress(
+        self, user_id: str = "default"
+    ) -> list[PatternProgress]:
         """Get progress for all patterns for a user."""
         return self._run(self._db.get_all_pattern_progress(user_id))
 
@@ -96,12 +103,14 @@ class SyncDatabase:
 
     # ==================== Quest Completion Operations ====================
 
-    def get_quest_completion(self, user_id: str, quest_id: str) -> Optional[QuestCompletion]:
+    def get_quest_completion(
+        self, user_id: str, quest_id: str
+    ) -> QuestCompletion | None:
         """Get completion record for a quest."""
         return self._run(self._db.get_quest_completion(user_id, quest_id))
 
     def get_completed_quests(
-        self, user_id: str = "default", pattern_id: Optional[str] = None
+        self, user_id: str = "default", pattern_id: str | None = None
     ) -> list[QuestCompletion]:
         """Get all completed quests, optionally filtered by pattern."""
         return self._run(self._db.get_completed_quests(user_id, pattern_id))
@@ -118,11 +127,15 @@ class SyncDatabase:
 
     def get_concept_understanding(
         self, user_id: str, pattern_id: str, concept: str
-    ) -> Optional[ConceptUnderstanding]:
+    ) -> ConceptUnderstanding | None:
         """Get understanding record for a specific concept."""
-        return self._run(self._db.get_concept_understanding(user_id, pattern_id, concept))
+        return self._run(
+            self._db.get_concept_understanding(user_id, pattern_id, concept)
+        )
 
-    def get_pattern_concepts(self, user_id: str, pattern_id: str) -> list[ConceptUnderstanding]:
+    def get_pattern_concepts(
+        self, user_id: str, pattern_id: str
+    ) -> list[ConceptUnderstanding]:
         """Get all concept understanding records for a pattern."""
         return self._run(self._db.get_pattern_concepts(user_id, pattern_id))
 
@@ -139,12 +152,14 @@ class SyncDatabase:
         pattern_id: str,
         mistake_type: str,
         description: str,
-        lesson_learned: Optional[str] = None,
+        lesson_learned: str | None = None,
     ) -> str:
         """Add a mistake, incrementing recurrence if same type exists for pattern."""
-        return self._run(self._db.add_mistake(
-            user_id, quest_id, pattern_id, mistake_type, description, lesson_learned
-        ))
+        return self._run(
+            self._db.add_mistake(
+                user_id, quest_id, pattern_id, mistake_type, description, lesson_learned
+            )
+        )
 
     def get_recent_mistakes(self, user_id: str, limit: int = 5) -> list[dict]:
         """Get most recent mistakes."""
@@ -162,12 +177,14 @@ class SyncDatabase:
         problems_delta: int = 0,
         time_delta_mins: int = 0,
         hints_delta: int = 0,
-        pattern_worked: Optional[str] = None,
+        pattern_worked: str | None = None,
     ) -> None:
         """Update or create today's daily log."""
-        self._run(self._db.upsert_daily_log(
-            user_id, problems_delta, time_delta_mins, hints_delta, pattern_worked
-        ))
+        self._run(
+            self._db.upsert_daily_log(
+                user_id, problems_delta, time_delta_mins, hints_delta, pattern_worked
+            )
+        )
 
     def get_weekly_activity(self, user_id: str) -> dict:
         """Get activity summary for current week."""
@@ -180,13 +197,15 @@ class SyncDatabase:
         user_id: str,
         milestone_type: str,
         description: str,
-        pattern_id: Optional[str] = None,
-        quest_id: Optional[str] = None,
+        pattern_id: str | None = None,
+        quest_id: str | None = None,
     ) -> str:
         """Add a milestone achievement."""
-        return self._run(self._db.add_milestone(
-            user_id, milestone_type, description, pattern_id, quest_id
-        ))
+        return self._run(
+            self._db.add_milestone(
+                user_id, milestone_type, description, pattern_id, quest_id
+            )
+        )
 
     def get_recent_milestones(self, user_id: str, days: int = 7) -> list[dict]:
         """Get milestones achieved in last N days."""
@@ -202,9 +221,13 @@ class SyncDatabase:
         student_response: str = "unknown",
     ) -> None:
         """Record that a concept was taught, incrementing count if exists."""
-        self._run(self._db.record_teaching(user_id, pattern_id, concept, student_response))
+        self._run(
+            self._db.record_teaching(user_id, pattern_id, concept, student_response)
+        )
 
-    def get_teaching_history(self, user_id: str, pattern_id: Optional[str] = None) -> list[dict]:
+    def get_teaching_history(
+        self, user_id: str, pattern_id: str | None = None
+    ) -> list[dict]:
         """Get teaching history, optionally filtered by pattern."""
         return self._run(self._db.get_teaching_history(user_id, pattern_id))
 
@@ -249,15 +272,14 @@ class SyncDatabase:
 
         # Derive patterns_in_progress (has quests but not mastered)
         patterns_in_progress = [
-            p.pattern_id for p in patterns
-            if p.quests_completed > 0 and not p.mastered
+            p.pattern_id for p in patterns if p.quests_completed > 0 and not p.mastered
         ]
 
         return {
             "profile": {
                 "name": profile.name,
                 "current_quest": session.current_quest if session else None,
-                "active_mode": getattr(profile, 'active_mode', None) or "fast_track",
+                "active_mode": getattr(profile, "active_mode", None) or "fast_track",
             },
             "pattern_proficiency": pattern_prof,
             "completed_quests": {c.quest_id: True for c in completed},

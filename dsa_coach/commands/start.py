@@ -1,6 +1,6 @@
 from dsa_coach import paths
-from dsa_coach.ui import UI
 from dsa_coach.storage.sync import SyncDatabase
+from dsa_coach.ui import UI
 
 
 def cmd_start():
@@ -9,6 +9,7 @@ def cmd_start():
     ui = UI(rich_available=False, console=None)
     try:
         from rich.console import Console
+
         ui = UI(rich_available=True, console=Console())
     except ImportError:
         pass
@@ -23,7 +24,7 @@ def cmd_start():
             if profile.name and profile.name != "DSA Learner":
                 ui.print_styled(
                     f"Welcome back, {profile.name}! Use 'python coach.py status' to see your progress.",
-                    "green"
+                    "green",
                 )
                 return
     except Exception as e:
@@ -65,6 +66,5 @@ Your journey to Principal Engineer begins now!
 Master patterns through deliberate practice.
 
 Run 'python coach.py next' to get your first quest.""",
-        "green"
+        "green",
     )
-

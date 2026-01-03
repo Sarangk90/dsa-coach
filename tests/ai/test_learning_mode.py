@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable
-
-import pytest
+from collections.abc import Callable
 
 
 def _fake_input(responses: list[str]) -> Callable[[str], str]:
@@ -191,7 +189,3 @@ def test_choose_mode_ask_can_quit() -> None:
         )
         is None
     )
-
-
-
-

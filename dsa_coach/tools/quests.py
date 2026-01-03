@@ -3,19 +3,18 @@
 Tools for managing quest assignment, completion, and hints.
 """
 
+import contextlib
 import json
 import webbrowser
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
-from .registry import tool, ToolResult
 from ..storage.db import Database
-from ..storage.models import QuestCompletion, PatternProgress
-
+from ..storage.models import PatternProgress, QuestCompletion
+from .registry import ToolResult, tool
 
 # Cache for quests.json data
-_quests_cache: Optional[dict] = None
+_quests_cache: dict | None = None
 
 
 def _load_quests() -> dict:
@@ -23,7 +22,7 @@ def _load_quests() -> dict:
     global _quests_cache
     if _quests_cache is None:
         quests_path = Path(__file__).parent.parent.parent / "quests.json"
-        with open(quests_path, "r") as f:
+        with quests_path.open() as f:
             _quests_cache = json.load(f)
     return _quests_cache
 
@@ -39,14 +38,15 @@ def _count_total_quests_for_pattern(pattern_id: str) -> int:
         curriculum = quests.get("curriculum", {}).get(mode, [])
         for pattern in curriculum:
             if pattern.get("pattern_id") == pattern_id:
-                total = sum(len(concept.get("practice_problems", []))
-                           for concept in pattern.get("concepts", []))
-                return total
+                return sum(
+                    len(concept.get("practice_problems", []))
+                    for concept in pattern.get("concepts", [])
+                )
 
     return 0
 
 
-def _find_quest(quest_id: str) -> Optional[dict]:
+def _find_quest(quest_id: str) -> dict | None:
     """Find a quest/problem by ID (V2 only)."""
     quests = _load_quests()
 
@@ -103,12 +103,14 @@ async def get_quests_for_pattern(
             if pattern.get("pattern_id") == pattern_id:
                 for concept in pattern.get("concepts", []):
                     for problem in concept.get("practice_problems", []):
-                        pattern_quests.append({
-                            "id": problem.get("problem_id"),
-                            "title": problem.get("problem_name"),
-                            "difficulty": problem.get("difficulty", "medium"),
-                            "link": problem.get("url", ""),
-                        })
+                        pattern_quests.append(
+                            {
+                                "id": problem.get("problem_id"),
+                                "title": problem.get("problem_name"),
+                                "difficulty": problem.get("difficulty", "medium"),
+                                "link": problem.get("url", ""),
+                            }
+                        )
 
     # Get completion status
     completed = await db.get_completed_quests(user_id, pattern_id)
@@ -116,7 +118,7 @@ async def get_quests_for_pattern(
 
     for quest in pattern_quests:
         quest["completed"] = quest["id"] in completed_ids
-    
+
     return ToolResult(
         success=True,
         data=pattern_quests,
@@ -135,7 +137,7 @@ async def get_current_quest(
 ) -> ToolResult:
     """
     Get the current active quest for the user.
-    
+
     :return: Current quest details or null if none assigned
     """
     session = await db.get_latest_session(user_id)
@@ -145,7 +147,7 @@ async def get_current_quest(
             data=None,
             message="No quest currently assigned",
         )
-    
+
     quest = _find_quest(session.current_quest)
     if not quest:
         return ToolResult(
@@ -153,7 +155,7 @@ async def get_current_quest(
             data=None,
             message="Quest not found",
         )
-    
+
     return ToolResult(
         success=True,
         data={
@@ -180,7 +182,7 @@ async def assign_quest(
 ) -> ToolResult:
     """
     Assign a quest to the user.
-    
+
     :param quest_id: The quest identifier to assign
     :param open_browser: Whether to open the LeetCode problem in browser
     :return: Quest details and solution file path
@@ -191,7 +193,7 @@ async def assign_quest(
             success=False,
             error=f"Quest '{quest_id}' not found",
         )
-    
+
     # Update session with current quest
     session = await db.get_latest_session(user_id)
     if session:
@@ -205,23 +207,26 @@ async def assign_quest(
             current_quest=quest_id,
             current_pattern=quest.get("pattern"),
         )
-    
+
     # Create solution file
     solutions_dir = Path(__file__).parent.parent.parent / "solutions"
     pattern = quest.get("pattern", "unknown")
     target_dir = solutions_dir / pattern
     target_dir.mkdir(parents=True, exist_ok=True)
-    
+
     solution_file = target_dir / f"{quest_id}.py"
     if not solution_file.exists():
-        template = quest.get("template", f"# Solution for {quest.get('title', quest_id)}\n\n# Your code here\n")
+        template = quest.get(
+            "template",
+            f"# Solution for {quest.get('title', quest_id)}\n\n# Your code here\n",
+        )
         header = f'''"""
-{quest.get('title', quest_id)}
-{'=' * len(quest.get('title', quest_id))}
+{quest.get("title", quest_id)}
+{"=" * len(quest.get("title", quest_id))}
 
-Difficulty: {quest.get('difficulty', 'medium').upper()}
-Pattern: {quest.get('pattern', 'unknown')}
-Link: {quest.get('link', '')}
+Difficulty: {quest.get("difficulty", "medium").upper()}
+Pattern: {quest.get("pattern", "unknown")}
+Link: {quest.get("link", "")}
 
 DIVE Protocol:
 1. Decode: Understand the problem completely
@@ -234,14 +239,12 @@ DIVE Protocol:
 {template}
 '''
         solution_file.write_text(header)
-    
+
     # Open in browser if requested
     if open_browser and quest.get("link"):
-        try:
+        with contextlib.suppress(Exception):
             webbrowser.open(quest["link"])
-        except Exception:
-            pass  # Ignore browser errors
-    
+
     return ToolResult(
         success=True,
         data={
@@ -271,7 +274,7 @@ async def mark_quest_complete(
 ) -> ToolResult:
     """
     Mark the current quest as complete.
-    
+
     :param success: Whether the quest was solved successfully
     :param time_minutes: Time taken in minutes (optional)
     :param hints_used: Number of hints used
@@ -284,7 +287,7 @@ async def mark_quest_complete(
             success=False,
             error="No quest currently assigned. Use assign_quest first.",
         )
-    
+
     quest = _find_quest(session.current_quest)
     if not quest:
         return ToolResult(
@@ -296,7 +299,7 @@ async def mark_quest_complete(
     profile = await db.get_or_create_profile(user_id)
     profile.quests_completed += 1
     await db.update_profile(profile)
-    
+
     # Record quest completion
     pattern_id = quest.get("pattern", "unknown")
     completion = QuestCompletion(
@@ -312,7 +315,7 @@ async def mark_quest_complete(
         next_review_in=1,  # Review tomorrow
     )
     await db.upsert_quest_completion(completion)
-    
+
     # Update pattern progress
     pattern_progress = await db.get_pattern_progress(user_id, pattern_id)
     if not pattern_progress:
@@ -336,14 +339,16 @@ async def mark_quest_complete(
     # Update confidence based on success and hints
     if success:
         confidence_gain = 15 if hints_used == 0 else 10
-        pattern_progress.confidence = min(100, pattern_progress.confidence + confidence_gain)
+        pattern_progress.confidence = min(
+            100, pattern_progress.confidence + confidence_gain
+        )
 
     await db.upsert_pattern_progress(pattern_progress)
-    
+
     # Clear current quest
     session.current_quest = None
     await db.update_session(session)
-    
+
     return ToolResult(
         success=True,
         data={
@@ -369,7 +374,7 @@ async def get_hint(
 ) -> ToolResult:
     """
     Get a hint for the current quest.
-    
+
     :param level: Hint level - 'low', 'medium', 'high', or 'auto' (based on confidence)
     :return: Hint text and metadata
     """
@@ -380,40 +385,40 @@ async def get_hint(
             success=False,
             error="No quest currently assigned",
         )
-    
+
     quest = _find_quest(session.current_quest)
     if not quest:
         return ToolResult(
             success=False,
             error=f"Quest '{session.current_quest}' not found",
         )
-    
+
     hints = quest.get("hints", {})
     if not hints:
         return ToolResult(
             success=False,
             error="No hints available for this quest",
         )
-    
+
     # Determine hint level
     if level == "auto":
         pattern_id = quest.get("pattern", "unknown")
         progress = await db.get_pattern_progress(user_id, pattern_id)
         confidence = progress.confidence if progress else 0
-        
+
         if confidence >= 70:
             level = "high"
         elif confidence >= 40:
             level = "medium"
         else:
             level = "low"
-    
+
     hint_text = hints.get(level)
     if not hint_text:
         # Fall back to any available hint
         level = list(hints.keys())[0]
         hint_text = hints[level]
-    
+
     return ToolResult(
         success=True,
         data={
@@ -455,13 +460,13 @@ async def get_next_recommended_quest(
 
     # Get next quest using V2 selection logic
     quest = get_next_quest(progress_compat)
-    
+
     if not quest:
         return ToolResult(
             success=False,
             error="No quests available. Either all quests are complete or prerequisites not met.",
         )
-    
+
     # Return quest details
     quest_id = quest.get("problem_id", quest.get("id"))
     return ToolResult(
@@ -481,5 +486,3 @@ async def get_next_recommended_quest(
         },
         message=f"Next recommended quest: {quest.get('problem_name', quest.get('title'))} ({quest.get('pattern_name', 'Unknown')} pattern)",
     )
-
-

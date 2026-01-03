@@ -4,14 +4,11 @@ from __future__ import annotations
 
 import os
 import sys
-from datetime import datetime
-from typing import Any
 
 from . import paths
-from .domain.scheduling import get_due_items
 from .curriculum import get_pattern_name
-from .ui import UI
 from .storage.sync import SyncDatabase
+from .ui import UI
 
 
 def clear_screen() -> None:
@@ -24,6 +21,7 @@ def get_ui() -> UI:
     ui = UI(rich_available=False, console=None)
     try:
         from rich.console import Console
+
         ui = UI(rich_available=True, console=Console())
     except ImportError:
         pass
@@ -32,10 +30,7 @@ def get_ui() -> UI:
 
 def render_progress_bar(current: int, target: int, width: int = 20) -> str:
     """Render a simple progress bar."""
-    if target == 0:
-        filled = 0
-    else:
-        filled = int((current / target) * width)
+    filled = 0 if target == 0 else int(current / target * width)
     bar = "█" * filled + "░" * (width - filled)
     return f"[{bar}] {current}/{target}"
 
@@ -53,9 +48,9 @@ def render_dashboard() -> None:
         session = db.get_latest_session()
 
     if not profile.name or profile.name == "DSA Learner":
-        ui.print_styled("\n" + "="*70, "yellow")
+        ui.print_styled("\n" + "=" * 70, "yellow")
         ui.print_styled("  🎯 DSA COACH - WELCOME!", "bold yellow")
-        ui.print_styled("="*70 + "\n", "yellow")
+        ui.print_styled("=" * 70 + "\n", "yellow")
         ui.print_styled("  ⚠️  No profile found. Let's get you started!", "yellow")
         ui.print_styled("  💡 Select option 1 to initialize your profile\n", "dim")
         return
@@ -64,35 +59,44 @@ def render_dashboard() -> None:
     completed = len(completed_quests)
 
     # Find weakest patterns
-    pattern_conf = [(p.pattern_id, p.confidence) for p in pattern_progress if p.quests_completed > 0]
+    pattern_conf = [
+        (p.pattern_id, p.confidence) for p in pattern_progress if p.quests_completed > 0
+    ]
     pattern_conf.sort(key=lambda x: x[1])
     weakest = [(p, c) for p, c in pattern_conf if c < 70][:3]
 
     # Get current quest from session
     current_quest_id = session.current_quest if session else None
-    
+
     # Find quest details for current quest
     current_quest_title = None
     current_pattern = None
     if current_quest_id:
         from .quests import get_all_quests
+
         for quest in get_all_quests():
-            if quest.get("id") == current_quest_id or quest.get("problem_id") == current_quest_id:
-                current_quest_title = quest.get("problem_name", quest.get("title", current_quest_id))
-                current_pattern = quest.get("pattern_name", quest.get("pattern", "")).replace("_", " ").title()
+            if (
+                quest.get("id") == current_quest_id
+                or quest.get("problem_id") == current_quest_id
+            ):
+                current_quest_title = quest.get(
+                    "problem_name", quest.get("title", current_quest_id)
+                )
+                current_pattern = (
+                    quest.get("pattern_name", quest.get("pattern", ""))
+                    .replace("_", " ")
+                    .title()
+                )
                 break
         if not current_quest_title:
             current_quest_title = current_quest_id  # Fallback to ID
 
     # Render dashboard
     if ui.rich_available and ui.console:
-        from rich.panel import Panel
-        from rich.table import Table
-
         # Header
-        ui.console.print("\n" + "="*70)
+        ui.console.print("\n" + "=" * 70)
         ui.console.print(f"  🎯 DSA COACH - {profile.name}", style="bold cyan")
-        ui.console.print("="*70)
+        ui.console.print("=" * 70)
 
         # Quick stats row
         stats_line = f"  ✅ Completed: [bold]{completed}[/bold] quests"
@@ -101,28 +105,36 @@ def render_dashboard() -> None:
             stats_line += f"  |  ⏰ Due Today: [red bold]{len(due_items)}[/red bold]"
 
         ui.console.print(stats_line)
-        ui.console.print("="*70 + "\n")
+        ui.console.print("=" * 70 + "\n")
 
         # Current quest (with pattern info)
         if current_quest_title:
             if current_pattern:
-                ui.console.print(f"  🎯 [yellow]Current Quest:[/yellow] [bold]{current_quest_title}[/bold] [dim]({current_pattern})[/dim]")
+                ui.console.print(
+                    f"  🎯 [yellow]Current Quest:[/yellow] [bold]{current_quest_title}[/bold] [dim]({current_pattern})[/dim]"
+                )
             else:
-                ui.console.print(f"  🎯 [yellow]Current Quest:[/yellow] [bold]{current_quest_title}[/bold]")
+                ui.console.print(
+                    f"  🎯 [yellow]Current Quest:[/yellow] [bold]{current_quest_title}[/bold]"
+                )
         else:
-            ui.console.print("  💡 [dim]No active quest - select 'Next Quest' to get started![/dim]")
+            ui.console.print(
+                "  💡 [dim]No active quest - select 'Next Quest' to get started![/dim]"
+            )
 
         # Weak patterns
         if weakest:
-            weak_str = ", ".join([f"{get_pattern_name(p)} ({int(c)}%)" for p, c in weakest])
+            weak_str = ", ".join(
+                [f"{get_pattern_name(p)} ({int(c)}%)" for p, c in weakest]
+            )
             ui.console.print(f"  ⚠️  [red]Focus Areas:[/red] {weak_str}")
 
         ui.console.print()
     else:
         # Plain text fallback
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print(f"  🎯 DSA COACH - {profile.name}")
-        print("="*70)
+        print("=" * 70)
 
         stats_line = f"  ✅ Completed: {completed} quests"
 
@@ -130,7 +142,7 @@ def render_dashboard() -> None:
             stats_line += f"  |  ⏰ Due Today: {len(due_items)}"
 
         print(stats_line)
-        print("="*70 + "\n")
+        print("=" * 70 + "\n")
 
         # Current quest (with pattern info)
         if current_quest_title:
@@ -142,7 +154,9 @@ def render_dashboard() -> None:
             print("  💡 No active quest - select 'Next Quest' to get started!")
 
         if weakest:
-            weak_str = ", ".join([f"{get_pattern_name(p)} ({int(c)}%)" for p, c in weakest])
+            weak_str = ", ".join(
+                [f"{get_pattern_name(p)} ({int(c)}%)" for p, c in weakest]
+            )
             print(f"  ⚠️  Focus Areas: {weak_str}")
 
         print()
@@ -164,9 +178,10 @@ def cmd_continue_quest() -> None:
         return
 
     # Find the quest details
+    import webbrowser
+
     from .quests import get_all_quests
     from .storage import load_json
-    import webbrowser
 
     quest = None
     for q in get_all_quests():
@@ -175,18 +190,24 @@ def cmd_continue_quest() -> None:
             break
 
     if not quest:
-        ui.print_styled(f"\n  ❌ Quest '{current_quest_id}' not found in database.", "red")
+        ui.print_styled(
+            f"\n  ❌ Quest '{current_quest_id}' not found in database.", "red"
+        )
         return
 
     quest_title = quest.get("problem_name", quest.get("title", current_quest_id))
 
     # Display quest info
-    ui.print_styled("\n" + "="*70, "cyan")
+    ui.print_styled("\n" + "=" * 70, "cyan")
     ui.print_styled(f"  🎯 CURRENT QUEST: {quest_title}", "bold yellow")
-    ui.print_styled("="*70, "cyan")
+    ui.print_styled("=" * 70, "cyan")
 
     # Quest details
-    pattern = quest.get("pattern_name", quest.get("pattern", "unknown")).replace("_", " ").title()
+    pattern = (
+        quest.get("pattern_name", quest.get("pattern", "unknown"))
+        .replace("_", " ")
+        .title()
+    )
     pattern_id = quest.get("pattern_id", quest.get("pattern", ""))
     difficulty = quest.get("difficulty", "unknown").capitalize()
 
@@ -194,61 +215,74 @@ def cmd_continue_quest() -> None:
     ui.print_styled(f"  📊 Difficulty: {difficulty}", "cyan")
 
     # Find solution file
-    quests_data = load_json(paths.QUESTS_FILE)
+    load_json(paths.QUESTS_FILE)
     quest_id = quest.get("id", quest.get("problem_id", "unknown"))
     solution_file = paths.SOLUTIONS_DIR / f"{quest_id}.py"
 
-    ui.print_styled(f"\n  📂 Solution File:", "yellow")
+    ui.print_styled("\n  📂 Solution File:", "yellow")
     ui.print_styled(f"     {solution_file}", "white")
 
     # LeetCode link
     leetcode_link = quest.get("url", quest.get("link", ""))
     if leetcode_link:
-        ui.print_styled(f"\n  🔗 LeetCode Link:", "yellow")
+        ui.print_styled("\n  🔗 LeetCode Link:", "yellow")
         ui.print_styled(f"     {leetcode_link}", "blue")
 
     # Pattern confidence
     if pattern_id:
         pattern_prog = pattern_progress_map.get(pattern_id)
         conf = pattern_prog.confidence if pattern_prog else 0
-        ui.print_styled(f"\n  📈 Your {pattern} Confidence: {conf:.0f}%", "green" if conf >= 70 else "yellow" if conf >= 40 else "red")
-    
+        ui.print_styled(
+            f"\n  📈 Your {pattern} Confidence: {conf:.0f}%",
+            "green" if conf >= 70 else "yellow" if conf >= 40 else "red",
+        )
+
     # DIVE protocol reminder
     ui.print_styled("\n  📋 DIVE Protocol:", "cyan")
-    ui.print_styled("     D - Decode (2 min): Read problem, clarify inputs/outputs", "dim")
+    ui.print_styled(
+        "     D - Decode (2 min): Read problem, clarify inputs/outputs", "dim"
+    )
     ui.print_styled("     I - Identify (2 min): Map to pattern", "dim")
-    ui.print_styled("     V - Visualize (3 min): Draw example, walk through logic", "dim")
+    ui.print_styled(
+        "     V - Visualize (3 min): Draw example, walk through logic", "dim"
+    )
     ui.print_styled("     E - Execute (15 min): Write clean code", "dim")
-    ui.print_styled("     E - Evaluate (3 min): Time/space complexity, test edges", "dim")
-    
+    ui.print_styled(
+        "     E - Evaluate (3 min): Time/space complexity, test edges", "dim"
+    )
+
     # Next steps
     ui.print_styled("\n  💡 Next Steps:", "green")
     ui.print_styled(f"     1. Open: {solution_file}", "")
-    ui.print_styled(f"     2. Visit: {leetcode_link if leetcode_link else 'LeetCode'}", "")
+    ui.print_styled(
+        f"     2. Visit: {leetcode_link if leetcode_link else 'LeetCode'}", ""
+    )
     ui.print_styled("     3. Solve using DIVE protocol", "")
     ui.print_styled("     4. Return here and select option 4 (Mark Quest Done)", "")
-    
+
     # Helper options
     ui.print_styled("\n  🆘 Need Help?", "yellow")
     ui.print_styled("     • Option 5: Get adaptive hint", "dim")
     ui.print_styled(f"     • Option 6: Learn {pattern} pattern", "dim")
     ui.print_styled("     • Option 8: Request code review", "dim")
-    
+
     # Offer to open browser
     print()
-    open_browser = input("  🌐 Open LeetCode problem in browser? (y/n): ").strip().lower()
-    if open_browser == 'y' and leetcode_link:
+    open_browser = (
+        input("  🌐 Open LeetCode problem in browser? (y/n): ").strip().lower()
+    )
+    if open_browser == "y" and leetcode_link:
         try:
             webbrowser.open(leetcode_link)
             ui.print_styled("  ✅ Browser opened!", "green")
-        except:
+        except Exception:
             ui.print_styled("  ⚠️  Could not open browser automatically", "yellow")
 
 
 def render_menu() -> None:
     """Render the main menu."""
     ui = get_ui()
-    
+
     menu_text = """
   ═══ DAILY WORKFLOW ═══
   1. Today's Schedule
@@ -273,7 +307,7 @@ def render_menu() -> None:
 
   0. Exit
 """
-    
+
     if ui.rich_available and ui.console:
         ui.console.print(menu_text, style="cyan")
     else:
@@ -291,16 +325,26 @@ def dispatch_command(choice: str) -> bool:
     Returns True if should continue running, False if should exit.
     """
     from .commands import (
-        start, status, next_quest, done, hint, learn,
-        mistakes, review, design, recall, sessions, summary, today
+        design,
+        done,
+        hint,
+        learn,
+        mistakes,
+        next_quest,
+        recall,
+        review,
+        sessions,
+        status,
+        summary,
+        today,
     )
-    
+
     choice = choice.strip().lower()
-    
+
     if choice in ["0", "q", "quit", "exit"]:
         print("\n  👋 Happy coding! Remember: patterns over memorization.\n")
         return False
-    
+
     try:
         if choice == "1":
             # Today's Schedule
@@ -329,7 +373,9 @@ def dispatch_command(choice: str) -> bool:
         elif choice == "9":
             # Code Review
             print("\n  🔍 Code Review")
-            file_path = input("  Enter solution file path (e.g., solutions/day1/two_sum.py): ").strip()
+            file_path = input(
+                "  Enter solution file path (e.g., solutions/day1/two_sum.py): "
+            ).strip()
             if file_path:
                 # Mock sys.argv for review command
                 old_argv = sys.argv.copy()
@@ -341,7 +387,9 @@ def dispatch_command(choice: str) -> bool:
         elif choice == "10":
             # System Design Session
             print("\n  🏗️  System Design Session")
-            design_name = input("  Enter design name (or press Enter for menu): ").strip()
+            design_name = input(
+                "  Enter design name (or press Enter for menu): "
+            ).strip()
             design_name = design_name if design_name else None
             design.cmd_design(design_name)
         elif choice == "11":
@@ -356,10 +404,10 @@ def dispatch_command(choice: str) -> bool:
         else:
             print(f"\n  ❌ Invalid option: {choice}")
             print("  Please choose a number from the menu (0-13)")
-        
+
         wait_for_continue()
         return True
-    
+
     except KeyboardInterrupt:
         print("\n\n  ⚠️  Command interrupted.")
         wait_for_continue()
@@ -367,6 +415,7 @@ def dispatch_command(choice: str) -> bool:
     except Exception as e:
         print(f"\n  ❌ Error executing command: {e}")
         import traceback
+
         traceback.print_exc()
         wait_for_continue()
         return True
@@ -399,6 +448,6 @@ def run_interactive_menu() -> None:
         except Exception as e:
             print(f"\n  ❌ Unexpected error: {e}")
             import traceback
+
             traceback.print_exc()
             wait_for_continue()
-

@@ -6,15 +6,13 @@ Tools for browser interactions, dashboard display, and external resources.
 import json
 import webbrowser
 from pathlib import Path
-from typing import Optional
 
-from .registry import tool, ToolResult
-from ..storage.db import Database
 from ..curriculum import get_pattern_name
-
+from ..storage.db import Database
+from .registry import ToolResult, tool
 
 # Cache for quests.json data
-_quests_cache: Optional[dict] = None
+_quests_cache: dict | None = None
 
 
 def _load_quests() -> dict:
@@ -22,19 +20,19 @@ def _load_quests() -> dict:
     global _quests_cache
     if _quests_cache is None:
         quests_path = Path(__file__).parent.parent.parent / "quests.json"
-        with open(quests_path, "r") as f:
+        with quests_path.open() as f:
             _quests_cache = json.load(f)
     return _quests_cache
 
 
-def _find_quest(quest_id: str) -> Optional[dict]:
+def _find_quest(quest_id: str) -> dict | None:
     """Find a quest by ID."""
     quests = _load_quests()
-    
+
     for quest in quests.get("quests", []):
         if quest.get("id") == quest_id:
             return quest
-            
+
     return None
 
 
@@ -49,7 +47,7 @@ async def open_browser(
 ) -> ToolResult:
     """
     Open a URL in the browser.
-    
+
     :param url: The URL to open
     :return: Success status
     """
@@ -78,7 +76,7 @@ async def open_leetcode_problem(
 ) -> ToolResult:
     """
     Open the LeetCode problem for a quest.
-    
+
     :param quest_id: The quest to open
     :return: Success status and URL
     """
@@ -88,14 +86,14 @@ async def open_leetcode_problem(
             success=False,
             error=f"Quest '{quest_id}' not found",
         )
-    
+
     url = quest.get("link", "")
     if not url:
         return ToolResult(
             success=False,
             error=f"No LeetCode link for quest '{quest_id}'",
         )
-    
+
     try:
         webbrowser.open(url)
         return ToolResult(
@@ -143,22 +141,24 @@ async def get_dashboard_state(
                 "pattern": quest.get("pattern", "unknown"),
                 "difficulty": quest.get("difficulty", "medium"),
             }
-    
+
     # Get pattern progress (top 5 weakest)
     all_progress = await db.get_all_pattern_progress(user_id)
     weak_patterns = sorted(all_progress, key=lambda p: p.confidence)[:5]
-    
+
     # Get due reviews
     due_reviews = await db.get_due_reviews(user_id)
-    
+
     # Build alerts
     alerts = []
     if due_reviews:
-        alerts.append({
-            "type": "review",
-            "message": f"{len(due_reviews)} quests due for review",
-            "priority": "high" if len(due_reviews) >= 3 else "medium",
-        })
+        alerts.append(
+            {
+                "type": "review",
+                "message": f"{len(due_reviews)} quests due for review",
+                "priority": "high" if len(due_reviews) >= 3 else "medium",
+            }
+        )
 
     return ToolResult(
         success=True,
@@ -194,39 +194,47 @@ async def search_patterns_and_quests(
 ) -> ToolResult:
     """
     Search patterns and quests by keyword.
-    
+
     :param query: Search query
     :return: Matching patterns and quests
     """
     quests = _load_quests()
     query_lower = query.lower()
-    
+
     # Search patterns
     matching_patterns = []
     patterns = quests.get("metadata", {}).get("patterns", {})
     for pattern_id, pattern_data in patterns.items():
-        if (query_lower in pattern_id.lower() or 
-            query_lower in pattern_data.get("title", "").lower() or
-            query_lower in pattern_data.get("description", "").lower()):
-            matching_patterns.append({
-                "pattern_id": pattern_id,
-                "title": pattern_data.get("title", pattern_id),
-                "description": pattern_data.get("description", "")[:100],
-            })
-    
+        if (
+            query_lower in pattern_id.lower()
+            or query_lower in pattern_data.get("title", "").lower()
+            or query_lower in pattern_data.get("description", "").lower()
+        ):
+            matching_patterns.append(
+                {
+                    "pattern_id": pattern_id,
+                    "title": pattern_data.get("title", pattern_id),
+                    "description": pattern_data.get("description", "")[:100],
+                }
+            )
+
     # Search quests
     matching_quests = []
     for quest in quests.get("quests", []):
-        if (query_lower in quest.get("id", "").lower() or
-            query_lower in quest.get("title", "").lower() or
-            query_lower in quest.get("pattern", "").lower()):
-            matching_quests.append({
-                "quest_id": quest["id"],
-                "title": quest.get("title", quest["id"]),
-                "pattern": quest.get("pattern", "unknown"),
-                "difficulty": quest.get("difficulty", "medium"),
-            })
-    
+        if (
+            query_lower in quest.get("id", "").lower()
+            or query_lower in quest.get("title", "").lower()
+            or query_lower in quest.get("pattern", "").lower()
+        ):
+            matching_quests.append(
+                {
+                    "quest_id": quest["id"],
+                    "title": quest.get("title", quest["id"]),
+                    "pattern": quest.get("pattern", "unknown"),
+                    "difficulty": quest.get("difficulty", "medium"),
+                }
+            )
+
     return ToolResult(
         success=True,
         data={
@@ -236,4 +244,3 @@ async def search_patterns_and_quests(
         },
         message=f"Found {len(matching_patterns)} patterns and {len(matching_quests)} quests",
     )
-

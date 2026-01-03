@@ -1,26 +1,27 @@
 """Interactive learning session functionality for DSA Coach."""
 
+import contextlib
 import os
 import shlex
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Any
 
 from .client import get_ai_response
 from .prompts import (
-    LEARNING_SESSION_INTRO,
     LEARNING_SESSION_DIAGNOSE_INTRO,
+    LEARNING_SESSION_INTRO,
     SYSTEM_DESIGN_PROMPT,
     get_mentor_system_prompt,
 )
-from .session import save_conversation, load_conversation
+from .session import load_conversation, save_conversation
 from .ui import print_ai_response
 
 
 def start_learning_session(
-    pattern: str, progress: Dict[str, Any], mode: str = "teach_first"
-) -> Tuple[List[Dict[str, str]], str]:
+    pattern: str, progress: dict[str, Any], mode: str = "teach_first"
+) -> tuple[list[dict[str, str]], str]:
     """Start an interactive learning session for a pattern.
 
     Args:
@@ -54,7 +55,9 @@ def start_learning_session(
         return [], f"Error starting learning session: {e}"
 
 
-def start_design_session(topic: str, progress: Dict[str, Any]) -> Tuple[List[Dict[str, str]], str]:
+def start_design_session(
+    topic: str, progress: dict[str, Any]
+) -> tuple[list[dict[str, str]], str]:
     """Start a system design interview session.
 
     Args:
@@ -79,8 +82,8 @@ def start_design_session(topic: str, progress: Dict[str, Any]) -> Tuple[List[Dic
 
 
 def continue_conversation(
-    messages: List[Dict[str, str]], user_input: str, progress: Dict[str, Any]
-) -> Tuple[List[Dict[str, str]], str]:
+    messages: list[dict[str, str]], user_input: str, progress: dict[str, Any]
+) -> tuple[list[dict[str, str]], str]:
     """Continue an ongoing conversation.
 
     Args:
@@ -109,7 +112,7 @@ def continue_conversation(
         return messages, f"Error continuing conversation: {e}"
 
 
-def _read_multiline_natural(prompt_text: str = "› ") -> Optional[str]:
+def _read_multiline_natural(prompt_text: str = "› ") -> str | None:
     """Natural multiline input with full editing capabilities.
 
     Args:
@@ -123,11 +126,11 @@ def _read_multiline_natural(prompt_text: str = "› ") -> Optional[str]:
     """
     try:
         from prompt_toolkit import prompt as pt_prompt
-        from prompt_toolkit.key_binding import KeyBindings
         from prompt_toolkit.completion import WordCompleter
-        from prompt_toolkit.lexers import PygmentsLexer
-        from prompt_toolkit.history import InMemoryHistory
         from prompt_toolkit.formatted_text import HTML
+        from prompt_toolkit.history import InMemoryHistory
+        from prompt_toolkit.key_binding import KeyBindings
+        from prompt_toolkit.lexers import PygmentsLexer
         from prompt_toolkit.styles import Style
         from pygments.lexers.python import PythonLexer
 
@@ -156,7 +159,7 @@ def _read_multiline_natural(prompt_text: str = "› ") -> Optional[str]:
 
             return HTML(
                 f'<style bg="#333333" fg="#888888">'
-                f' <b>Ctrl+J</b> newline │ <b>Enter</b> send │ <b>Ctrl+C</b> cancel │ '
+                f" <b>Ctrl+J</b> newline │ <b>Enter</b> send │ <b>Ctrl+C</b> cancel │ "
                 f'<style fg="#aaddff">{line_info}</style> '
                 f"</style>"
             )
@@ -175,10 +178,12 @@ def _read_multiline_natural(prompt_text: str = "› ") -> Optional[str]:
             event.current_buffer.validate_and_handle()
 
         # Prompt styling
-        style = Style.from_dict({
-            "prompt": "bold fg:ansicyan",
-            "bottom-toolbar": "bg:#333333 fg:#888888",
-        })
+        style = Style.from_dict(
+            {
+                "prompt": "bold fg:ansicyan",
+                "bottom-toolbar": "bg:#333333 fg:#888888",
+            }
+        )
 
         text = pt_prompt(
             [("class:prompt", prompt_text)],
@@ -200,7 +205,7 @@ def _read_multiline_natural(prompt_text: str = "› ") -> Optional[str]:
     except ImportError:
         # Fallback: simple double-Enter mode
         print(prompt_text, end="", flush=True)
-        lines: List[str] = []
+        lines: list[str] = []
         try:
             while True:
                 line = input("" if lines else "")
@@ -210,12 +215,14 @@ def _read_multiline_natural(prompt_text: str = "› ") -> Optional[str]:
         except KeyboardInterrupt:
             return None
 
-        text = "\\n".join(lines).strip()
-        return text  # Return empty string if nothing typed, None only for Ctrl+C
+        return "\\n".join(lines).strip()
 
 
 def interactive_learning_session(
-    pattern: str, progress: Dict[str, Any], quests: List[Dict[str, Any]], mode: Optional[str] = None
+    pattern: str,
+    progress: dict[str, Any],
+    quests: list[dict[str, Any]],
+    mode: str | None = None,
 ) -> None:
     """Run an interactive learning session for a pattern.
 
@@ -225,6 +232,7 @@ def interactive_learning_session(
         quests: List of all quests (legacy parameter, not used)
         mode: Optional initial mode ("teach_first" or "diagnose_first")
     """
+
     def _autosave_enabled() -> bool:
         v = (os.getenv("COACH_AUTOSAVE") or "1").strip().lower()
         return v not in {"0", "false", "no", "off"}
@@ -239,11 +247,13 @@ def interactive_learning_session(
         except Exception:
             return 25
 
-    def _print_transcript(msgs: List[Dict[str, Any]]) -> None:
+    def _print_transcript(msgs: list[dict[str, Any]]) -> None:
         """Print a readable transcript (best-effort) for resumed sessions."""
         # Skip system messages; map OpenAI roles to our UI roles.
         show_mode = _resume_show_mode()
-        filtered = [m for m in msgs if isinstance(m, dict) and m.get("role") != "system"]
+        filtered = [
+            m for m in msgs if isinstance(m, dict) and m.get("role") != "system"
+        ]
 
         if show_mode == "last":
             filtered = filtered[-1:] if filtered else []
@@ -273,7 +283,7 @@ def interactive_learning_session(
             )
             print_ai_response(str(content), ui_role)
 
-    def _read_from_editor() -> Optional[str]:
+    def _read_from_editor() -> str | None:
         """Open $EDITOR for composing a multi-line message. Returns None if cancelled/empty."""
         editor_env = (os.getenv("EDITOR") or "").strip()
         if not editor_env:
@@ -297,28 +307,27 @@ def interactive_learning_session(
             path = Path(tf.name)
 
         try:
-            print("\\n📝 Editor mode: write your message, SAVE, then CLOSE the editor/tab to send it.\\n")
+            print(
+                "\\n📝 Editor mode: write your message, SAVE, then CLOSE the editor/tab to send it.\\n"
+            )
             subprocess.run([*cmd, str(path)], check=False)
             text = path.read_text(encoding="utf-8", errors="replace")
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 path.unlink()
-            except Exception:
-                pass
 
         text = (text or "").strip()
         return text or None
 
-    def _session_meta(messages: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _session_meta(messages: list[dict[str, Any]]) -> dict[str, Any]:
         meta = {"pattern": pattern}
-        try:
+        with contextlib.suppress(Exception):
             meta["learning_mode"] = (
                 "diagnose_first"
-                if messages and "Diagnose my understanding" in messages[0].get("content", "")
+                if messages
+                and "Diagnose my understanding" in messages[0].get("content", "")
                 else "teach_first"
             )
-        except Exception:
-            pass
         return meta
 
     # If mode is explicitly passed, start fresh with that mode (skip resume check)
@@ -339,13 +348,19 @@ def interactive_learning_session(
                 _print_transcript(messages)
             else:
                 # Corrupted session, start fresh
-                messages, response = start_learning_session(pattern, progress, mode="teach_first")
+                messages, response = start_learning_session(
+                    pattern, progress, mode="teach_first"
+                )
                 print_ai_response(response, "Mentor")
                 if _autosave_enabled():
-                    save_conversation("learn", pattern, messages, _session_meta(messages))
+                    save_conversation(
+                        "learn", pattern, messages, _session_meta(messages)
+                    )
         else:
             # No saved session, start fresh
-            messages, response = start_learning_session(pattern, progress, mode="teach_first")
+            messages, response = start_learning_session(
+                pattern, progress, mode="teach_first"
+            )
             print_ai_response(response, "Mentor")
             if _autosave_enabled():
                 save_conversation("learn", pattern, messages, _session_meta(messages))
@@ -380,7 +395,7 @@ def interactive_learning_session(
             # Check for special commands
             if user_input.lower() in ["pause", "exit", "quit", "save"]:
                 save_conversation("learn", pattern, messages, _session_meta(messages))
-                print(f"\\n💾 Session paused and saved!")
+                print("\\n💾 Session paused and saved!")
                 print(f"Resume with: python coach.py learn {pattern}\\n")
                 break
 
@@ -403,5 +418,5 @@ def interactive_learning_session(
     except KeyboardInterrupt:
         # Fallback: auto-save on unexpected Ctrl+C
         save_conversation("learn", pattern, messages, _session_meta(messages))
-        print(f"\\n\\n💾 Session auto-saved!")
+        print("\\n\\n💾 Session auto-saved!")
         print(f"Resume with: python coach.py learn {pattern}\\n")

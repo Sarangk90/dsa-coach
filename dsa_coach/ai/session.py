@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from dsa_coach.paths import CONVERSATIONS_DIR
 from dsa_coach.storage import load_json, save_json
@@ -14,13 +14,13 @@ def save_conversation(
     session_type: str, session_id: str, messages: list, metadata: dict | None = None
 ) -> Path:
     """Save conversation to disk for later resumption.
-    
+
     Args:
         session_type: Type of session ("learn" or "design")
         session_id: Unique identifier (pattern name or design id)
         messages: List of message dicts
         metadata: Optional metadata dict
-        
+
     Returns:
         Path to saved conversation file
     """
@@ -38,13 +38,13 @@ def save_conversation(
     return filepath
 
 
-def load_conversation(session_type: str, session_id: str) -> Optional[dict]:
+def load_conversation(session_type: str, session_id: str) -> dict | None:
     """Load a saved conversation if it exists.
-    
+
     Args:
         session_type: Type of session ("learn" or "design")
         session_id: Unique identifier
-        
+
     Returns:
         Conversation dict or None if not found
     """
@@ -57,7 +57,7 @@ def load_conversation(session_type: str, session_id: str) -> Optional[dict]:
 
 def delete_conversation(session_type: str, session_id: str) -> None:
     """Delete a saved conversation.
-    
+
     Args:
         session_type: Type of session
         session_id: Unique identifier
@@ -69,7 +69,7 @@ def delete_conversation(session_type: str, session_id: str) -> None:
 
 def list_saved_conversations() -> list[dict]:
     """List all saved conversations.
-    
+
     Returns:
         List of conversation metadata dicts
     """
@@ -77,7 +77,7 @@ def list_saved_conversations() -> list[dict]:
 
     for filepath in CONVERSATIONS_DIR.glob("*.json"):
         try:
-            with open(filepath) as f:
+            with filepath.open() as f:
                 data = json.load(f)
                 conversations.append(
                     {
@@ -91,4 +91,3 @@ def list_saved_conversations() -> list[dict]:
             pass
 
     return conversations
-

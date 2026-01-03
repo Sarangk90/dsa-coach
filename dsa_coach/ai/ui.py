@@ -11,10 +11,10 @@ import sys
 READING_WIDTH = int(os.getenv("COACH_WIDTH", "88"))
 
 try:
+    from rich.align import Align
     from rich.console import Console
     from rich.markdown import Markdown
     from rich.panel import Panel
-    from rich.align import Align
 
     RICH_AVAILABLE = True
 
@@ -24,8 +24,7 @@ try:
     def get_left_padding() -> int:
         """Calculate padding needed to center content."""
         term_width = shutil.get_terminal_size().columns
-        padding = max(0, (term_width - READING_WIDTH) // 2)
-        return padding
+        return max(0, (term_width - READING_WIDTH) // 2)
 
 except ImportError:
     RICH_AVAILABLE = False
@@ -38,7 +37,7 @@ except ImportError:
 
 def print_ai_response(text: str, role: str = "Mentor") -> None:
     """Print AI response with nice formatting.
-    
+
     Args:
         text: Response text to display
         role: Role label (default: "Mentor")
@@ -63,7 +62,6 @@ def print_ai_response(text: str, role: str = "Mentor") -> None:
         console.print(Align(panel, align="right" if is_user else "left"))
         console.print()
     elif RICH_AVAILABLE:
-        # Classic: heading + Markdown
         icon = "🧑" if role.strip().lower() in {"you", "user"} else "🎓"
         color = "magenta" if role.strip().lower() in {"you", "user"} else "cyan"
         console.print()
@@ -110,10 +108,7 @@ def get_user_prompt(label: str = "You") -> str:
     divider = "─" * max(10, width)
 
     # Dim divider, bold magenta label, dim chevrons.
-    return (
-        f"\n\033[2m{divider}\033[0m"
-        f"\n\033[1;35m🧑 {label}\033[0m \033[2m››\033[0m "
-    )
+    return f"\n\033[2m{divider}\033[0m\n\033[1;35m🧑 {label}\033[0m \033[2m››\033[0m "
 
 
 def clear_last_input_line() -> None:

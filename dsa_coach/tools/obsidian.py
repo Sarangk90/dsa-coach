@@ -6,26 +6,25 @@ in the user's Obsidian vault.
 
 from __future__ import annotations
 
-from typing import Any
-
-from dsa_coach.tools.registry import tool, ToolResult
 from dsa_coach.obsidian import (
     generate_pattern_note,
     generate_problem_note,
-    write_note,
-    list_existing_notes as list_notes_internal,
-    note_exists,
     get_filename_for_pattern,
     get_filename_for_problem,
+    note_exists,
+    write_note,
+)
+from dsa_coach.obsidian import (
+    list_existing_notes as list_notes_internal,
+)
+from dsa_coach.obsidian import (
     update_note as update_note_internal,
 )
 from dsa_coach.obsidian.analyzer import (
     should_create_note,
-    should_create_problem_note,
-    extract_articulation_improvements,
 )
 from dsa_coach.obsidian.writer import get_vault_path
-from pathlib import Path
+from dsa_coach.tools.registry import ToolResult, tool
 
 
 @tool(
@@ -39,12 +38,12 @@ async def propose_pattern_note(
     session_insights: str,
 ) -> ToolResult:
     """Analyze pattern and propose atomic note structure.
-    
+
     Args:
         pattern: Pattern ID (e.g., "sliding_window")
         confidence: Current confidence level (0-100)
         session_insights: Summary of key insights from learning session
-        
+
     Returns:
         ToolResult with proposal dict containing sections, diagrams, code examples
     """
@@ -52,14 +51,14 @@ async def propose_pattern_note(
         # Check if note already exists
         filename = get_filename_for_pattern(pattern)
         exists = note_exists(filename, "pattern")
-        
+
         if exists:
             return ToolResult(
                 success=False,
                 message=f"Note already exists for pattern '{pattern}'",
                 data={"exists": True, "filename": filename},
             )
-        
+
         # Build proposal structure
         proposal = {
             "pattern": pattern,
@@ -79,13 +78,13 @@ async def propose_pattern_note(
             "needs_diagram": confidence > 50,  # Complex patterns need diagrams
             "session_insights": session_insights,
         }
-        
+
         return ToolResult(
             success=True,
             data=proposal,
             message=f"Note proposal ready for '{pattern}'",
         )
-    
+
     except Exception as e:
         return ToolResult(
             success=False,
@@ -116,7 +115,7 @@ async def create_pattern_note(
     has_diagram: bool = False,
 ) -> ToolResult:
     """Create atomic pattern note file in Obsidian vault.
-    
+
     Args:
         pattern: Pattern ID
         title: Human-readable title
@@ -133,7 +132,7 @@ async def create_pattern_note(
         use_cases: Comma-separated use cases (optional)
         related_patterns: Comma-separated pattern names (optional)
         has_diagram: Whether to include mermaid diagram
-        
+
     Returns:
         ToolResult with filepath of created note
     """
@@ -144,31 +143,39 @@ async def create_pattern_note(
                 success=False,
                 error="OBSIDIAN_VAULT_PATH not configured in .env",
             )
-        
+
         # Parse string inputs
         import json
-        
+
         try:
             trade_offs_list = json.loads(trade_offs) if trade_offs else []
         except json.JSONDecodeError:
             # Fallback: treat as simple list
             trade_offs_list = [
-                {"aspect": "General", "description": trade_offs, "when_to_use": "See context"}
+                {
+                    "aspect": "General",
+                    "description": trade_offs,
+                    "when_to_use": "See context",
+                }
             ]
-        
+
         key_terms = [t.strip() for t in key_terminology.split(",") if t.strip()]
         follow_ups = [q.strip() for q in follow_up_questions.split(",") if q.strip()]
         pitfalls = [p.strip() for p in common_pitfalls.split(",") if p.strip()]
-        company_list = [c.strip() for c in companies.split(",") if c.strip()] if companies else []
-        use_case_list = [u.strip() for u in use_cases.split(",") if u.strip()] if use_cases else []
-        
+        company_list = (
+            [c.strip() for c in companies.split(",") if c.strip()] if companies else []
+        )
+        use_case_list = (
+            [u.strip() for u in use_cases.split(",") if u.strip()] if use_cases else []
+        )
+
         related_list = []
         if related_patterns:
             for rel in related_patterns.split(","):
                 rel = rel.strip()
                 if rel:
                     related_list.append({"name": rel, "context": "Related pattern"})
-        
+
         # Generate note content
         content = generate_pattern_note(
             pattern=pattern,
@@ -187,20 +194,19 @@ async def create_pattern_note(
             related_patterns=related_list,
             has_diagram=has_diagram,
         )
-        
+
         # Write to vault
         filename = get_filename_for_pattern(pattern)
         success, message, filepath = write_note(content, filename, "pattern")
-        
+
         if success:
             return ToolResult(
                 success=True,
                 data={"filepath": str(filepath), "filename": filename},
                 message=message,
             )
-        else:
-            return ToolResult(success=False, error=message)
-    
+        return ToolResult(success=False, error=message)
+
     except Exception as e:
         return ToolResult(
             success=False,
@@ -215,10 +221,10 @@ async def create_pattern_note(
 )
 async def list_existing_notes(folder: str = "all") -> ToolResult:
     """List existing notes in vault.
-    
+
     Args:
         folder: "pattern", "problem", or "all"
-        
+
     Returns:
         ToolResult with list of note metadata dicts
     """
@@ -229,16 +235,16 @@ async def list_existing_notes(folder: str = "all") -> ToolResult:
                 success=False,
                 error="OBSIDIAN_VAULT_PATH not configured",
             )
-        
+
         note_type = folder.lower() if folder in ["pattern", "problem"] else "all"
         notes = list_notes_internal(note_type)  # type: ignore
-        
+
         return ToolResult(
             success=True,
             data={"notes": notes, "count": len(notes)},
             message=f"Found {len(notes)} notes",
         )
-    
+
     except Exception as e:
         return ToolResult(
             success=False,
@@ -257,12 +263,12 @@ async def update_note_with_insights(
     section_title: str = "Additional Insights",
 ) -> ToolResult:
     """Append new section to existing note.
-    
+
     Args:
         note_name: Note filename (with or without .md)
         new_insights: Content to append
         section_title: Section header for new content
-        
+
     Returns:
         ToolResult with success status
     """
@@ -273,15 +279,15 @@ async def update_note_with_insights(
                 success=False,
                 error="OBSIDIAN_VAULT_PATH not configured",
             )
-        
+
         # Find the note
         if not note_name.endswith(".md"):
             note_name += ".md"
-        
+
         # Search in both Patterns and Problems
         patterns_path = vault / "Patterns" / note_name
         problems_path = vault / "Problems" / note_name
-        
+
         filepath = None
         if patterns_path.exists():
             filepath = patterns_path
@@ -292,19 +298,18 @@ async def update_note_with_insights(
                 success=False,
                 error=f"Note '{note_name}' not found in Patterns/ or Problems/",
             )
-        
+
         # Update the note
         success, message = update_note_internal(filepath, new_insights, section_title)
-        
+
         if success:
             return ToolResult(
                 success=True,
                 data={"filepath": str(filepath)},
                 message=message,
             )
-        else:
-            return ToolResult(success=False, error=message)
-    
+        return ToolResult(success=False, error=message)
+
     except Exception as e:
         return ToolResult(
             success=False,
@@ -324,13 +329,13 @@ async def check_note_creation_criteria(
     confidence_gain: float,
 ) -> ToolResult:
     """Determine if a pattern note should be created.
-    
+
     Args:
         pattern: Pattern name
         confidence: Current confidence (0-100)
         session_messages: Message count in session
         confidence_gain: Confidence increase
-        
+
     Returns:
         ToolResult with recommendation
     """
@@ -338,7 +343,7 @@ async def check_note_creation_criteria(
         should_create, reason = should_create_note(
             pattern, confidence, session_messages, confidence_gain
         )
-        
+
         return ToolResult(
             success=True,
             data={
@@ -349,7 +354,7 @@ async def check_note_creation_criteria(
             },
             message=reason,
         )
-    
+
     except Exception as e:
         return ToolResult(
             success=False,
@@ -375,7 +380,7 @@ async def create_problem_note(
     space_complexity: str = "",
 ) -> ToolResult:
     """Create problem-specific note.
-    
+
     Args:
         problem_id: Problem identifier
         title: Problem title
@@ -387,7 +392,7 @@ async def create_problem_note(
         solution_approach: Brief solution explanation
         time_complexity: Time complexity
         space_complexity: Space complexity
-        
+
     Returns:
         ToolResult with filepath
     """
@@ -398,11 +403,11 @@ async def create_problem_note(
                 success=False,
                 error="OBSIDIAN_VAULT_PATH not configured",
             )
-        
+
         # Parse inputs
         trade_offs_list = [t.strip() for t in trade_offs.split(",") if t.strip()]
         edge_cases_list = [e.strip() for e in edge_cases.split(",") if e.strip()]
-        
+
         # Generate note
         content = generate_problem_note(
             problem_id=problem_id,
@@ -416,25 +421,21 @@ async def create_problem_note(
             time_complexity=time_complexity,
             space_complexity=space_complexity,
         )
-        
+
         # Write to vault
         filename = get_filename_for_problem(problem_id)
         success, message, filepath = write_note(content, filename, "problem")
-        
+
         if success:
             return ToolResult(
                 success=True,
                 data={"filepath": str(filepath), "filename": filename},
                 message=message,
             )
-        else:
-            return ToolResult(success=False, error=message)
-    
+        return ToolResult(success=False, error=message)
+
     except Exception as e:
         return ToolResult(
             success=False,
             error=f"Failed to create problem note: {e}",
         )
-
-
-

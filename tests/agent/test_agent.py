@@ -1,14 +1,15 @@
 """Tests for CoachAgent."""
 
-import pytest
-import pytest_asyncio
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import AsyncMock, patch
 
-from dsa_coach.storage.db import Database
-from dsa_coach.agent.agent import CoachAgent, AgentResponse
+import pytest
+import pytest_asyncio
+
+from dsa_coach.agent.agent import AgentResponse, CoachAgent
 from dsa_coach.ai.client import LLMResponse, ToolCall
+from dsa_coach.storage.db import Database
 
 
 @pytest_asyncio.fixture
@@ -16,12 +17,12 @@ async def test_db():
     """Create a temporary database for testing."""
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db_path = Path(f.name)
-    
+
     db = Database(db_path)
     await db.connect()
-    
+
     yield db
-    
+
     await db.close()
     db_path.unlink(missing_ok=True)
 
@@ -39,7 +40,7 @@ async def test_agent_initialization(test_db):
     """Test agent initializes correctly."""
     agent = CoachAgent(test_db)
     await agent.initialize()
-    
+
     assert agent.session.session is not None
     assert agent.tools is not None
 
@@ -48,7 +49,7 @@ async def test_agent_initialization(test_db):
 async def test_get_greeting_new_user(agent):
     """Test greeting for a new user."""
     greeting = await agent.get_greeting()
-    
+
     assert greeting is not None
     assert len(greeting) > 0
 
@@ -57,7 +58,7 @@ async def test_get_greeting_new_user(agent):
 async def test_get_system_prompt(agent):
     """Test system prompt generation."""
     prompt = agent.get_system_prompt()
-    
+
     assert "DSA Coach" in prompt
     assert "tools" in prompt.lower()
 
@@ -66,10 +67,10 @@ async def test_get_system_prompt(agent):
 async def test_get_tools_for_llm(agent):
     """Test tool definitions for LLM."""
     tools = agent.get_tools_for_llm()
-    
+
     assert isinstance(tools, list)
     assert len(tools) > 0
-    
+
     # Check tool structure
     for tool in tools:
         assert "name" in tool
@@ -84,13 +85,13 @@ async def test_run_with_mocked_llm(agent):
         tool_calls=[],
         stop_reason="end_turn",
     )
-    
+
     with patch(
         "dsa_coach.agent.agent.get_ai_response_with_tools",
         new=AsyncMock(return_value=mock_response),
     ):
         response = await agent.run("Hello!")
-    
+
     assert isinstance(response, AgentResponse)
     assert response.content == "Hello! How can I help you today?"
     assert len(response.tool_calls_made) == 0
@@ -111,23 +112,23 @@ async def test_run_with_tool_call(agent):
         ],
         stop_reason="tool_use",
     )
-    
+
     # Second response after tool execution
     final_response = LLMResponse(
         content="Here are the available patterns...",
         tool_calls=[],
         stop_reason="end_turn",
     )
-    
+
     # Mock the LLM to return tool call first, then final response
     mock_llm = AsyncMock(side_effect=[tool_call_response, final_response])
-    
+
     with patch(
         "dsa_coach.agent.agent.get_ai_response_with_tools",
         new=mock_llm,
     ):
         response = await agent.run("What patterns are available?")
-    
+
     assert isinstance(response, AgentResponse)
     assert len(response.tool_calls_made) == 1
     assert response.tool_calls_made[0]["name"] == "list_patterns"
@@ -139,4 +140,3 @@ async def test_dashboard_property(agent):
     # Dashboard should be populated after initialization
     assert agent.dashboard is not None
     assert "profile" in agent.dashboard
-

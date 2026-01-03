@@ -1,6 +1,6 @@
-from dsa_coach.ui import UI
-from dsa_coach.storage.sync import SyncDatabase
 from dsa_coach.curriculum import get_pattern_name
+from dsa_coach.storage.sync import SyncDatabase
+from dsa_coach.ui import UI
 
 
 def cmd_status():
@@ -9,8 +9,9 @@ def cmd_status():
     ui = UI(rich_available=False, console=None)
     try:
         from rich.console import Console
-        from rich.table import Table
         from rich.panel import Panel
+        from rich.table import Table
+
         ui = UI(rich_available=True, console=Console())
     except ImportError:
         pass
@@ -41,15 +42,15 @@ def cmd_status():
 
     # Display
     if ui.rich_available and ui.console:
-        from rich.table import Table
         from rich.panel import Panel
+        from rich.table import Table
 
         # Header
-        ui.console.print(Panel(
-            f"[bold]{profile.name}[/bold]",
-            title="👤 Profile",
-            border_style="blue"
-        ))
+        ui.console.print(
+            Panel(
+                f"[bold]{profile.name}[/bold]", title="👤 Profile", border_style="blue"
+            )
+        )
 
         # Stats table
         table = Table(show_header=False, box=None)
@@ -69,7 +70,9 @@ def cmd_status():
             ui.console.print(f"\n[red]⚠️ Focus Areas:[/red] {', '.join(weakest_names)}")
         if strongest:
             strongest_names = [get_pattern_name(p) for p in strongest]
-            ui.console.print(f"[green]💪 Strengths:[/green] {', '.join(strongest_names)}")
+            ui.console.print(
+                f"[green]💪 Strengths:[/green] {', '.join(strongest_names)}"
+            )
 
         # Current quest
         if current_quest:
@@ -85,4 +88,3 @@ def cmd_status():
         if strongest:
             strongest_names = [get_pattern_name(p) for p in strongest]
             print(f"💪 Strengths: {', '.join(strongest_names)}")
-

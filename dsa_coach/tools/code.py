@@ -5,14 +5,12 @@ Tools for managing solution files and code review.
 
 import json
 from pathlib import Path
-from typing import Optional
 
-from .registry import tool, ToolResult
 from ..storage.db import Database
-
+from .registry import ToolResult, tool
 
 # Cache for quests.json data
-_quests_cache: Optional[dict] = None
+_quests_cache: dict | None = None
 
 
 def _load_quests() -> dict:
@@ -20,19 +18,19 @@ def _load_quests() -> dict:
     global _quests_cache
     if _quests_cache is None:
         quests_path = Path(__file__).parent.parent.parent / "quests.json"
-        with open(quests_path, "r") as f:
+        with quests_path.open() as f:
             _quests_cache = json.load(f)
     return _quests_cache
 
 
-def _find_quest(quest_id: str) -> Optional[dict]:
+def _find_quest(quest_id: str) -> dict | None:
     """Find a quest by ID."""
     quests = _load_quests()
-    
+
     for quest in quests.get("quests", []):
         if quest.get("id") == quest_id:
             return quest
-            
+
     return None
 
 
@@ -52,7 +50,7 @@ async def create_solution_file(
 ) -> ToolResult:
     """
     Create a solution file for a quest.
-    
+
     :param quest_id: The quest to create a solution file for
     :return: Path to the created file
     """
@@ -62,14 +60,14 @@ async def create_solution_file(
             success=False,
             error=f"Quest '{quest_id}' not found",
         )
-    
+
     solutions_dir = _get_solutions_dir()
     pattern = quest.get("pattern", "unknown")
     target_dir = solutions_dir / pattern
     target_dir.mkdir(parents=True, exist_ok=True)
-    
+
     solution_file = target_dir / f"{quest_id}.py"
-    
+
     if solution_file.exists():
         return ToolResult(
             success=True,
@@ -79,15 +77,18 @@ async def create_solution_file(
             },
             message=f"Solution file already exists: {solution_file}",
         )
-    
-    template = quest.get("template", f"# Solution for {quest.get('title', quest_id)}\n\n# Your code here\n")
-    header = f'''"""
-{quest.get('title', quest_id)}
-{'=' * len(quest.get('title', quest_id))}
 
-Difficulty: {quest.get('difficulty', 'medium').upper()}
-Pattern: {quest.get('pattern', 'unknown')}
-Link: {quest.get('link', '')}
+    template = quest.get(
+        "template",
+        f"# Solution for {quest.get('title', quest_id)}\n\n# Your code here\n",
+    )
+    header = f'''"""
+{quest.get("title", quest_id)}
+{"=" * len(quest.get("title", quest_id))}
+
+Difficulty: {quest.get("difficulty", "medium").upper()}
+Pattern: {quest.get("pattern", "unknown")}
+Link: {quest.get("link", "")}
 
 DIVE Protocol:
 1. Decode: Understand the problem completely
@@ -100,7 +101,7 @@ DIVE Protocol:
 {template}
 '''
     solution_file.write_text(header)
-    
+
     return ToolResult(
         success=True,
         data={
@@ -122,7 +123,7 @@ async def read_solution_file(
 ) -> ToolResult:
     """
     Read the solution file for a quest.
-    
+
     :param quest_id: The quest to read solution for
     :return: File contents and metadata
     """
@@ -132,26 +133,26 @@ async def read_solution_file(
             success=False,
             error=f"Quest '{quest_id}' not found",
         )
-    
+
     solutions_dir = _get_solutions_dir()
     pattern = quest.get("pattern", "unknown")
     solution_file = solutions_dir / pattern / f"{quest_id}.py"
-    
+
     # Fallback search if not found in pattern dir (for backward compatibility)
     if not solution_file.exists():
         found = list(solutions_dir.glob(f"**/{quest_id}.py"))
         if found:
             solution_file = found[0]
-    
+
     if not solution_file.exists():
         return ToolResult(
             success=False,
             error=f"Solution file not found: {solution_file}",
         )
-    
+
     content = solution_file.read_text()
     lines = content.split("\n")
-    
+
     return ToolResult(
         success=True,
         data={
@@ -173,18 +174,18 @@ async def list_solution_files(
 ) -> ToolResult:
     """
     List all solution files.
-    
+
     :return: List of solution files with metadata
     """
     solutions_dir = _get_solutions_dir()
-    
+
     if not solutions_dir.exists():
         return ToolResult(
             success=True,
             data=[],
             message="No solutions directory found",
         )
-    
+
     files = []
     # Recursively find all python files in solutions dir
     for solution_file in sorted(solutions_dir.glob("**/*.py")):
@@ -192,15 +193,17 @@ async def list_solution_files(
             quest_id = solution_file.stem
             parent_dir = solution_file.parent.name
             content = solution_file.read_text()
-            
-            files.append({
-                "quest_id": quest_id,
-                "category": parent_dir,  # Was day, now pattern or whatever dir
-                "path": str(solution_file),
-                "lines": len(content.split("\n")),
-                "size_bytes": len(content.encode("utf-8")),
-            })
-    
+
+            files.append(
+                {
+                    "quest_id": quest_id,
+                    "category": parent_dir,  # Was day, now pattern or whatever dir
+                    "path": str(solution_file),
+                    "lines": len(content.split("\n")),
+                    "size_bytes": len(content.encode("utf-8")),
+                }
+            )
+
     return ToolResult(
         success=True,
         data=files,
@@ -220,10 +223,10 @@ async def review_code(
 ) -> ToolResult:
     """
     Review code for a quest.
-    
+
     Note: This is a placeholder that returns review prompts.
     The actual review is done by the LLM using this context.
-    
+
     :param code: The code to review
     :param quest_id: The quest the code is for
     :return: Review context and hints
@@ -234,7 +237,7 @@ async def review_code(
             success=False,
             error=f"Quest '{quest_id}' not found",
         )
-    
+
     # Provide context for LLM to do the review
     return ToolResult(
         success=True,
@@ -269,7 +272,7 @@ async def get_solution_template(
 ) -> ToolResult:
     """
     Get the solution template for a quest.
-    
+
     :param quest_id: The quest to get template for
     :return: Template code and quest info
     """
@@ -279,9 +282,9 @@ async def get_solution_template(
             success=False,
             error=f"Quest '{quest_id}' not found",
         )
-    
+
     template = quest.get("template", "# No template provided\n")
-    
+
     return ToolResult(
         success=True,
         data={
@@ -291,4 +294,3 @@ async def get_solution_template(
             "template": template,
         },
     )
-

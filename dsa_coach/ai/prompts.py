@@ -6,15 +6,14 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..storage.db import Database
-    from ..storage.models import PatternProgress, QuestCompletion, Session
 
 
 def get_mentor_system_prompt(progress: dict) -> str:
     """Generate a personalized system prompt based on student progress.
-    
+
     Args:
         progress: User progress dict containing profile and pattern proficiency
-        
+
     Returns:
         Formatted system prompt string
     """
@@ -42,9 +41,9 @@ def get_mentor_system_prompt(progress: dict) -> str:
 
 STUDENT PROFILE:
 - Name: {name}
-- Strongest Patterns: {', '.join(strong_patterns) if strong_patterns else 'Still building strengths'}
-- Weakest Patterns: {', '.join(weak_patterns) if weak_patterns else 'No significant weaknesses detected'}
-- Recent Mistake Patterns: {', '.join(set(mistake_patterns)) if mistake_patterns else 'None recorded'}
+- Strongest Patterns: {", ".join(strong_patterns) if strong_patterns else "Still building strengths"}
+- Weakest Patterns: {", ".join(weak_patterns) if weak_patterns else "No significant weaknesses detected"}
+- Recent Mistake Patterns: {", ".join(set(mistake_patterns)) if mistake_patterns else "None recorded"}
 
 TEACHING PHILOSOPHY:
 1. NEVER give complete solutions. Guide discovery through questions and hints.
@@ -58,7 +57,7 @@ TEACHING PHILOSOPHY:
 
 COMMUNICATION RULES:
 - MAX 2-3 sentences per response
-- ALWAYS end with ONE question  
+- ALWAYS end with ONE question
 - NEVER explain unless they say "I don't know" multiple times
 - When stuck: "What's your instinct?" before any hint
 - Wrong answer: Don't correct. Ask about a counterexample.
@@ -87,7 +86,7 @@ Student confidence: {confidence}% | Hint level: {hint_level}/3
 PROGRESSIVE HINTS (give ONLY the hint for the requested level):
 
 Level 1 - Question only:
-  "What if you kept track of [key data structure]?" 
+  "What if you kept track of [key data structure]?"
   "Have you considered what happens at the edges?"
   Ask a question. No information.
 
@@ -318,10 +317,13 @@ def _format_mastery_snapshot(patterns: list) -> str:
     lines = []
     for p in sorted(patterns, key=lambda x: x.confidence, reverse=True):
         level = (
-            "MASTERED" if p.confidence >= 80 else
-            "PROFICIENT" if p.confidence >= 60 else
-            "DEVELOPING" if p.confidence >= 30 else
-            "BEGINNER"
+            "MASTERED"
+            if p.confidence >= 80
+            else "PROFICIENT"
+            if p.confidence >= 60
+            else "DEVELOPING"
+            if p.confidence >= 30
+            else "BEGINNER"
         )
         pattern_name = p.pattern_id.replace("_", " ").title()
         lines.append(f"- {pattern_name}: {p.confidence}% ({level})")
@@ -380,8 +382,10 @@ def _format_due_reviews(reviews: list) -> str:
 
     lines = []
     for r in reviews[:5]:
-        quest_id = r.quest_id if hasattr(r, 'quest_id') else r.get("quest_id", "Unknown")
-        pattern = r.pattern_id if hasattr(r, 'pattern_id') else r.get("pattern_id", "")
+        quest_id = (
+            r.quest_id if hasattr(r, "quest_id") else r.get("quest_id", "Unknown")
+        )
+        pattern = r.pattern_id if hasattr(r, "pattern_id") else r.get("pattern_id", "")
         pattern_name = pattern.replace("_", " ").title()
         lines.append(f"- {quest_id} ({pattern_name})")
 
@@ -419,7 +423,7 @@ def _format_activity(activity: dict) -> str:
     return f"Problems: {problems} | Time: {time_str} | Patterns: {pattern_str}"
 
 
-async def build_student_context(db: "Database", user_id: str = "default") -> str:
+async def build_student_context(db: Database, user_id: str = "default") -> str:
     """
     Build comprehensive student context for system prompt injection.
 
@@ -437,7 +441,7 @@ async def build_student_context(db: "Database", user_id: str = "default") -> str
     profile = await db.get_or_create_profile(user_id)
     patterns = await db.get_all_pattern_progress(user_id)
     due_reviews = await db.get_due_reviews(user_id)
-    recent_mistakes = await db.get_recent_mistakes(user_id, limit=5)
+    await db.get_recent_mistakes(user_id, limit=5)
     recurring_mistakes = await db.get_recurring_mistake_types(user_id)
     concepts_struggling = await db.get_struggling_concepts(user_id)
     concepts_mastered = await db.get_mastered_concepts(user_id)
@@ -503,8 +507,7 @@ async def build_student_context(db: "Database", user_id: str = "default") -> str
 
 
 def get_agent_system_prompt(
-    dashboard_state: dict | None = None,
-    student_context: str | None = None
+    dashboard_state: dict | None = None, student_context: str | None = None
 ) -> str:
     """
     Get the system prompt for the CoachAgent with student context.
@@ -531,13 +534,12 @@ def get_agent_system_prompt(
         context = f"""
 
 ## CURRENT SESSION CONTEXT
-- User: {profile.get('name', 'Unknown')}
-- Quests Completed: {profile.get('quests_completed', 0)}
-- Member Since: {profile.get('created_at', 'N/A')[:10]}
-- Current Quest: {current['title'] if current else 'None'}
+- User: {profile.get("name", "Unknown")}
+- Quests Completed: {profile.get("quests_completed", 0)}
+- Member Since: {profile.get("created_at", "N/A")[:10]}
+- Current Quest: {current["title"] if current else "None"}
 - Alerts: {len(alerts)} items needing attention
 """
         return base + context
 
     return base
-

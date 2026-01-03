@@ -1,11 +1,12 @@
 """Code review functionality for DSA Coach."""
 
-from typing import Dict, Any
+from typing import Any
+
 from .client import get_ai_response
 from .prompts import CODE_REVIEW_PROMPT, get_mentor_system_prompt
 
 
-def review_code(quest: Dict[str, Any], code: str, progress: Dict[str, Any]) -> str:
+def review_code(quest: dict[str, Any], code: str, progress: dict[str, Any]) -> str:
     """Review student's code and provide feedback.
 
     Args:

@@ -6,22 +6,21 @@ import sys
 
 # Import all command handlers
 from dsa_coach.commands import (
-    start,
-    status,
-    next_quest,
+    design,
     done,
     hint,
-    recall,
     learn,
     mistakes,
-    sessions,
-    review,
-    today,
-    summary,
-    design,
+    next_quest,
+    recall,
     reset,
+    review,
+    sessions,
+    start,
+    status,
+    summary,
+    today,
 )
-
 
 CLI_HELP = """
 DSA Coach - An Adaptive CLI for Interview Preparation
@@ -79,4 +78,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
