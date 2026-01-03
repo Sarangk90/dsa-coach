@@ -138,6 +138,78 @@ python coach.py summary        # Full progress dump
 
 ### Testing
 
+#### Test Harness (Recommended for Agent Testing)
+
+The test harness (`test_harness.py`) enables programmatic testing of the agent with conversation management and state verification. **Use this when testing agent behavior, tool calls, or state changes.**
+
+**Quick Start:**
+```bash
+# Run a predefined test scenario
+python test_harness.py --scenario basic_conversation
+
+# Single commands
+python test_harness.py hydrate                           # Populate test data
+python test_harness.py send "What should I work on?"     # Send message
+python test_harness.py inspect patterns                  # Check database state
+python test_harness.py inspect mistakes                  # Check recorded mistakes
+```
+
+**Interactive JSON Mode (for scripted testing):**
+```bash
+python test_harness.py --json
+# Then send JSON commands:
+{"action": "hydrate"}
+{"action": "send", "message": "I want to learn binary search"}
+{"action": "inspect", "entity": "patterns"}
+{"action": "snapshot"}
+{"action": "diff"}
+```
+
+**Available Scenarios:**
+- `basic_conversation` - Greeting, questions, pattern info
+- `progress_tracking` - Complete a quest and verify state changes
+- `mistake_recording` - Report a mistake and verify it's recorded
+- `teaching_flow` - Learning session with concept understanding
+
+**Inspect Entities:**
+- `profile` - User profile
+- `patterns` - Pattern progress (confidence, mastery)
+- `quests` - Completed quests
+- `mistakes` - Recorded mistakes with recurrence tracking
+- `milestones` - Achievements
+- `teaching` - Teaching history (what was explained)
+- `concepts` - Concept understanding records
+- `reviews` - Quests due for spaced repetition
+
+**What the Harness Verifies:**
+- ✅ Agent responses are appropriate
+- ✅ Tools are called correctly (see `tools_used` in response)
+- ✅ Database state updates after tool calls (use `snapshot` → action → `diff`)
+- ✅ Mistakes, teaching, and learning are recorded automatically
+- ✅ Memory is incorporated into coaching (past mistakes influence recommendations)
+
+**Using in Pytest:**
+```python
+import pytest
+from tests.harness import CoachTestHarness
+
+@pytest.mark.asyncio
+async def test_agent_records_mistake(tmp_path):
+    async with CoachTestHarness(db_path=tmp_path / "test.db", auto_hydrate=True) as harness:
+        # Take snapshot before
+        before = await harness.snapshot()
+        
+        # Send message describing a mistake
+        response = await harness.send("I made an off-by-one error on ft_04_c1_p1")
+        
+        # Check what changed
+        after = await harness.snapshot()
+        diff = harness.diff_snapshot(before, after)
+        
+        # Verify mistake was recorded
+        assert "mistakes_added" in diff
+```
+
 #### Test Data Hydration
 Use the hydration script to populate the database with realistic test data:
 ```bash
@@ -361,7 +433,12 @@ dsa-coach/
 │       └── hints.py      # Adaptive hint generation
 ├── scripts/              # Utility scripts
 │   └── hydrate_test_data.py  # Test data hydration (creates realistic test data)
+├── test_harness.py       # CLI for programmatic agent testing
 ├── tests/                # Test suite (pytest)
+│   ├── harness/          # Agent test harness
+│   │   ├── coach_harness.py  # CoachTestHarness class
+│   │   └── test_harness_examples.py  # Example tests
+│   └── conftest.py       # Pytest fixtures (coach_harness, hydrated_harness)
 ├── quests.json           # Quest database (curriculum structure)
 ├── progress.json         # DEPRECATED - do not use
 ├── requirements.txt      # Python dependencies
@@ -643,14 +720,13 @@ pip freeze | grep -E "ruff|mypy|pre-commit" >> requirements.txt
 
 ## Known Limitations
 
-- Test data hydration script available, but no automated test suite (use `scripts/hydrate_test_data.py`)
 - SQLite database (`coach.db`) not backed up automatically
 - Single user support (hardcoded `user_id="default"`)
 - AI features require external API keys (costs money)
 - No built-in code execution or validation
 - Solutions directory not automatically synced or committed
 - Legacy `curriculum.py` functions still expect progress dict (use `build_progress_compat()`)
-- Agent mode requires terminal for full interactivity (use programmatic testing for CI)
+- Agent test harness requires network for AI calls (use `--scenario` for offline structure tests)
 
 ## Migration Notes (December 2024)
 
