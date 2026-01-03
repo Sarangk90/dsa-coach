@@ -71,19 +71,39 @@ with SyncDatabase() as db:
 ## Development Commands
 
 ### Environment Setup
-```bash
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On macOS/Linux
-# venv\Scripts\activate   # On Windows
 
-# Install dependencies
-pip install -r requirements.txt
+#### Prerequisites
+Install uv (if not already installed):
+```bash
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Or via pip
+pip install uv
+```
+
+#### Setup
+```bash
+# Create virtual environment and install dependencies
+uv venv
+source .venv/bin/activate  # On macOS/Linux
+# .venv\Scripts\activate   # On Windows
+
+# Install all dependencies (including dev tools)
+uv sync
+
+# Or install production dependencies only
+uv pip install -e .
 
 # Set up API keys for AI features (optional)
 cp env.example .env
 # Edit .env with ANTHROPIC_API_KEY or OPENAI_API_KEY
 ```
+
+**Note:** `uv sync` installs both main dependencies and dev dependencies (pytest, ruff, mypy, pre-commit). Use `uv pip install -e .` if you only need runtime dependencies.
 
 ### Running the Application
 
@@ -474,6 +494,152 @@ async def my_tool(db: Database, user_id: str = "default") -> ToolResult:
 - Student context: `build_student_context()` in prompts.py
 - Hint generation: `dsa_coach/ai/hints.py`
 - Agent system prompt: `get_agent_system_prompt()` in prompts.py
+
+## Code Quality & Linting
+
+The project uses modern Python linting and formatting tools to maintain code quality and consistency.
+
+### Tools Configured
+
+**Ruff** (v0.14.10) - Fast, comprehensive linter and formatter
+- Replaces flake8, isort, black, and other tools
+- Enforces PEP 8 style guidelines
+- Checks for common bugs and code smells
+- Auto-formats code consistently (88 char line length)
+- Configuration in `pyproject.toml`
+
+**Mypy** (v1.19.1) - Static type checker
+- Validates type annotations
+- Catches type-related bugs before runtime
+- Works seamlessly with Pydantic models
+- Configuration in `pyproject.toml`
+
+**Pre-commit** (v4.5.1) - Git hooks framework
+- Runs linters automatically before each commit
+- Auto-fixes formatting and simple issues
+- Blocks commits with serious code quality issues
+- Configuration in `.pre-commit-config.yaml`
+
+### Running Linters
+
+**Automatic (via pre-commit hooks):**
+```bash
+git add .
+git commit -m "your message"
+# Linters run automatically before commit
+# Auto-fixes are applied when possible
+```
+
+**Manual (run all hooks):**
+```bash
+pre-commit run --all-files  # Check all files
+```
+
+**Manual (specific tools):**
+```bash
+ruff check .                # Check for issues
+ruff check . --fix          # Auto-fix issues
+ruff format .               # Format code
+mypy dsa_coach/             # Type check
+```
+
+### Best Practices for Claude Code
+
+**ALWAYS follow these practices when writing or modifying code:**
+
+1. **Run linters before committing changes**
+   - Use `ruff check . --fix` to auto-fix issues
+   - Use `ruff format .` to format code consistently
+   - Address any remaining linting errors before committing
+
+2. **Write clean, formatted code from the start**
+   - Follow 88 character line length limit
+   - Use double quotes for strings
+   - Remove unused imports and variables
+   - Keep functions focused and simple
+
+3. **Handle linting errors proactively**
+   - If pre-commit blocks a commit, fix the issues it reports
+   - Don't ignore linting errors - they catch real bugs
+   - Use `--fix` flag to auto-fix when possible
+   - For mypy errors, add type hints or fix type mismatches
+
+4. **Avoid introducing new linting violations**
+   - Check modified files with `ruff check <file>` before saving
+   - If editing a file with existing violations, fix them too
+   - Don't use `# noqa` or `# type: ignore` unless absolutely necessary
+
+5. **Type annotations (gradual adoption)**
+   - Add type hints to new functions and methods
+   - Use proper return type annotations
+   - Leverage Pydantic models for data validation
+   - Mypy warnings won't block commits, but should be addressed
+
+### Common Linting Issues
+
+**Unused imports:**
+```python
+# ❌ Bad
+from rich.layout import Layout  # Imported but never used
+
+# ✅ Good - Remove unused imports
+# (removed)
+```
+
+**Unnecessary variable assignment before return:**
+```python
+# ❌ Bad
+def get_text():
+    text = process_data()
+    return text
+
+# ✅ Good
+def get_text():
+    return process_data()
+```
+
+**Line too long (>88 chars):**
+```python
+# ❌ Bad
+really_long_function_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+
+# ✅ Good
+really_long_function_name(
+    arg1, arg2, arg3, arg4, arg5,
+    arg6, arg7, arg8, arg9, arg10
+)
+```
+
+**Missing type hints (mypy warnings):**
+```python
+# ❌ Bad
+def get_pattern_name(pattern_id):
+    return PATTERNS.get(pattern_id)
+
+# ✅ Good
+def get_pattern_name(pattern_id: str) -> str | None:
+    return PATTERNS.get(pattern_id)
+```
+
+### Configuration Files
+
+- **pyproject.toml**: Ruff and mypy configuration (line length, rules, exclusions)
+- **.pre-commit-config.yaml**: Pre-commit hooks configuration (versions, arguments)
+- **.gitignore**: Excludes linter cache directories (`.ruff_cache/`, `.mypy_cache/`)
+
+### Updating Linting Tools
+
+To update to the latest versions:
+```bash
+# Update Python packages
+pip install --upgrade ruff mypy pre-commit
+
+# Update pre-commit hooks
+pre-commit autoupdate
+
+# Update requirements.txt with new versions
+pip freeze | grep -E "ruff|mypy|pre-commit" >> requirements.txt
+```
 
 ## Known Limitations
 

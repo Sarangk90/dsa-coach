@@ -15,10 +15,19 @@ ENV/
 dist/
 build/
 
+# uv
+.python-version
+uv.lock
+
 # Testing
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Linting and pre-commit
+.pre-commit-cache/
+.mypy_cache/
+.ruff_cache/
 
 # IDE
 .vscode/
@@ -41,4 +50,3 @@ conversations/
 # OS
 .DS_Store
 Thumbs.db
-

@@ -12,11 +12,29 @@ An adaptive CLI for mastering Data Structures, Algorithms, and System Design for
 
 ## Quick Start
 
+### Prerequisites
+
+Install uv (fast Python package manager):
+```bash
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Or via pip
+pip install uv
+```
+
 ### Option 1: Interactive Menu (Recommended)
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+# Create virtual environment and install dependencies
+uv venv
+source .venv/bin/activate  # On macOS/Linux: .venv\Scripts\activate on Windows
+
+# Install all dependencies
+uv sync
 
 # Set up your API key (optional, for AI features)
 cp env.example .env
@@ -326,4 +344,3 @@ MIT - Use it, modify it, ace your interviews!
 **Remember**: The goal isn't to memorize solutions. It's to internalize patterns so deeply that you can derive solutions from first principles under pressure.
 
 Good luck, future Principal Engineer! 🚀
-
