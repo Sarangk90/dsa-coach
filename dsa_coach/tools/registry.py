@@ -117,7 +117,7 @@ def tool(
         async def wrapper(*args, **kwargs):
             return await func(*args, **kwargs)
 
-        wrapper._tool_info = registered
+        wrapper._tool_info = registered  # type: ignore[attr-defined]
         return wrapper
 
     return decorator

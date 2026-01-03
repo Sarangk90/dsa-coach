@@ -33,7 +33,7 @@ async def migrate_from_json(
     except json.JSONDecodeError as e:
         return {"status": "error", "reason": f"Invalid JSON: {e}"}
 
-    summary = {
+    summary: dict[str, bool | int | str] = {
         "status": "success",
         "profile_migrated": False,
         "patterns_migrated": 0,
@@ -55,8 +55,8 @@ async def migrate_from_json(
         )
 
         # Check if profile already exists
-        existing = await db.get_or_create_profile(user_id)
-        if existing.quests_completed < profile.quests_completed:
+        existing_profile = await db.get_or_create_profile(user_id)
+        if existing_profile.quests_completed < profile.quests_completed:
             # Only update if JSON has more progress
             await db.update_profile(profile)
             summary["profile_migrated"] = True
@@ -70,10 +70,10 @@ async def migrate_from_json(
             pattern_id=pattern_id,
             confidence=confidence,
         )
-        existing = await db.get_pattern_progress(user_id, pattern_id)
-        if not existing or existing.confidence < confidence:
+        existing_pattern = await db.get_pattern_progress(user_id, pattern_id)
+        if not existing_pattern or existing_pattern.confidence < confidence:
             await db.upsert_pattern_progress(progress)
-            summary["patterns_migrated"] += 1
+            summary["patterns_migrated"] = int(summary["patterns_migrated"]) + 1
 
     # Migrate completed quests
     completed_quests = data.get("completed_quests", {})
@@ -92,7 +92,6 @@ async def migrate_from_json(
             pattern_id=pattern_id,
             completed_at=completed_at,
             hints_used=quest_data.get("hints_used", 0),
-            xp_earned=quest_data.get("xp", 0),
             success=True,
             review_count=quest_data.get("review_count", 0),
             last_reviewed=datetime.fromisoformat(quest_data["last_reviewed"])
@@ -101,10 +100,10 @@ async def migrate_from_json(
             next_review_in=quest_data.get("next_review_in", 1),
         )
 
-        existing = await db.get_quest_completion(user_id, quest_id)
-        if not existing:
+        existing_quest = await db.get_quest_completion(user_id, quest_id)
+        if not existing_quest:
             await db.upsert_quest_completion(completion)
-            summary["quests_migrated"] += 1
+            summary["quests_migrated"] = int(summary["quests_migrated"]) + 1
 
     return summary
 

@@ -387,10 +387,10 @@ def dispatch_command(choice: str) -> bool:
         elif choice == "10":
             # System Design Session
             print("\n  🏗️  System Design Session")
-            design_name = input(
+            design_input = input(
                 "  Enter design name (or press Enter for menu): "
             ).strip()
-            design_name = design_name if design_name else None
+            design_name: str | None = design_input if design_input else None
             design.cmd_design(design_name)
         elif choice == "11":
             # Spaced Repetition

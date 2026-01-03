@@ -142,7 +142,7 @@ def _read_multiline_natural(prompt_text: str = "› ") -> str | None:
 
         # Persistent history across messages in this session
         if not hasattr(_read_multiline_natural, "_history"):
-            _read_multiline_natural._history = InMemoryHistory()
+            _read_multiline_natural._history = InMemoryHistory()  # type: ignore[attr-defined]
 
         # Dynamic toolbar that shows line count (accesses current app's buffer)
         def bottom_toolbar():
@@ -191,7 +191,7 @@ def _read_multiline_natural(prompt_text: str = "› ") -> str | None:
             key_bindings=kb,
             completer=completer,
             complete_while_typing=False,  # Only show completions on Tab, not while typing
-            history=_read_multiline_natural._history,
+            history=_read_multiline_natural._history,  # type: ignore[attr-defined]
             lexer=PygmentsLexer(PythonLexer),
             bottom_toolbar=bottom_toolbar,
             style=style,

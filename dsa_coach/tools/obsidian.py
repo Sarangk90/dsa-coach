@@ -237,7 +237,7 @@ async def list_existing_notes(folder: str = "all") -> ToolResult:
             )
 
         note_type = folder.lower() if folder in ["pattern", "problem"] else "all"
-        notes = list_notes_internal(note_type)  # type: ignore
+        notes = list_notes_internal(note_type)
 
         return ToolResult(
             success=True,

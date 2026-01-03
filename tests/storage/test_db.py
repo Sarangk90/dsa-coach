@@ -102,22 +102,22 @@ async def test_user_profile_create_on_get(test_db):
     profile = await test_db.get_or_create_profile("new_user")
 
     assert profile.id == "new_user"
-    assert profile.total_xp == 0
-    assert profile.current_rank == "Novice"
+    assert profile.quests_completed == 0
+    assert profile.name == "DSA Learner"
 
 
 @pytest.mark.asyncio
 async def test_update_profile(test_db):
     """Test updating user profile."""
     profile = await test_db.get_or_create_profile("test_user")
-    profile.total_xp = 500
-    profile.current_rank = "Apprentice"
+    profile.quests_completed = 5
+    profile.name = "Test Apprentice"
 
     await test_db.update_profile(profile)
 
     retrieved = await test_db.get_or_create_profile("test_user")
-    assert retrieved.total_xp == 500
-    assert retrieved.current_rank == "Apprentice"
+    assert retrieved.quests_completed == 5
+    assert retrieved.name == "Test Apprentice"
 
 
 @pytest.mark.asyncio
@@ -147,15 +147,15 @@ async def test_quest_completion(test_db):
         user_id="default",
         quest_id="two_sum",
         pattern_id="hash_map",
-        xp_earned=100,
         hints_used=1,
+        time_minutes=30,
     )
 
     await test_db.upsert_quest_completion(completion)
 
     retrieved = await test_db.get_quest_completion("default", "two_sum")
     assert retrieved is not None
-    assert retrieved.xp_earned == 100
+    assert retrieved.time_minutes == 30
     assert retrieved.hints_used == 1
 
 

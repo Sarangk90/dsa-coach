@@ -40,19 +40,19 @@ def mock_workspace(tmp_path):
     # Patch modules that imported constants from paths
     import dsa_coach.progress
 
-    dsa_coach.progress.PROGRESS_FILE = temp_progress
-    dsa_coach.progress.QUESTS_FILE = tmp_path / "quests.json"
+    dsa_coach.progress.PROGRESS_FILE = temp_progress  # type: ignore[attr-defined]
+    dsa_coach.progress.QUESTS_FILE = tmp_path / "quests.json"  # type: ignore[attr-defined]
 
     import dsa_coach.quests
 
-    dsa_coach.quests.QUESTS_FILE = tmp_path / "quests.json"
+    dsa_coach.quests.QUESTS_FILE = tmp_path / "quests.json"  # type: ignore[attr-defined]
 
     import coach
 
-    coach.BASE_DIR = tmp_path
-    coach.QUESTS_FILE = tmp_path / "quests.json"
-    coach.PROGRESS_FILE = temp_progress
-    coach.SOLUTIONS_DIR = temp_solutions
+    coach.BASE_DIR = tmp_path  # type: ignore[attr-defined]
+    coach.QUESTS_FILE = tmp_path / "quests.json"  # type: ignore[attr-defined]
+    coach.PROGRESS_FILE = temp_progress  # type: ignore[attr-defined]
+    coach.SOLUTIONS_DIR = temp_solutions  # type: ignore[attr-defined]
 
     yield tmp_path
 

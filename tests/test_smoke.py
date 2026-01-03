@@ -27,25 +27,25 @@ def test_full_user_flow(mock_workspace):
         # 1. Start
         coach.cmd_start()
 
-        progress = load_json(coach.PROGRESS_FILE)
+        progress = load_json(coach.PROGRESS_FILE)  # type: ignore[attr-defined]
         assert progress["profile"]["name"] == "TestUser"
         assert progress["profile"]["xp"] == 0
 
         # 2. Next Quest
         coach.cmd_next()
 
-        progress = load_json(coach.PROGRESS_FILE)
+        progress = load_json(coach.PROGRESS_FILE)  # type: ignore[attr-defined]
         current_quest_id = progress["profile"]["current_quest"]
         assert current_quest_id is not None
 
         # Verify solution file created
-        quest_file = coach.SOLUTIONS_DIR / f"day1/{current_quest_id}.py"
+        quest_file = coach.SOLUTIONS_DIR / f"day1/{current_quest_id}.py"  # type: ignore[attr-defined]
         assert quest_file.exists()
 
         # 3. Done
         coach.cmd_done()
 
-    progress = load_json(coach.PROGRESS_FILE)
+    progress = load_json(coach.PROGRESS_FILE)  # type: ignore[attr-defined]
     assert progress["profile"]["current_quest"] is None
     assert current_quest_id in progress["completed_quests"]
     assert progress["profile"]["xp"] > 0

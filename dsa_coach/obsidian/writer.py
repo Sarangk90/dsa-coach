@@ -91,7 +91,7 @@ def write_note(
     if not target_dir:
         return (False, f"Could not create {note_type} directory", None)
 
-    filepath = target_dir / filename
+    filepath = target_dir / filename  # type: ignore[operator]
 
     # Check if file exists
     if filepath.exists() and not overwrite:
@@ -202,4 +202,4 @@ def note_exists(
     if not target_dir:
         return False
 
-    return (target_dir / filename).exists()
+    return (target_dir / filename).exists()  # type: ignore[operator]

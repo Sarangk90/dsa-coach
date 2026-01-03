@@ -29,6 +29,7 @@ Legacy Commands (use --legacy flag):
 """
 
 import sys
+from collections.abc import Callable
 
 # Note: All modular implementations are now in dsa_coach package
 # This file only handles CLI routing and legacy command mode
@@ -159,7 +160,7 @@ def run_legacy_command(argv: list[str]):
 
     command = argv[0].lower()
 
-    commands = {
+    commands: dict[str, Callable[[], None]] = {
         "start": cmd_start,
         "status": cmd_status,
         "next": cmd_next,
