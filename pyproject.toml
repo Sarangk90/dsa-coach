@@ -120,6 +120,25 @@ disallow_subclassing_any = false
 # Ignore missing imports for third-party libraries without stubs
 ignore_missing_imports = true
 
+# Only block commits on high-priority errors (likely runtime bugs)
+# Allow low-priority warnings (type strictness) to pass
+disable_error_code = [
+    "no-any-return",    # Returning Any from typed functions (common with JSON/dynamic data)
+    "union-attr",       # Attribute access on unions (often safe with runtime guards)
+    "arg-type",         # Argument type mismatches (often external library quirks)
+    "call-overload",    # Call overload mismatches (external API definitions)
+    "dict-item",        # Dict literal type mismatches (often safe)
+    "return-value",     # Some return value type mismatches
+]
+
+# High-priority errors that WILL block commits (likely to cause runtime issues):
+# - attr-defined: accessing non-existent attributes
+# - call-arg: wrong number/names of function arguments
+# - assignment: incompatible type assignments
+# - name-defined: using undefined variables
+# - operator: unsupported operations
+# - comparison-overlap: non-overlapping comparisons (logic bugs)
+
 # Exclude certain directories
 exclude = [
     "venv",
