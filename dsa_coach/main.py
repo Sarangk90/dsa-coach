@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable
 
 # Import all command handlers
 from dsa_coach.commands import (
@@ -52,7 +53,7 @@ def main() -> None:
 
     command = sys.argv[1].lower()
 
-    commands = {
+    commands: dict[str, Callable[[], None]] = {
         "start": start.cmd_start,
         "status": status.cmd_status,
         "next": next_quest.cmd_next,

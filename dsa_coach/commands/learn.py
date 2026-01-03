@@ -239,7 +239,7 @@ def cmd_learn(pattern: str | None = None):
 
     ui.print_styled("     4. 🔍 Pick a Specific Problem", "white")
 
-    if has_saved:
+    if has_saved and saved_session:
         saved_date = saved_session.get("saved_at", "")[:10]
         ui.print_styled(f"     5. 📂 Resume Saved Session ({saved_date})", "yellow")
 

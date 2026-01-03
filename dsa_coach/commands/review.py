@@ -1,15 +1,24 @@
 """Review command - request AI code review for current solution."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from dsa_coach.paths import SOLUTIONS_DIR
 from dsa_coach.quests import get_all_quests
 from dsa_coach.storage.sync import SyncDatabase
 from dsa_coach.ui import UI
 
-try:
+if TYPE_CHECKING:
     from rich.console import Console
+
+_console: Console | None
+
+try:
+    from rich.console import Console as RichConsole
     from rich.panel import Panel
 
-    _console = Console()
+    _console = RichConsole()
     _ui = UI(rich_available=True, console=_console)
 except ImportError:
     _console = None

@@ -7,10 +7,14 @@ Uses the same advanced input UX from mentor.py for consistency.
 from __future__ import annotations
 
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rich.console import Console
 
 try:
     from rich import box
-    from rich.console import Console
+    from rich.console import Console as RichConsole
     from rich.markdown import Markdown
     from rich.panel import Panel
     from rich.table import Table
@@ -42,9 +46,11 @@ TERMINAL_WIDTH = int(os.environ.get("COACH_WIDTH", 88))
 class TerminalUI:
     """Rich terminal UI for the coaching experience."""
 
+    console: Console | None
+
     def __init__(self):
         if RICH_AVAILABLE:
-            self.console = Console(width=TERMINAL_WIDTH)
+            self.console = RichConsole(width=TERMINAL_WIDTH)
         else:
             self.console = None
 

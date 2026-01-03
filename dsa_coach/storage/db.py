@@ -721,7 +721,7 @@ class Database:
                 (row["id"],),
             )
             await self.conn.commit()
-            return row["id"]
+            return str(row["id"])
 
         # Create new mistake
         mistake_id = str(uuid.uuid4())
@@ -849,10 +849,11 @@ class Database:
         """Get activity summary for current week."""
         # Get date 7 days ago
         from datetime import timedelta
+        from typing import Any
 
         week_ago = (datetime.now() - timedelta(days=7)).date().isoformat()
 
-        totals = {
+        totals: dict[str, Any] = {
             "sessions": 0,
             "problems_solved": 0,
             "time_mins": 0,

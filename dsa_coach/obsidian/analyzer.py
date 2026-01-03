@@ -26,7 +26,7 @@ def analyze_learning_session(
     Returns:
         Analysis dict with insights, articulation_improvements, key_concepts
     """
-    analysis = {
+    analysis: dict[str, Any] = {
         "pattern": pattern,
         "confidence_gain": confidence_after - confidence_before,
         "message_count": len(messages),

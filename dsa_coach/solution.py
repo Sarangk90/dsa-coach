@@ -75,4 +75,4 @@ def get_solution_path(problem: dict[str, Any]) -> Path:
     pattern_name = problem.get("pattern_name", problem.get("pattern_id", "misc"))
     pattern_dir = pattern_name.replace(" ", "_").replace("&", "and").lower()
     problem_id = problem.get("problem_id", problem.get("id", "unknown"))
-    return paths.SOLUTIONS_DIR / pattern_dir / f"{problem_id}.py"
+    return Path(paths.SOLUTIONS_DIR / pattern_dir / f"{problem_id}.py")

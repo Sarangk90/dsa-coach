@@ -11,7 +11,7 @@ except ImportError:
     _ui = UI(rich_available=False, console=None)
 
 
-def cmd_design(topic: str = None):
+def cmd_design(topic: str | None = None):
     """Start an interactive system design session."""
     _ui.print_styled(
         "\n⚠️  System Design quests are currently disabled/under restructuring.",

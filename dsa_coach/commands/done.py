@@ -78,7 +78,7 @@ def cmd_done(success: bool = True, time_mins: int | None = None):
         concept_id = quest.get("concept_id")
 
         # Get hints used from daily log for today
-        weekly = db.get_weekly_activity()
+        weekly = db.get_weekly_activity("default")
         hints_used = weekly.get("hints_used", 0) if weekly else 0
 
         # Create/update QuestCompletion in database
@@ -224,7 +224,7 @@ def cmd_done(success: bool = True, time_mins: int | None = None):
         confidence = pattern_progress.confidence if pattern_progress else 0
 
         # Display results
-        if ui.rich_available:
+        if ui.rich_available and ui.console:
             ui.console.print("\n[bold green]🎉 VICTORY![/bold green]")
 
             # Show confidence gain

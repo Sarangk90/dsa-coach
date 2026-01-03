@@ -25,13 +25,13 @@ def _load_quests() -> dict:
     return _quests_cache
 
 
-def _find_quest(quest_id: str) -> dict | None:
+def _find_quest(quest_id: str) -> dict[str, str] | None:
     """Find a quest by ID."""
     quests = _load_quests()
 
     for quest in quests.get("quests", []):
         if quest.get("id") == quest_id:
-            return quest
+            return dict(quest)
 
     return None
 

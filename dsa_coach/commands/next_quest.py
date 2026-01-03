@@ -7,7 +7,7 @@ from dsa_coach.storage.sync import SyncDatabase
 from dsa_coach.ui import UI
 
 
-def start_quest(quest: dict, progress: dict, ui: UI = None):
+def start_quest(quest: dict, progress: dict, ui: UI | None = None):
     """Start a specific quest: set as current, create file, show UI.
 
     Note: progress dict is kept for backward compatibility with AI functions,

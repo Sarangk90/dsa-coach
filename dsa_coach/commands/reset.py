@@ -65,8 +65,8 @@ def cmd_reset(argv: list[str] | None = None) -> None:
                 "This will reset ALL pattern progress to 0.", yes=yes
             ):
                 return
-            for pattern in all_patterns:
-                _reset_pattern_progress(db, pattern.pattern_id)
+            for pattern_obj in all_patterns:
+                _reset_pattern_progress(db, pattern_obj.pattern_id)
             print("✅ Reset all pattern progress.")
             return
 

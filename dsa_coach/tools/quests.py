@@ -268,7 +268,7 @@ DIVE Protocol:
 async def mark_quest_complete(
     db: Database,
     success: bool = True,
-    time_minutes: int = None,
+    time_minutes: int | None = None,
     hints_used: int = 0,
     user_id: str = "default",
 ) -> ToolResult:

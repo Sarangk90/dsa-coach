@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rich.console import Console
 
 
 @dataclass(frozen=True)
@@ -12,11 +16,10 @@ class UI:
     """
 
     rich_available: bool
-    console: object | None
+    console: Console | None
 
     def print_styled(self, text: str, style: str = "") -> None:
         if self.rich_available and self.console is not None:
-            # type: ignore[union-attr]
             self.console.print(text, style=style)
         else:
             print(text)
@@ -25,7 +28,6 @@ class UI:
         if self.rich_available and self.console is not None:
             from rich.panel import Panel
 
-            # type: ignore[union-attr]
             self.console.print(Panel(content, title=title, border_style=style))
         else:
             print(f"\n{'=' * 50}")

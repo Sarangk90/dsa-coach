@@ -7,6 +7,8 @@ from dsa_coach.storage.sync import SyncDatabase
 
 
 class PatternManager:
+    patterns_config: dict[str, Any]
+
     def __init__(self):
         self.quests_data = load_json(paths.QUESTS_FILE)
         self.patterns_config = self.quests_data.get("metadata", {}).get("patterns", {})

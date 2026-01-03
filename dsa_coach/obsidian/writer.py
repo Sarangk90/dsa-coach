@@ -33,7 +33,7 @@ def get_vault_path() -> Path | None:
     return path if path.exists() else None
 
 
-def ensure_vault_structure() -> dict[str, Path | None]:
+def ensure_vault_structure() -> dict[str, Path | None | str]:
     """Ensure Patterns/ and Problems/ subdirectories exist.
 
     Returns:

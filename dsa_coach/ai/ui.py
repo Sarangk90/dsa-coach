@@ -5,10 +5,16 @@ from __future__ import annotations
 import os
 import shutil
 import sys
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rich.console import Console as ConsoleType
 
 # Reading width for comfortable text display (80-90 is optimal)
 # Can be overridden via COACH_WIDTH environment variable
 READING_WIDTH = int(os.getenv("COACH_WIDTH", "88"))
+
+console: ConsoleType | None
 
 try:
     from rich.align import Align

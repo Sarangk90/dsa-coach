@@ -101,7 +101,7 @@ async def get_learning_history(
     recent = [c for c in completions if c.completed_at >= cutoff]
 
     # Group by day
-    by_day = {}
+    by_day: dict[str, list[dict[str, str]]] = {}
     for c in recent:
         day_key = c.completed_at.date().isoformat()
         if day_key not in by_day:
