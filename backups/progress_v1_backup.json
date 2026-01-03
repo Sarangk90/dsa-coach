@@ -1,0 +1,136 @@
+{
+  "profile": {
+    "name": "",
+    "started": "2025-12-24T10:43:21.747843",
+    "current_day": 1,
+    "xp": 0,
+    "level": 1,
+    "rank": "Novice",
+    "streak_days": 0,
+    "last_session": "2025-12-24T10:43:21.747843",
+    "current_quest": null,
+    "quest_start_time": null
+  },
+  "pattern_proficiency": {
+    "sliding_window": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "two_pointers": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "prefix_sum": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "hash_map": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "fast_slow_pointers": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "stack": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "linked_list": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "heap": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "merge_intervals": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "backtracking": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "dynamic_programming": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "bfs": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "dfs": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "topological_sort": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "dijkstra": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "binary_search": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "union_find": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "cyclic_sort": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    },
+    "two_heaps": {
+      "attempts": 0,
+      "successes": 0,
+      "avg_time_mins": null,
+      "confidence": 0.0
+    }
+  },
+  "completed_quests": {},
+  "mistakes_log": [],
+  "spaced_repetition_queue": [],
+  "achievements": [],
+  "hints_used": 0,
+  "total_time_mins": 0
+}

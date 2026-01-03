@@ -1,0 +1,1281 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "last_updated": "2025-01-01",
+    "curriculum_modes": {
+      "fast_track": {
+        "name": "Atlassian Sprint (3-Month)",
+        "description": "80 hours intensive for January 2025 Atlassian DSA round",
+        "target_timeline_weeks": "10-12",
+        "total_hours": 80,
+        "total_patterns": 9,
+        "total_problems": 80,
+        "focus": "Highest ROI patterns only"
+      },
+      "complete": {
+        "name": "FAANG Complete Mastery",
+        "description": "400-500 hours comprehensive for Principal-level FAANG",
+        "target_timeline_weeks": "20-25",
+        "total_hours": 425,
+        "total_patterns": 22,
+        "total_problems": 280,
+        "focus": "Complete coverage with advanced patterns"
+      }
+    },
+    "user_profile": {
+      "name": "Sarang",
+      "current_role": "Principal AI Engineer at ThoughtWorks",
+      "target_companies": ["Google", "Meta", "Amazon","Apple", "Microsoft"],
+      "strengths": ["System Design", "Production AI Systems", "14 years experience"],
+      "gaps": ["DSA from scratch"],
+      "timeline": {
+        "immediate": "Google January 2026 DSA round",
+        "medium_term": "FAANG applications in  months"
+      }
+    }
+  },
+  "progress": {
+    "active_mode": "fast_track",
+    "current_pattern_id": null,
+    "current_concept_id": null,
+    "patterns_completed": [],
+    "patterns_in_progress": [],
+    "problems_solved": {},
+    "time_spent_hours": {
+      "total": 0,
+      "by_pattern": {}
+    },
+    "daily_study_log": [],
+    "milestones_achieved": [],
+    "spaced_repetition_queue": [],
+    "last_study_date": null,
+    "streak_days": 0
+  },
+  "curriculum": {
+    "fast_track": [
+      {
+        "pattern_id": "ft_01",
+        "sequence_order": 1,
+        "pattern_name": "Big-O Analysis & Complexity",
+        "tier": "foundation",
+        "prerequisites": [],
+        "unlocks": ["ft_02"],
+        "importance": "Critical",
+        "estimated_time_hours": 6,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Capacity planning for system design",
+          "Understanding time/space trade-offs",
+          "Back-of-envelope calculations"
+        ],
+        "concepts": [
+          {
+            "concept_id": "ft_01_c1",
+            "concept_name": "Time Complexity Analysis",
+            "explanation_goal": "Master O(n), O(log n), O(n^2) analysis for all future problems",
+            "estimated_time_hours": 3,
+            "practice_problems": []
+          },
+          {
+            "concept_id": "ft_01_c2",
+            "concept_name": "Space Complexity & Memory",
+            "explanation_goal": "Understand in-place vs auxiliary space trade-offs",
+            "estimated_time_hours": 3,
+            "practice_problems": []
+          }
+        ],
+        "mastery_criteria": {
+          "can_analyze_time_complexity": true,
+          "can_analyze_space_complexity": true,
+          "understands_tradeoffs": true
+        },
+        "review_schedule_days": [3, 7, 14, 30]
+      },
+      {
+        "pattern_id": "ft_02",
+        "sequence_order": 2,
+        "pattern_name": "Arrays & Hashing",
+        "tier": "must_master",
+        "prerequisites": ["ft_01"],
+        "unlocks": ["ft_03", "ft_04"],
+        "importance": "Critical",
+        "estimated_time_hours": 15,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Consistent Hashing (DynamoDB, Cassandra, Discord)",
+          "Database indexing fundamentals",
+          "In-memory caching (Redis, Memcached)",
+          "Sharding strategies"
+        ],
+        "concepts": [
+          {
+            "concept_id": "ft_02_c1",
+            "concept_name": "Hash Map Operations & Frequency Counting",
+            "explanation_goal": "Master O(1) lookup/insert/delete for complement patterns",
+            "estimated_time_hours": 5,
+            "practice_problems": [
+              {
+                "problem_id": "ft_02_c1_p1",
+                "problem_name": "Two Sum",
+                "difficulty": "Easy",
+                "url": "https://leetcode.com/problems/two-sum",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Foundation pattern: complement lookup using hash map",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Brute Force O(n^2)", "Hash Map O(n)"],
+                "tags": ["hash-map", "complement", "blind-75"]
+              },
+              {
+                "problem_id": "ft_02_c1_p2",
+                "problem_name": "Group Anagrams",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/group-anagrams",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Hash map with custom key generation (sorted string)",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Sort as key O(n*k log k)", "Character count as key O(n*k)"],
+                "tags": ["hash-map", "string", "grouping"]
+              },
+              {
+                "problem_id": "ft_02_c1_p3",
+                "problem_name": "Top K Frequent Elements",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/top-k-frequent-elements",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Frequency counting + heap (bridges to system design: trending)",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Hash map + heap O(n log k)", "Bucket sort O(n)"],
+                "tags": ["hash-map", "frequency", "heap", "top-k"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_02_c2",
+            "concept_name": "Prefix Sum & Subarray Problems",
+            "explanation_goal": "Use cumulative sums for O(n) range queries",
+            "estimated_time_hours": 5,
+            "practice_problems": [
+              {
+                "problem_id": "ft_02_c2_p1",
+                "problem_name": "Subarray Sum Equals K",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/subarray-sum-equals-k",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Prefix sum + hash map: FAANG favorite",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Brute force O(n^2)", "Prefix sum + hash map O(n)"],
+                "tags": ["prefix-sum", "hash-map", "subarray"]
+              },
+              {
+                "problem_id": "ft_02_c2_p2",
+                "problem_name": "Product of Array Except Self",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/product-of-array-except-self",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Prefix/suffix pattern without division; O(1) space",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Prefix + suffix arrays O(n) space", "In-place O(1) space"],
+                "tags": ["prefix-suffix", "array", "in-place"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_02_c3",
+            "concept_name": "In-Place Array Manipulation",
+            "explanation_goal": "Modify arrays without extra space",
+            "estimated_time_hours": 5,
+            "practice_problems": [
+              {
+                "problem_id": "ft_02_c3_p1",
+                "problem_name": "Rotate Image",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/rotate-image",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "2D in-place manipulation; matrix problems",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Transpose + reverse O(n^2)"],
+                "tags": ["matrix", "in-place", "2d-array"]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "solved_two_sum_variants": 2,
+          "understands_prefix_sum": true,
+          "can_use_hashmap_for_optimization": true
+        },
+        "review_schedule_days": [3, 7, 14, 30, 60]
+      },
+      {
+        "pattern_id": "ft_03",
+        "sequence_order": 3,
+        "pattern_name": "Two Pointers",
+        "tier": "must_master",
+        "prerequisites": ["ft_02"],
+        "unlocks": ["ft_04"],
+        "importance": "Critical",
+        "estimated_time_hours": 8,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Merging data streams in distributed systems",
+          "Load balancing algorithms",
+          "Deduplication in storage systems"
+        ],
+        "concepts": [
+          {
+            "concept_id": "ft_03_c1",
+            "concept_name": "Opposite Direction (Converging)",
+            "explanation_goal": "Move pointers from both ends toward center",
+            "estimated_time_hours": 4,
+            "practice_problems": [
+              {
+                "problem_id": "ft_03_c1_p1",
+                "problem_name": "3Sum",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/3sum",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Extends Two Sum to triplets; Blind 75",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Sort + two pointers O(n^2)"],
+                "tags": ["two-pointers", "sorting", "blind-75"]
+              },
+              {
+                "problem_id": "ft_03_c1_p2",
+                "problem_name": "Container With Most Water",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/container-with-most-water",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Greedy + opposite pointers; optimization proof",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Two pointers O(n)"],
+                "tags": ["two-pointers", "greedy", "optimization"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_03_c2",
+            "concept_name": "Same Direction (Fast-Slow)",
+            "explanation_goal": "Use two-speed pointers for cycle detection",
+            "estimated_time_hours": 4,
+            "practice_problems": [
+              {
+                "problem_id": "ft_03_c2_p1",
+                "problem_name": "Linked List Cycle",
+                "difficulty": "Easy",
+                "url": "https://leetcode.com/problems/linked-list-cycle",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Floyd's algorithm; fundamental technique",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Hash set O(n) space", "Fast-slow pointers O(1) space"],
+                "tags": ["linked-list", "fast-slow", "cycle-detection"]
+              },
+              {
+                "problem_id": "ft_03_c2_p2",
+                "problem_name": "Find the Duplicate Number",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/find-the-duplicate-number",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Floyd's on arrays; non-obvious connection",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Floyd's cycle detection O(n)"],
+                "tags": ["array", "cycle-detection", "floyd"]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "understands_converging_pointers": true,
+          "knows_floyd_algorithm": true,
+          "solved_3sum": true
+        },
+        "review_schedule_days": [3, 7, 14, 30]
+      },
+      {
+        "pattern_id": "ft_04",
+        "sequence_order": 4,
+        "pattern_name": "Sliding Window",
+        "tier": "must_master",
+        "prerequisites": ["ft_03"],
+        "unlocks": ["ft_05"],
+        "importance": "Critical",
+        "estimated_time_hours": 10,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Rate Limiting (Token Bucket, Sliding Window Counter - Amazon API Gateway)",
+          "Network congestion control (TCP sliding window)",
+          "Real-time analytics (moving averages)",
+          "API throttling in microservices"
+        ],
+        "concepts": [
+          {
+            "concept_id": "ft_04_c1",
+            "concept_name": "Variable-Size Sliding Window",
+            "explanation_goal": "Expand/shrink window dynamically based on conditions",
+            "estimated_time_hours": 6,
+            "practice_problems": [
+              {
+                "problem_id": "ft_04_c1_p1",
+                "problem_name": "Longest Substring Without Repeating Characters",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/longest-substring-without-repeating-characters",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Classic variable window; Blind 75",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Sliding window + hash set O(n)"],
+                "tags": ["sliding-window", "hash-set", "blind-75"]
+              },
+              {
+                "problem_id": "ft_04_c1_p2",
+                "problem_name": "Minimum Window Substring",
+                "difficulty": "Hard",
+                "url": "https://leetcode.com/problems/minimum-window-substring",
+                "estimated_time_minutes": 60,
+                "reason_for_selection": "Most comprehensive sliding window; frequency tracking",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Sliding window + hash map O(n)"],
+                "tags": ["sliding-window", "hash-map", "hard"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_04_c2",
+            "concept_name": "Fixed-Size Sliding Window",
+            "explanation_goal": "Maintain constant-size window while sliding",
+            "estimated_time_hours": 4,
+            "practice_problems": [
+              {
+                "problem_id": "ft_04_c2_p1",
+                "problem_name": "Permutation in String",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/permutation-in-string",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Fixed window with frequency matching",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Fixed sliding window O(n)"],
+                "tags": ["sliding-window", "frequency", "permutation"]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "solved_longest_substring": true,
+          "understands_expand_shrink": true,
+          "can_track_window_state": true
+        },
+        "review_schedule_days": [3, 7, 14, 30, 60]
+      },
+      {
+        "pattern_id": "ft_05",
+        "sequence_order": 5,
+        "pattern_name": "Binary Search",
+        "tier": "must_master",
+        "prerequisites": ["ft_02"],
+        "unlocks": ["ft_06"],
+        "importance": "Critical",
+        "estimated_time_hours": 12,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Database index lookups (B+ trees)",
+          "Git bisect for debugging",
+          "Load balancing with capacity search",
+          "Resource allocation optimization"
+        ],
+        "concepts": [
+          {
+            "concept_id": "ft_05_c1",
+            "concept_name": "Standard Binary Search",
+            "explanation_goal": "Master template with proper boundary handling",
+            "estimated_time_hours": 4,
+            "practice_problems": [
+              {
+                "problem_id": "ft_05_c1_p1",
+                "problem_name": "Binary Search",
+                "difficulty": "Easy",
+                "url": "https://leetcode.com/problems/binary-search",
+                "estimated_time_minutes": 20,
+                "reason_for_selection": "Template problem; boundary practice",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Binary search O(log n)"],
+                "tags": ["binary-search", "template"]
+              },
+              {
+                "problem_id": "ft_05_c1_p2",
+                "problem_name": "Search in Rotated Sorted Array",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/search-in-rotated-sorted-array",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "FAANG favorite; identify sorted half",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Modified binary search O(log n)"],
+                "tags": ["binary-search", "rotated", "blind-75"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_05_c2",
+            "concept_name": "Binary Search on Answer Space",
+            "explanation_goal": "Search solution space instead of input array",
+            "estimated_time_hours": 8,
+            "practice_problems": [
+              {
+                "problem_id": "ft_05_c2_p1",
+                "problem_name": "Koko Eating Bananas",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/koko-eating-bananas",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Classic answer space pattern",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Binary search on speed O(n log max)"],
+                "tags": ["binary-search", "answer-space"]
+              },
+              {
+                "problem_id": "ft_05_c2_p2",
+                "problem_name": "Capacity To Ship Packages Within D Days",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/capacity-to-ship-packages-within-d-days",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Similar to Koko; feasibility function",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Binary search on capacity O(n log sum)"],
+                "tags": ["binary-search", "answer-space", "feasibility"]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "no_off_by_one_errors": true,
+          "understands_answer_space": true,
+          "solved_rotated_array": true
+        },
+        "review_schedule_days": [3, 7, 14, 30]
+      },
+      {
+        "pattern_id": "ft_06",
+        "sequence_order": 6,
+        "pattern_name": "Recursion Fundamentals",
+        "tier": "must_master",
+        "prerequisites": ["ft_02"],
+        "unlocks": ["ft_07", "ft_08"],
+        "importance": "Critical",
+        "estimated_time_hours": 12,
+        "skip_allowed": false,
+        "warning": "⚠️ CRITICAL GATE: You cannot proceed to Trees or DP without mastering this",
+        "system_design_connections": [
+          "Recursive DNS resolution",
+          "File system tree traversal",
+          "Distributed system partition recursion"
+        ],
+        "concepts": [
+          {
+            "concept_id": "ft_06_c1",
+            "concept_name": "Basic Recursion & Base Cases",
+            "explanation_goal": "Understand call stack, base cases, and recursive patterns",
+            "estimated_time_hours": 6,
+            "practice_problems": [
+              {
+                "problem_id": "ft_06_c1_p1",
+                "problem_name": "Fibonacci Number",
+                "difficulty": "Easy",
+                "url": "https://leetcode.com/problems/fibonacci-number",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Introduces recursion; see exponential time",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Naive recursion O(2^n)", "Memoization O(n)", "Bottom-up O(n)"],
+                "tags": ["recursion", "memoization", "dp-intro"]
+              },
+              {
+                "problem_id": "ft_06_c1_p2",
+                "problem_name": "Climbing Stairs",
+                "difficulty": "Easy",
+                "url": "https://leetcode.com/problems/climbing-stairs",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Fibonacci variant; bridge to DP",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Recursion with memo O(n)"],
+                "tags": ["recursion", "fibonacci", "dp"]
+              },
+              {
+                "problem_id": "ft_06_c1_p3",
+                "problem_name": "Power(x, n)",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/powx-n",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Divide-and-conquer; O(log n) fast exponentiation",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Fast exponentiation O(log n)"],
+                "tags": ["recursion", "divide-conquer", "math"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_06_c2",
+            "concept_name": "Memoization (Top-Down DP)",
+            "explanation_goal": "Cache recursive results to avoid recomputation",
+            "estimated_time_hours": 6,
+            "practice_problems": [
+              {
+                "problem_id": "ft_06_c2_p1",
+                "problem_name": "Decode Ways",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/decode-ways",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Fibonacci with constraints; memoization essential",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Recursion with memo O(n)"],
+                "tags": ["recursion", "memoization", "dp", "string"]
+              },
+              {
+                "problem_id": "ft_06_c2_p2",
+                "problem_name": "Unique Paths",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/unique-paths",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "2D memoization; direct bridge to tabulation",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Recursion with 2D memo O(m*n)", "Bottom-up DP O(m*n)"],
+                "tags": ["recursion", "memoization", "2d-dp", "grid"]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "understands_call_stack": true,
+          "can_identify_base_cases": true,
+          "knows_when_to_memoize": true,
+          "comfortable_with_recursion": true
+        },
+        "review_schedule_days": [3, 7, 14, 30, 60]
+      },
+      {
+        "pattern_id": "ft_07",
+        "sequence_order": 7,
+        "pattern_name": "Trees",
+        "tier": "must_master",
+        "prerequisites": ["ft_06"],
+        "unlocks": ["ft_08"],
+        "importance": "Critical",
+        "estimated_time_hours": 20,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "File system hierarchies",
+          "Organization charts",
+          "Database indexes (B+ trees)",
+          "HTML DOM traversal"
+        ],
+        "concepts": [
+          {
+            "concept_id": "ft_07_c1",
+            "concept_name": "Tree Traversals (DFS)",
+            "explanation_goal": "Master preorder, inorder, postorder recursively",
+            "estimated_time_hours": 5,
+            "practice_problems": [
+              {
+                "problem_id": "ft_07_c1_p1",
+                "problem_name": "Binary Tree Inorder Traversal",
+                "difficulty": "Easy",
+                "url": "https://leetcode.com/problems/binary-tree-inorder-traversal",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Inorder gives sorted for BST",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Recursive O(n)", "Iterative with stack O(n)"],
+                "tags": ["tree", "dfs", "inorder"]
+              },
+              {
+                "problem_id": "ft_07_c1_p2",
+                "problem_name": "Maximum Depth of Binary Tree",
+                "difficulty": "Easy",
+                "url": "https://leetcode.com/problems/maximum-depth-of-binary-tree",
+                "estimated_time_minutes": 20,
+                "reason_for_selection": "Simple recursive pattern",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DFS O(n)", "BFS O(n)"],
+                "tags": ["tree", "dfs", "recursion"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_07_c2",
+            "concept_name": "BST Properties",
+            "explanation_goal": "Leverage BST ordering for optimization",
+            "estimated_time_hours": 6,
+            "practice_problems": [
+              {
+                "problem_id": "ft_07_c2_p1",
+                "problem_name": "Validate Binary Search Tree",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/validate-binary-search-tree",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Common mistake: only checking parent-child; need range",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Inorder traversal O(n)", "Range validation O(n)"],
+                "tags": ["tree", "bst", "validation"]
+              },
+              {
+                "problem_id": "ft_07_c2_p2",
+                "problem_name": "Kth Smallest Element in a BST",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/kth-smallest-element-in-a-bst",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Inorder of BST is sorted; O(k) solution",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Inorder traversal O(n)", "Early stop at kth O(k)"],
+                "tags": ["tree", "bst", "inorder"]
+              },
+              {
+                "problem_id": "ft_07_c2_p3",
+                "problem_name": "Lowest Common Ancestor of BST",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Uses BST property for O(log n)",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["BST property O(h)"],
+                "tags": ["tree", "bst", "lca"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_07_c3",
+            "concept_name": "Path Problems",
+            "explanation_goal": "Find paths with constraints using DFS",
+            "estimated_time_hours": 5,
+            "practice_problems": [
+              {
+                "problem_id": "ft_07_c3_p1",
+                "problem_name": "Path Sum",
+                "difficulty": "Easy",
+                "url": "https://leetcode.com/problems/path-sum",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Basic root-to-leaf path",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DFS O(n)"],
+                "tags": ["tree", "dfs", "path"]
+              },
+              {
+                "problem_id": "ft_07_c3_p2",
+                "problem_name": "Binary Tree Maximum Path Sum",
+                "difficulty": "Hard",
+                "url": "https://leetcode.com/problems/binary-tree-maximum-path-sum",
+                "estimated_time_minutes": 60,
+                "reason_for_selection": "Google favorite; any node-to-node path",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Postorder with global max O(n)"],
+                "tags": ["tree", "dfs", "path", "google"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_07_c4",
+            "concept_name": "Level Order (BFS)",
+            "explanation_goal": "Process tree level by level using queue",
+            "estimated_time_hours": 4,
+            "practice_problems": [
+              {
+                "problem_id": "ft_07_c4_p1",
+                "problem_name": "Binary Tree Level Order Traversal",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/binary-tree-level-order-traversal",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Foundation for all BFS tree problems",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["BFS with queue O(n)"],
+                "tags": ["tree", "bfs", "level-order"]
+              },
+              {
+                "problem_id": "ft_07_c4_p2",
+                "problem_name": "Binary Tree Right Side View",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/binary-tree-right-side-view",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Level order with rightmost selection",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["BFS O(n)", "DFS with level tracking O(n)"],
+                "tags": ["tree", "bfs", "level-order"]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "comfortable_with_recursion_on_trees": true,
+          "knows_all_traversals": true,
+          "understands_bst_properties": true,
+          "solved_validate_bst": true,
+          "solved_max_path_sum": true
+        },
+        "review_schedule_days": [3, 7, 14, 30, 60]
+      },
+      {
+        "pattern_id": "ft_08",
+        "sequence_order": 8,
+        "pattern_name": "Graphs",
+        "tier": "must_master",
+        "prerequisites": ["ft_07"],
+        "unlocks": ["ft_09"],
+        "importance": "Critical",
+        "estimated_time_hours": 25,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Social network friend suggestions",
+          "Distributed systems (Union Find for partition detection)",
+          "Dependency resolution (Topological Sort - npm, pip, gradle)",
+          "Network routing (Dijkstra, BFS)",
+          "Deadlock detection (Cycle detection)"
+        ],
+        "concepts": [
+          {
+            "concept_id": "ft_08_c1",
+            "concept_name": "Graph DFS - Connected Components",
+            "explanation_goal": "Traverse graphs with DFS and track visited nodes",
+            "estimated_time_hours": 6,
+            "practice_problems": [
+              {
+                "problem_id": "ft_08_c1_p1",
+                "problem_name": "Number of Islands",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/number-of-islands",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Perfect DFS intro; implicit graph on grid",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DFS O(m*n)", "BFS O(m*n)", "Union-Find O(m*n)"],
+                "tags": ["graph", "dfs", "grid", "blind-75"]
+              },
+              {
+                "problem_id": "ft_08_c1_p2",
+                "problem_name": "Clone Graph",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/clone-graph",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "DFS with hash map; deep copy pattern",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DFS with hash map O(V+E)", "BFS O(V+E)"],
+                "tags": ["graph", "dfs", "hash-map", "clone"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_08_c2",
+            "concept_name": "Graph BFS - Shortest Paths",
+            "explanation_goal": "Use BFS for shortest paths in unweighted graphs",
+            "estimated_time_hours": 6,
+            "practice_problems": [
+              {
+                "problem_id": "ft_08_c2_p1",
+                "problem_name": "Rotting Oranges",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/rotting-oranges",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Multi-source BFS; time-based spreading",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Multi-source BFS O(m*n)"],
+                "tags": ["graph", "bfs", "multi-source", "grid"]
+              },
+              {
+                "problem_id": "ft_08_c2_p2",
+                "problem_name": "01 Matrix",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/01-matrix",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Multi-source BFS for distance",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Multi-source BFS O(m*n)"],
+                "tags": ["graph", "bfs", "distance", "grid"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_08_c3",
+            "concept_name": "Cycle Detection & Topological Sort",
+            "explanation_goal": "Detect cycles and order DAG nodes",
+            "estimated_time_hours": 7,
+            "practice_problems": [
+              {
+                "problem_id": "ft_08_c3_p1",
+                "problem_name": "Course Schedule",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/course-schedule",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Cycle detection in directed graph; topo sort foundation",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DFS with state O(V+E)", "Kahn's algorithm O(V+E)"],
+                "tags": ["graph", "cycle", "topological-sort", "blind-75"]
+              },
+              {
+                "problem_id": "ft_08_c3_p2",
+                "problem_name": "Course Schedule II",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/course-schedule-ii",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Return topological order; extends cycle detection",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DFS postorder O(V+E)", "Kahn's O(V+E)"],
+                "tags": ["graph", "topological-sort", "dfs"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_08_c4",
+            "concept_name": "Union Find",
+            "explanation_goal": "Track connected components efficiently with path compression",
+            "estimated_time_hours": 6,
+            "practice_problems": [
+              {
+                "problem_id": "ft_08_c4_p1",
+                "problem_name": "Number of Provinces",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/number-of-provinces",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Union-find alternative to DFS; compare approaches",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DFS O(n^2)", "Union-Find O(n^2 * α(n))"],
+                "tags": ["graph", "union-find", "connected-components"]
+              },
+              {
+                "problem_id": "ft_08_c4_p2",
+                "problem_name": "Redundant Connection",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/redundant-connection",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Find edge creating cycle using union-find",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["Union-Find O(E * α(V))"],
+                "tags": ["graph", "union-find", "cycle"]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "comfortable_with_graph_traversal": true,
+          "knows_dfs_and_bfs": true,
+          "understands_cycle_detection": true,
+          "knows_topological_sort": true,
+          "implemented_union_find": true
+        },
+        "review_schedule_days": [3, 7, 14, 30, 60, 90]
+      },
+      {
+        "pattern_id": "ft_09",
+        "sequence_order": 9,
+        "pattern_name": "Dynamic Programming (Core Patterns Only)",
+        "tier": "must_master",
+        "prerequisites": ["ft_06"],
+        "unlocks": [],
+        "importance": "Critical",
+        "estimated_time_hours": 30,
+        "skip_allowed": false,
+        "warning": "🔥 HIGHEST DIFFICULTY: Invest heavily here (383+ problems on LeetCode)",
+        "system_design_connections": [
+          "Resource allocation optimization",
+          "Text diff algorithms (Git uses LCS)",
+          "Database query optimization",
+          "Autocorrect/spell-check (Edit Distance)"
+        ],
+        "concepts": [
+          {
+            "concept_id": "ft_09_c1",
+            "concept_name": "1D Linear DP",
+            "explanation_goal": "State depends on previous 1-2 states",
+            "estimated_time_hours": 10,
+            "practice_problems": [
+              {
+                "problem_id": "ft_09_c1_p1",
+                "problem_name": "House Robber",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/house-robber",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Classic rob-or-skip decision; max of adjacent",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DP O(n)", "DP with O(1) space"],
+                "tags": ["dp", "1d", "linear"]
+              },
+              {
+                "problem_id": "ft_09_c1_p2",
+                "problem_name": "Longest Increasing Subsequence",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/longest-increasing-subsequence",
+                "estimated_time_minutes": 60,
+                "reason_for_selection": "FAANG favorite; O(n^2) DP or O(n log n) binary search",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DP O(n^2)", "DP + Binary Search O(n log n)"],
+                "tags": ["dp", "1d", "lis", "binary-search"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_09_c2",
+            "concept_name": "2D Grid DP",
+            "explanation_goal": "Navigate grids with cumulative values",
+            "estimated_time_hours": 8,
+            "practice_problems": [
+              {
+                "problem_id": "ft_09_c2_p1",
+                "problem_name": "Unique Paths",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/unique-paths",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Simplest 2D DP; dp[i][j] = dp[i-1][j] + dp[i][j-1]",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["2D DP O(m*n)", "1D DP O(n)"],
+                "tags": ["dp", "2d", "grid"]
+              },
+              {
+                "problem_id": "ft_09_c2_p2",
+                "problem_name": "Minimum Path Sum",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/minimum-path-sum",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Add cell values to path costs",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["2D DP O(m*n)", "In-place O(1) space"],
+                "tags": ["dp", "2d", "grid", "path"]
+              }
+            ]
+          },
+          {
+            "concept_id": "ft_09_c3",
+            "concept_name": "Knapsack Patterns",
+            "explanation_goal": "Optimize selection with capacity constraints",
+            "estimated_time_hours": 12,
+            "practice_problems": [
+              {
+                "problem_id": "ft_09_c3_p1",
+                "problem_name": "Coin Change",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/coin-change",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Unbounded knapsack; min coins for target; Blind 75",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DP O(amount * coins)", "BFS O(amount * coins)"],
+                "tags": ["dp", "knapsack", "unbounded", "blind-75"]
+              },
+              {
+                "problem_id": "ft_09_c3_p2",
+                "problem_name": "Partition Equal Subset Sum",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/partition-equal-subset-sum",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "0/1 knapsack; subset sum = total/2",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DP O(n * sum)", "DP with O(sum) space"],
+                "tags": ["dp", "knapsack", "0-1", "subset-sum"]
+              },
+              {
+                "problem_id": "ft_09_c3_p3",
+                "problem_name": "Target Sum",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/target-sum",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Transforms to subset sum; +/- assignment",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": ["DP O(n * sum)", "Memoization O(n * sum)"],
+                "tags": ["dp", "knapsack", "subset-sum", "transform"]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "identifies_dp_problems": true,
+          "knows_top_down_vs_bottom_up": true,
+          "solved_house_robber": true,
+          "solved_coin_change": true,
+          "comfortable_with_2d_dp": true
+        },
+        "review_schedule_days": [3, 7, 14, 30, 60, 90, 120]
+      }
+    ],
+    "complete": [
+      {
+        "note": "Complete curriculum includes all 22 patterns with full problem sets",
+        "includes_from_fast_track": "All fast_track patterns plus:",
+        "additional_patterns": [
+          "Linked Lists (dedicated)",
+          "Stacks & Queues (separate)",
+          "Backtracking (full)",
+          "Heaps (full)",
+          "Greedy Algorithms",
+          "Tries",
+          "Intervals",
+          "Bit Manipulation",
+          "String Manipulation",
+          "Advanced Patterns (Monotonic Stack/Queue, Prefix Sum variants)",
+          "Design Problems (LRU, LFU, specialized structures)",
+          "DP Advanced (State Machine, DP on Trees, Bitmask DP)"
+        ],
+        "reference": "See dsa_curriculum_complete.json for full curriculum"
+      }
+    ]
+  },
+  "agent_instructions": {
+    "pattern_unlocking_logic": {
+      "description": "Agent must enforce prerequisites before unlocking next pattern",
+      "rules": [
+        "Check prerequisites array - all must be in progress.patterns_completed",
+        "If prerequisites not met, suggest completing those first",
+        "If all prerequisites met, pattern is unlocked and can be started",
+        "Cannot skip patterns marked skip_allowed: false"
+      ]
+    },
+    "problem_progression_logic": {
+      "description": "Agent guides through problems in order within each concept",
+      "rules": [
+        "Present problems in sequence within concept",
+        "Mark problem as completed when user confirms solution",
+        "Track attempts and time spent",
+        "Suggest moving to next problem after 45 minutes if stuck",
+        "Recommend reviewing previous problems if user struggles with 3+ in a row"
+      ]
+    },
+    "spaced_repetition_logic": {
+      "description": "Agent schedules review sessions based on review_schedule_days",
+      "rules": [
+        "After completing a pattern, add to spaced_repetition_queue",
+        "Each pattern has review_schedule_days array [3, 7, 14, 30, 60, 90, 120]",
+        "On day N after completion, prompt user to review 2-3 key problems from that pattern",
+        "Track review sessions in progress.daily_study_log",
+        "Skip repetitions for patterns with mastery_criteria fully met"
+      ]
+    },
+    "mastery_assessment": {
+      "description": "Agent checks mastery_criteria before marking pattern complete",
+      "rules": [
+        "Review all items in mastery_criteria object",
+        "For boolean criteria, confirm with user or check problem completion",
+        "For numeric criteria (e.g., solved_two_sum_variants: 2), count completed problems",
+        "Pattern is not considered complete until all mastery_criteria are met",
+        "Agent can suggest additional problems if mastery criteria not met"
+      ]
+    },
+    "dashboard_metrics": {
+      "description": "Metrics agent should calculate for progress dashboard",
+      "metrics": [
+        {
+          "metric": "overall_completion_percentage",
+          "calculation": "(patterns_completed.length / total_patterns) * 100"
+        },
+        {
+          "metric": "hours_invested",
+          "calculation": "sum(progress.time_spent_hours.by_pattern)"
+        },
+        {
+          "metric": "hours_remaining",
+          "calculation": "mode.total_hours - hours_invested"
+        },
+        {
+          "metric": "problems_solved_count",
+          "calculation": "count(problems where is_completed: true)"
+        },
+        {
+          "metric": "current_streak_days",
+          "calculation": "progress.streak_days"
+        },
+        {
+          "metric": "next_review_due",
+          "calculation": "earliest date in spaced_repetition_queue"
+        },
+        {
+          "metric": "patterns_unlocked",
+          "calculation": "patterns where all prerequisites in patterns_completed"
+        },
+        {
+          "metric": "estimated_completion_date",
+          "calculation": "today + (hours_remaining / avg_hours_per_day)"
+        }
+      ]
+    },
+    "daily_study_session_flow": {
+      "description": "Agent's recommended flow for each study session",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Check if any reviews are due from spaced_repetition_queue",
+          "if_yes": "Present 2-3 problems from that pattern for review",
+          "if_no": "Proceed to step 2"
+        },
+        {
+          "step": 2,
+          "action": "Identify current pattern and concept in progress",
+          "display": "Show pattern name, concept name, estimated time remaining"
+        },
+        {
+          "step": 3,
+          "action": "Present next problem in sequence",
+          "display": "Problem name, difficulty, URL, reason_for_selection, estimated_time"
+        },
+        {
+          "step": 4,
+          "action": "After problem completion, log time spent and mark completed"
+        },
+        {
+          "step": 5,
+          "action": "Check if concept is complete (all problems solved)",
+          "if_yes": "Move to next concept or pattern"
+        },
+        {
+          "step": 6,
+          "action": "Check if pattern is complete (all concepts done + mastery_criteria met)",
+          "if_yes": "Add to patterns_completed, add to spaced_repetition_queue, unlock dependent patterns"
+        },
+        {
+          "step": 7,
+          "action": "Update dashboard metrics and show progress"
+        }
+      ]
+    },
+    "motivational_triggers": {
+      "description": "Agent provides encouragement at key milestones",
+      "triggers": [
+        {
+          "trigger": "pattern_completed",
+          "message": "🎉 Pattern complete! You've unlocked: {system_design_connections}. This directly maps to real-world systems you know!"
+        },
+        {
+          "trigger": "tier_completed",
+          "message": "🔥 Tier {tier} complete! You've mastered the {tier} patterns. {patterns_remaining} patterns to go!"
+        },
+        {
+          "trigger": "50_percent_complete",
+          "message": "🚀 Halfway there! You've invested {hours} hours and solved {problems} problems. Keep the momentum!"
+        },
+        {
+          "trigger": "recursion_mastery",
+          "message": "⚡ CRITICAL GATE PASSED: You've mastered recursion. Trees, DP, and Backtracking are now unlocked!"
+        },
+        {
+          "trigger": "dp_started",
+          "message": "🧠 DP is the BOSS pattern. This will take time, but mastering this is what separates Senior from Principal engineers."
+        },
+        {
+          "trigger": "streak_milestone",
+          "message": "🔥 {streak_days}-day streak! Consistency beats intensity in DSA mastery."
+        }
+      ]
+    },
+    "pivot_to_complete_mode": {
+      "description": "When to suggest switching from fast_track to complete mode",
+      "conditions": [
+        "User completes fast_track (all 9 patterns)",
+        "User explicitly requests more depth"
+      ],
+      "action": "Agent suggests: 'You've completed the Fast Track! Ready for complete mastery? I'll add 13 more patterns including Backtracking, Heaps, Tries, and Advanced Patterns.'"
+    }
+  },
+  "dashboard_config": {
+    "primary_view": {
+      "title": "DSA Mastery Dashboard",
+      "widgets": [
+        {
+          "widget": "progress_ring",
+          "data": "overall_completion_percentage",
+          "label": "Overall Progress"
+        },
+        {
+          "widget": "stat_card",
+          "data": "hours_invested / mode.total_hours",
+          "label": "Time Invested"
+        },
+        {
+          "widget": "stat_card",
+          "data": "problems_solved_count / mode.total_problems",
+          "label": "Problems Solved"
+        },
+        {
+          "widget": "stat_card",
+          "data": "current_streak_days",
+          "label": "Current Streak"
+        },
+        {
+          "widget": "pattern_list",
+          "data": "curriculum[active_mode]",
+          "columns": ["pattern_name", "status", "completion_percentage", "time_spent"],
+          "status_legend": {
+            "locked": "🔒 Prerequisites not met",
+            "unlocked": "🔓 Ready to start",
+            "in_progress": "⏳ In progress",
+            "completed": "✅ Mastered"
+          }
+        },
+        {
+          "widget": "timeline",
+          "data": "estimated_completion_date",
+          "label": "Projected Finish Date"
+        },
+        {
+          "widget": "upcoming_reviews",
+          "data": "spaced_repetition_queue",
+          "label": "Next Reviews",
+          "display": "Next 5 reviews due"
+        }
+      ]
+    },
+    "pattern_detail_view": {
+      "title": "{pattern_name} - Deep Dive",
+      "widgets": [
+        {
+          "widget": "concept_list",
+          "data": "concepts",
+          "columns": ["concept_name", "problems_completed", "time_spent", "status"]
+        },
+        {
+          "widget": "system_design_callout",
+          "data": "system_design_connections",
+          "label": "🎯 How This Connects to Your System Design Knowledge"
+        },
+        {
+          "widget": "mastery_checklist",
+          "data": "mastery_criteria",
+          "label": "Mastery Criteria"
+        },
+        {
+          "widget": "problem_history",
+          "data": "concepts[].practice_problems",
+          "columns": ["problem_name", "difficulty", "attempts", "last_attempted", "status"]
+        }
+      ]
+    }
+  }
+}

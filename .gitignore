@@ -1,0 +1,44 @@
+# Environment and secrets
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+.cursorrules
+*.swp
+*.swo
+*~
+
+# Claude internal docs
+.claude/
+
+# Project specific - User data (never commit)
+progress.json
+coach.db
+solutions/
+conversations/
+
+# OS
+.DS_Store
+Thumbs.db
+
