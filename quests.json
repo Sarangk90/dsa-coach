@@ -25,9 +25,21 @@
     "user_profile": {
       "name": "Sarang",
       "current_role": "Principal AI Engineer at ThoughtWorks",
-      "target_companies": ["Google", "Meta", "Amazon","Apple", "Microsoft"],
-      "strengths": ["System Design", "Production AI Systems", "14 years experience"],
-      "gaps": ["DSA from scratch"],
+      "target_companies": [
+        "Google",
+        "Meta",
+        "Amazon",
+        "Apple",
+        "Microsoft"
+      ],
+      "strengths": [
+        "System Design",
+        "Production AI Systems",
+        "14 years experience"
+      ],
+      "gaps": [
+        "DSA from scratch"
+      ],
       "timeline": {
         "immediate": "Google January 2026 DSA round",
         "medium_term": "FAANG applications in  months"
@@ -54,12 +66,14 @@
   "curriculum": {
     "fast_track": [
       {
-        "pattern_id": "ft_01",
+        "pattern_id": "big_o_analysis",
         "sequence_order": 1,
         "pattern_name": "Big-O Analysis & Complexity",
         "tier": "foundation",
         "prerequisites": [],
-        "unlocks": ["ft_02"],
+        "unlocks": [
+          "arrays_hashing"
+        ],
         "importance": "Critical",
         "estimated_time_hours": 6,
         "skip_allowed": false,
@@ -70,14 +84,14 @@
         ],
         "concepts": [
           {
-            "concept_id": "ft_01_c1",
+            "concept_id": "big_o_analysis_time_complexity",
             "concept_name": "Time Complexity Analysis",
             "explanation_goal": "Master O(n), O(log n), O(n^2) analysis for all future problems",
             "estimated_time_hours": 3,
             "practice_problems": []
           },
           {
-            "concept_id": "ft_01_c2",
+            "concept_id": "big_o_analysis_space_complexity",
             "concept_name": "Space Complexity & Memory",
             "explanation_goal": "Understand in-place vs auxiliary space trade-offs",
             "estimated_time_hours": 3,
@@ -89,15 +103,25 @@
           "can_analyze_space_complexity": true,
           "understands_tradeoffs": true
         },
-        "review_schedule_days": [3, 7, 14, 30]
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30
+        ]
       },
       {
-        "pattern_id": "ft_02",
+        "pattern_id": "arrays_hashing",
         "sequence_order": 2,
         "pattern_name": "Arrays & Hashing",
         "tier": "must_master",
-        "prerequisites": ["ft_01"],
-        "unlocks": ["ft_03", "ft_04"],
+        "prerequisites": [
+          "big_o_analysis"
+        ],
+        "unlocks": [
+          "two_pointers",
+          "sliding_window"
+        ],
         "importance": "Critical",
         "estimated_time_hours": 15,
         "skip_allowed": false,
@@ -109,13 +133,13 @@
         ],
         "concepts": [
           {
-            "concept_id": "ft_02_c1",
+            "concept_id": "arrays_hashing_hash_map_operations",
             "concept_name": "Hash Map Operations & Frequency Counting",
             "explanation_goal": "Master O(1) lookup/insert/delete for complement patterns",
             "estimated_time_hours": 5,
             "practice_problems": [
               {
-                "problem_id": "ft_02_c1_p1",
+                "problem_id": "arrays_hashing_two_sum",
                 "problem_name": "Two Sum",
                 "difficulty": "Easy",
                 "url": "https://leetcode.com/problems/two-sum",
@@ -123,11 +147,18 @@
                 "reason_for_selection": "Foundation pattern: complement lookup using hash map",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Brute Force O(n^2)", "Hash Map O(n)"],
-                "tags": ["hash-map", "complement", "blind-75"]
+                "solution_approaches": [
+                  "Brute Force O(n^2)",
+                  "Hash Map O(n)"
+                ],
+                "tags": [
+                  "hash-map",
+                  "complement",
+                  "blind-75"
+                ]
               },
               {
-                "problem_id": "ft_02_c1_p2",
+                "problem_id": "arrays_hashing_group_anagrams",
                 "problem_name": "Group Anagrams",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/group-anagrams",
@@ -135,11 +166,18 @@
                 "reason_for_selection": "Hash map with custom key generation (sorted string)",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Sort as key O(n*k log k)", "Character count as key O(n*k)"],
-                "tags": ["hash-map", "string", "grouping"]
+                "solution_approaches": [
+                  "Sort as key O(n*k log k)",
+                  "Character count as key O(n*k)"
+                ],
+                "tags": [
+                  "hash-map",
+                  "string",
+                  "grouping"
+                ]
               },
               {
-                "problem_id": "ft_02_c1_p3",
+                "problem_id": "arrays_hashing_top_k_frequent_elements",
                 "problem_name": "Top K Frequent Elements",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/top-k-frequent-elements",
@@ -147,19 +185,27 @@
                 "reason_for_selection": "Frequency counting + heap (bridges to system design: trending)",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Hash map + heap O(n log k)", "Bucket sort O(n)"],
-                "tags": ["hash-map", "frequency", "heap", "top-k"]
+                "solution_approaches": [
+                  "Hash map + heap O(n log k)",
+                  "Bucket sort O(n)"
+                ],
+                "tags": [
+                  "hash-map",
+                  "frequency",
+                  "heap",
+                  "top-k"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_02_c2",
+            "concept_id": "arrays_hashing_prefix_sum",
             "concept_name": "Prefix Sum & Subarray Problems",
             "explanation_goal": "Use cumulative sums for O(n) range queries",
             "estimated_time_hours": 5,
             "practice_problems": [
               {
-                "problem_id": "ft_02_c2_p1",
+                "problem_id": "arrays_hashing_subarray_sum_equals_k",
                 "problem_name": "Subarray Sum Equals K",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/subarray-sum-equals-k",
@@ -167,11 +213,18 @@
                 "reason_for_selection": "Prefix sum + hash map: FAANG favorite",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Brute force O(n^2)", "Prefix sum + hash map O(n)"],
-                "tags": ["prefix-sum", "hash-map", "subarray"]
+                "solution_approaches": [
+                  "Brute force O(n^2)",
+                  "Prefix sum + hash map O(n)"
+                ],
+                "tags": [
+                  "prefix-sum",
+                  "hash-map",
+                  "subarray"
+                ]
               },
               {
-                "problem_id": "ft_02_c2_p2",
+                "problem_id": "arrays_hashing_product_of_array_except_self",
                 "problem_name": "Product of Array Except Self",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/product-of-array-except-self",
@@ -179,19 +232,26 @@
                 "reason_for_selection": "Prefix/suffix pattern without division; O(1) space",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Prefix + suffix arrays O(n) space", "In-place O(1) space"],
-                "tags": ["prefix-suffix", "array", "in-place"]
+                "solution_approaches": [
+                  "Prefix + suffix arrays O(n) space",
+                  "In-place O(1) space"
+                ],
+                "tags": [
+                  "prefix-suffix",
+                  "array",
+                  "in-place"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_02_c3",
+            "concept_id": "arrays_hashing_in_place_manipulation",
             "concept_name": "In-Place Array Manipulation",
             "explanation_goal": "Modify arrays without extra space",
             "estimated_time_hours": 5,
             "practice_problems": [
               {
-                "problem_id": "ft_02_c3_p1",
+                "problem_id": "arrays_hashing_rotate_image",
                 "problem_name": "Rotate Image",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/rotate-image",
@@ -199,8 +259,14 @@
                 "reason_for_selection": "2D in-place manipulation; matrix problems",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Transpose + reverse O(n^2)"],
-                "tags": ["matrix", "in-place", "2d-array"]
+                "solution_approaches": [
+                  "Transpose + reverse O(n^2)"
+                ],
+                "tags": [
+                  "matrix",
+                  "in-place",
+                  "2d-array"
+                ]
               }
             ]
           }
@@ -210,15 +276,25 @@
           "understands_prefix_sum": true,
           "can_use_hashmap_for_optimization": true
         },
-        "review_schedule_days": [3, 7, 14, 30, 60]
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30,
+          60
+        ]
       },
       {
-        "pattern_id": "ft_03",
+        "pattern_id": "two_pointers",
         "sequence_order": 3,
         "pattern_name": "Two Pointers",
         "tier": "must_master",
-        "prerequisites": ["ft_02"],
-        "unlocks": ["ft_04"],
+        "prerequisites": [
+          "arrays_hashing"
+        ],
+        "unlocks": [
+          "sliding_window"
+        ],
         "importance": "Critical",
         "estimated_time_hours": 8,
         "skip_allowed": false,
@@ -229,13 +305,13 @@
         ],
         "concepts": [
           {
-            "concept_id": "ft_03_c1",
+            "concept_id": "two_pointers_opposite_direction",
             "concept_name": "Opposite Direction (Converging)",
             "explanation_goal": "Move pointers from both ends toward center",
             "estimated_time_hours": 4,
             "practice_problems": [
               {
-                "problem_id": "ft_03_c1_p1",
+                "problem_id": "two_pointers_3sum",
                 "problem_name": "3Sum",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/3sum",
@@ -243,11 +319,17 @@
                 "reason_for_selection": "Extends Two Sum to triplets; Blind 75",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Sort + two pointers O(n^2)"],
-                "tags": ["two-pointers", "sorting", "blind-75"]
+                "solution_approaches": [
+                  "Sort + two pointers O(n^2)"
+                ],
+                "tags": [
+                  "two-pointers",
+                  "sorting",
+                  "blind-75"
+                ]
               },
               {
-                "problem_id": "ft_03_c1_p2",
+                "problem_id": "two_pointers_container_with_most_water",
                 "problem_name": "Container With Most Water",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/container-with-most-water",
@@ -255,19 +337,25 @@
                 "reason_for_selection": "Greedy + opposite pointers; optimization proof",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Two pointers O(n)"],
-                "tags": ["two-pointers", "greedy", "optimization"]
+                "solution_approaches": [
+                  "Two pointers O(n)"
+                ],
+                "tags": [
+                  "two-pointers",
+                  "greedy",
+                  "optimization"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_03_c2",
+            "concept_id": "two_pointers_same_direction",
             "concept_name": "Same Direction (Fast-Slow)",
             "explanation_goal": "Use two-speed pointers for cycle detection",
             "estimated_time_hours": 4,
             "practice_problems": [
               {
-                "problem_id": "ft_03_c2_p1",
+                "problem_id": "two_pointers_linked_list_cycle",
                 "problem_name": "Linked List Cycle",
                 "difficulty": "Easy",
                 "url": "https://leetcode.com/problems/linked-list-cycle",
@@ -275,11 +363,18 @@
                 "reason_for_selection": "Floyd's algorithm; fundamental technique",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Hash set O(n) space", "Fast-slow pointers O(1) space"],
-                "tags": ["linked-list", "fast-slow", "cycle-detection"]
+                "solution_approaches": [
+                  "Hash set O(n) space",
+                  "Fast-slow pointers O(1) space"
+                ],
+                "tags": [
+                  "linked-list",
+                  "fast-slow",
+                  "cycle-detection"
+                ]
               },
               {
-                "problem_id": "ft_03_c2_p2",
+                "problem_id": "two_pointers_find_duplicate_number",
                 "problem_name": "Find the Duplicate Number",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/find-the-duplicate-number",
@@ -287,8 +382,14 @@
                 "reason_for_selection": "Floyd's on arrays; non-obvious connection",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Floyd's cycle detection O(n)"],
-                "tags": ["array", "cycle-detection", "floyd"]
+                "solution_approaches": [
+                  "Floyd's cycle detection O(n)"
+                ],
+                "tags": [
+                  "array",
+                  "cycle-detection",
+                  "floyd"
+                ]
               }
             ]
           }
@@ -298,15 +399,24 @@
           "knows_floyd_algorithm": true,
           "solved_3sum": true
         },
-        "review_schedule_days": [3, 7, 14, 30]
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30
+        ]
       },
       {
-        "pattern_id": "ft_04",
+        "pattern_id": "sliding_window",
         "sequence_order": 4,
         "pattern_name": "Sliding Window",
         "tier": "must_master",
-        "prerequisites": ["ft_03"],
-        "unlocks": ["ft_05"],
+        "prerequisites": [
+          "two_pointers"
+        ],
+        "unlocks": [
+          "binary_search"
+        ],
         "importance": "Critical",
         "estimated_time_hours": 10,
         "skip_allowed": false,
@@ -318,13 +428,13 @@
         ],
         "concepts": [
           {
-            "concept_id": "ft_04_c1",
+            "concept_id": "sliding_window_variable_size",
             "concept_name": "Variable-Size Sliding Window",
             "explanation_goal": "Expand/shrink window dynamically based on conditions",
             "estimated_time_hours": 6,
             "practice_problems": [
               {
-                "problem_id": "ft_04_c1_p1",
+                "problem_id": "sliding_window_longest_substring_without_repeating",
                 "problem_name": "Longest Substring Without Repeating Characters",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/longest-substring-without-repeating-characters",
@@ -332,11 +442,17 @@
                 "reason_for_selection": "Classic variable window; Blind 75",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Sliding window + hash set O(n)"],
-                "tags": ["sliding-window", "hash-set", "blind-75"]
+                "solution_approaches": [
+                  "Sliding window + hash set O(n)"
+                ],
+                "tags": [
+                  "sliding-window",
+                  "hash-set",
+                  "blind-75"
+                ]
               },
               {
-                "problem_id": "ft_04_c1_p2",
+                "problem_id": "sliding_window_minimum_window_substring",
                 "problem_name": "Minimum Window Substring",
                 "difficulty": "Hard",
                 "url": "https://leetcode.com/problems/minimum-window-substring",
@@ -344,19 +460,25 @@
                 "reason_for_selection": "Most comprehensive sliding window; frequency tracking",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Sliding window + hash map O(n)"],
-                "tags": ["sliding-window", "hash-map", "hard"]
+                "solution_approaches": [
+                  "Sliding window + hash map O(n)"
+                ],
+                "tags": [
+                  "sliding-window",
+                  "hash-map",
+                  "hard"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_04_c2",
+            "concept_id": "sliding_window_fixed_size",
             "concept_name": "Fixed-Size Sliding Window",
             "explanation_goal": "Maintain constant-size window while sliding",
             "estimated_time_hours": 4,
             "practice_problems": [
               {
-                "problem_id": "ft_04_c2_p1",
+                "problem_id": "sliding_window_permutation_in_string",
                 "problem_name": "Permutation in String",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/permutation-in-string",
@@ -364,8 +486,14 @@
                 "reason_for_selection": "Fixed window with frequency matching",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Fixed sliding window O(n)"],
-                "tags": ["sliding-window", "frequency", "permutation"]
+                "solution_approaches": [
+                  "Fixed sliding window O(n)"
+                ],
+                "tags": [
+                  "sliding-window",
+                  "frequency",
+                  "permutation"
+                ]
               }
             ]
           }
@@ -375,15 +503,25 @@
           "understands_expand_shrink": true,
           "can_track_window_state": true
         },
-        "review_schedule_days": [3, 7, 14, 30, 60]
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30,
+          60
+        ]
       },
       {
-        "pattern_id": "ft_05",
+        "pattern_id": "binary_search",
         "sequence_order": 5,
         "pattern_name": "Binary Search",
         "tier": "must_master",
-        "prerequisites": ["ft_02"],
-        "unlocks": ["ft_06"],
+        "prerequisites": [
+          "arrays_hashing"
+        ],
+        "unlocks": [
+          "recursion"
+        ],
         "importance": "Critical",
         "estimated_time_hours": 12,
         "skip_allowed": false,
@@ -395,13 +533,13 @@
         ],
         "concepts": [
           {
-            "concept_id": "ft_05_c1",
+            "concept_id": "binary_search_standard",
             "concept_name": "Standard Binary Search",
             "explanation_goal": "Master template with proper boundary handling",
             "estimated_time_hours": 4,
             "practice_problems": [
               {
-                "problem_id": "ft_05_c1_p1",
+                "problem_id": "binary_search_basic",
                 "problem_name": "Binary Search",
                 "difficulty": "Easy",
                 "url": "https://leetcode.com/problems/binary-search",
@@ -409,11 +547,16 @@
                 "reason_for_selection": "Template problem; boundary practice",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Binary search O(log n)"],
-                "tags": ["binary-search", "template"]
+                "solution_approaches": [
+                  "Binary search O(log n)"
+                ],
+                "tags": [
+                  "binary-search",
+                  "template"
+                ]
               },
               {
-                "problem_id": "ft_05_c1_p2",
+                "problem_id": "binary_search_rotated_sorted_array",
                 "problem_name": "Search in Rotated Sorted Array",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/search-in-rotated-sorted-array",
@@ -421,19 +564,25 @@
                 "reason_for_selection": "FAANG favorite; identify sorted half",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Modified binary search O(log n)"],
-                "tags": ["binary-search", "rotated", "blind-75"]
+                "solution_approaches": [
+                  "Modified binary search O(log n)"
+                ],
+                "tags": [
+                  "binary-search",
+                  "rotated",
+                  "blind-75"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_05_c2",
+            "concept_id": "binary_search_answer_space",
             "concept_name": "Binary Search on Answer Space",
             "explanation_goal": "Search solution space instead of input array",
             "estimated_time_hours": 8,
             "practice_problems": [
               {
-                "problem_id": "ft_05_c2_p1",
+                "problem_id": "binary_search_koko_eating_bananas",
                 "problem_name": "Koko Eating Bananas",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/koko-eating-bananas",
@@ -441,11 +590,16 @@
                 "reason_for_selection": "Classic answer space pattern",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Binary search on speed O(n log max)"],
-                "tags": ["binary-search", "answer-space"]
+                "solution_approaches": [
+                  "Binary search on speed O(n log max)"
+                ],
+                "tags": [
+                  "binary-search",
+                  "answer-space"
+                ]
               },
               {
-                "problem_id": "ft_05_c2_p2",
+                "problem_id": "binary_search_capacity_ship_packages",
                 "problem_name": "Capacity To Ship Packages Within D Days",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/capacity-to-ship-packages-within-d-days",
@@ -453,8 +607,14 @@
                 "reason_for_selection": "Similar to Koko; feasibility function",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Binary search on capacity O(n log sum)"],
-                "tags": ["binary-search", "answer-space", "feasibility"]
+                "solution_approaches": [
+                  "Binary search on capacity O(n log sum)"
+                ],
+                "tags": [
+                  "binary-search",
+                  "answer-space",
+                  "feasibility"
+                ]
               }
             ]
           }
@@ -464,19 +624,29 @@
           "understands_answer_space": true,
           "solved_rotated_array": true
         },
-        "review_schedule_days": [3, 7, 14, 30]
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30
+        ]
       },
       {
-        "pattern_id": "ft_06",
+        "pattern_id": "recursion",
         "sequence_order": 6,
         "pattern_name": "Recursion Fundamentals",
         "tier": "must_master",
-        "prerequisites": ["ft_02"],
-        "unlocks": ["ft_07", "ft_08"],
+        "prerequisites": [
+          "arrays_hashing"
+        ],
+        "unlocks": [
+          "trees",
+          "graphs"
+        ],
         "importance": "Critical",
         "estimated_time_hours": 12,
         "skip_allowed": false,
-        "warning": "⚠️ CRITICAL GATE: You cannot proceed to Trees or DP without mastering this",
+        "warning": "\u26a0\ufe0f CRITICAL GATE: You cannot proceed to Trees or DP without mastering this",
         "system_design_connections": [
           "Recursive DNS resolution",
           "File system tree traversal",
@@ -484,13 +654,13 @@
         ],
         "concepts": [
           {
-            "concept_id": "ft_06_c1",
+            "concept_id": "recursion_basic",
             "concept_name": "Basic Recursion & Base Cases",
             "explanation_goal": "Understand call stack, base cases, and recursive patterns",
             "estimated_time_hours": 6,
             "practice_problems": [
               {
-                "problem_id": "ft_06_c1_p1",
+                "problem_id": "recursion_fibonacci",
                 "problem_name": "Fibonacci Number",
                 "difficulty": "Easy",
                 "url": "https://leetcode.com/problems/fibonacci-number",
@@ -498,11 +668,19 @@
                 "reason_for_selection": "Introduces recursion; see exponential time",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Naive recursion O(2^n)", "Memoization O(n)", "Bottom-up O(n)"],
-                "tags": ["recursion", "memoization", "dp-intro"]
+                "solution_approaches": [
+                  "Naive recursion O(2^n)",
+                  "Memoization O(n)",
+                  "Bottom-up O(n)"
+                ],
+                "tags": [
+                  "recursion",
+                  "memoization",
+                  "dp-intro"
+                ]
               },
               {
-                "problem_id": "ft_06_c1_p2",
+                "problem_id": "recursion_climbing_stairs",
                 "problem_name": "Climbing Stairs",
                 "difficulty": "Easy",
                 "url": "https://leetcode.com/problems/climbing-stairs",
@@ -510,11 +688,17 @@
                 "reason_for_selection": "Fibonacci variant; bridge to DP",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Recursion with memo O(n)"],
-                "tags": ["recursion", "fibonacci", "dp"]
+                "solution_approaches": [
+                  "Recursion with memo O(n)"
+                ],
+                "tags": [
+                  "recursion",
+                  "fibonacci",
+                  "dp"
+                ]
               },
               {
-                "problem_id": "ft_06_c1_p3",
+                "problem_id": "recursion_power_x_n",
                 "problem_name": "Power(x, n)",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/powx-n",
@@ -522,19 +706,25 @@
                 "reason_for_selection": "Divide-and-conquer; O(log n) fast exponentiation",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Fast exponentiation O(log n)"],
-                "tags": ["recursion", "divide-conquer", "math"]
+                "solution_approaches": [
+                  "Fast exponentiation O(log n)"
+                ],
+                "tags": [
+                  "recursion",
+                  "divide-conquer",
+                  "math"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_06_c2",
+            "concept_id": "recursion_memoization",
             "concept_name": "Memoization (Top-Down DP)",
             "explanation_goal": "Cache recursive results to avoid recomputation",
             "estimated_time_hours": 6,
             "practice_problems": [
               {
-                "problem_id": "ft_06_c2_p1",
+                "problem_id": "recursion_decode_ways",
                 "problem_name": "Decode Ways",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/decode-ways",
@@ -542,11 +732,18 @@
                 "reason_for_selection": "Fibonacci with constraints; memoization essential",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Recursion with memo O(n)"],
-                "tags": ["recursion", "memoization", "dp", "string"]
+                "solution_approaches": [
+                  "Recursion with memo O(n)"
+                ],
+                "tags": [
+                  "recursion",
+                  "memoization",
+                  "dp",
+                  "string"
+                ]
               },
               {
-                "problem_id": "ft_06_c2_p2",
+                "problem_id": "recursion_unique_paths",
                 "problem_name": "Unique Paths",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/unique-paths",
@@ -554,8 +751,16 @@
                 "reason_for_selection": "2D memoization; direct bridge to tabulation",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Recursion with 2D memo O(m*n)", "Bottom-up DP O(m*n)"],
-                "tags": ["recursion", "memoization", "2d-dp", "grid"]
+                "solution_approaches": [
+                  "Recursion with 2D memo O(m*n)",
+                  "Bottom-up DP O(m*n)"
+                ],
+                "tags": [
+                  "recursion",
+                  "memoization",
+                  "2d-dp",
+                  "grid"
+                ]
               }
             ]
           }
@@ -566,15 +771,25 @@
           "knows_when_to_memoize": true,
           "comfortable_with_recursion": true
         },
-        "review_schedule_days": [3, 7, 14, 30, 60]
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30,
+          60
+        ]
       },
       {
-        "pattern_id": "ft_07",
+        "pattern_id": "trees",
         "sequence_order": 7,
         "pattern_name": "Trees",
         "tier": "must_master",
-        "prerequisites": ["ft_06"],
-        "unlocks": ["ft_08"],
+        "prerequisites": [
+          "recursion"
+        ],
+        "unlocks": [
+          "graphs"
+        ],
         "importance": "Critical",
         "estimated_time_hours": 20,
         "skip_allowed": false,
@@ -586,13 +801,13 @@
         ],
         "concepts": [
           {
-            "concept_id": "ft_07_c1",
+            "concept_id": "trees_traversals_dfs",
             "concept_name": "Tree Traversals (DFS)",
             "explanation_goal": "Master preorder, inorder, postorder recursively",
             "estimated_time_hours": 5,
             "practice_problems": [
               {
-                "problem_id": "ft_07_c1_p1",
+                "problem_id": "trees_inorder_traversal",
                 "problem_name": "Binary Tree Inorder Traversal",
                 "difficulty": "Easy",
                 "url": "https://leetcode.com/problems/binary-tree-inorder-traversal",
@@ -600,11 +815,18 @@
                 "reason_for_selection": "Inorder gives sorted for BST",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Recursive O(n)", "Iterative with stack O(n)"],
-                "tags": ["tree", "dfs", "inorder"]
+                "solution_approaches": [
+                  "Recursive O(n)",
+                  "Iterative with stack O(n)"
+                ],
+                "tags": [
+                  "tree",
+                  "dfs",
+                  "inorder"
+                ]
               },
               {
-                "problem_id": "ft_07_c1_p2",
+                "problem_id": "trees_maximum_depth",
                 "problem_name": "Maximum Depth of Binary Tree",
                 "difficulty": "Easy",
                 "url": "https://leetcode.com/problems/maximum-depth-of-binary-tree",
@@ -612,19 +834,26 @@
                 "reason_for_selection": "Simple recursive pattern",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DFS O(n)", "BFS O(n)"],
-                "tags": ["tree", "dfs", "recursion"]
+                "solution_approaches": [
+                  "DFS O(n)",
+                  "BFS O(n)"
+                ],
+                "tags": [
+                  "tree",
+                  "dfs",
+                  "recursion"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_07_c2",
+            "concept_id": "trees_bst_properties",
             "concept_name": "BST Properties",
             "explanation_goal": "Leverage BST ordering for optimization",
             "estimated_time_hours": 6,
             "practice_problems": [
               {
-                "problem_id": "ft_07_c2_p1",
+                "problem_id": "trees_validate_bst",
                 "problem_name": "Validate Binary Search Tree",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/validate-binary-search-tree",
@@ -632,11 +861,18 @@
                 "reason_for_selection": "Common mistake: only checking parent-child; need range",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Inorder traversal O(n)", "Range validation O(n)"],
-                "tags": ["tree", "bst", "validation"]
+                "solution_approaches": [
+                  "Inorder traversal O(n)",
+                  "Range validation O(n)"
+                ],
+                "tags": [
+                  "tree",
+                  "bst",
+                  "validation"
+                ]
               },
               {
-                "problem_id": "ft_07_c2_p2",
+                "problem_id": "trees_kth_smallest_bst",
                 "problem_name": "Kth Smallest Element in a BST",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/kth-smallest-element-in-a-bst",
@@ -644,11 +880,18 @@
                 "reason_for_selection": "Inorder of BST is sorted; O(k) solution",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Inorder traversal O(n)", "Early stop at kth O(k)"],
-                "tags": ["tree", "bst", "inorder"]
+                "solution_approaches": [
+                  "Inorder traversal O(n)",
+                  "Early stop at kth O(k)"
+                ],
+                "tags": [
+                  "tree",
+                  "bst",
+                  "inorder"
+                ]
               },
               {
-                "problem_id": "ft_07_c2_p3",
+                "problem_id": "trees_lowest_common_ancestor_bst",
                 "problem_name": "Lowest Common Ancestor of BST",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree",
@@ -656,19 +899,25 @@
                 "reason_for_selection": "Uses BST property for O(log n)",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["BST property O(h)"],
-                "tags": ["tree", "bst", "lca"]
+                "solution_approaches": [
+                  "BST property O(h)"
+                ],
+                "tags": [
+                  "tree",
+                  "bst",
+                  "lca"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_07_c3",
+            "concept_id": "trees_path_problems",
             "concept_name": "Path Problems",
             "explanation_goal": "Find paths with constraints using DFS",
             "estimated_time_hours": 5,
             "practice_problems": [
               {
-                "problem_id": "ft_07_c3_p1",
+                "problem_id": "trees_path_sum",
                 "problem_name": "Path Sum",
                 "difficulty": "Easy",
                 "url": "https://leetcode.com/problems/path-sum",
@@ -676,11 +925,17 @@
                 "reason_for_selection": "Basic root-to-leaf path",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DFS O(n)"],
-                "tags": ["tree", "dfs", "path"]
+                "solution_approaches": [
+                  "DFS O(n)"
+                ],
+                "tags": [
+                  "tree",
+                  "dfs",
+                  "path"
+                ]
               },
               {
-                "problem_id": "ft_07_c3_p2",
+                "problem_id": "trees_max_path_sum",
                 "problem_name": "Binary Tree Maximum Path Sum",
                 "difficulty": "Hard",
                 "url": "https://leetcode.com/problems/binary-tree-maximum-path-sum",
@@ -688,19 +943,26 @@
                 "reason_for_selection": "Google favorite; any node-to-node path",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Postorder with global max O(n)"],
-                "tags": ["tree", "dfs", "path", "google"]
+                "solution_approaches": [
+                  "Postorder with global max O(n)"
+                ],
+                "tags": [
+                  "tree",
+                  "dfs",
+                  "path",
+                  "google"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_07_c4",
+            "concept_id": "trees_level_order_bfs",
             "concept_name": "Level Order (BFS)",
             "explanation_goal": "Process tree level by level using queue",
             "estimated_time_hours": 4,
             "practice_problems": [
               {
-                "problem_id": "ft_07_c4_p1",
+                "problem_id": "trees_level_order_traversal",
                 "problem_name": "Binary Tree Level Order Traversal",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/binary-tree-level-order-traversal",
@@ -708,11 +970,17 @@
                 "reason_for_selection": "Foundation for all BFS tree problems",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["BFS with queue O(n)"],
-                "tags": ["tree", "bfs", "level-order"]
+                "solution_approaches": [
+                  "BFS with queue O(n)"
+                ],
+                "tags": [
+                  "tree",
+                  "bfs",
+                  "level-order"
+                ]
               },
               {
-                "problem_id": "ft_07_c4_p2",
+                "problem_id": "trees_right_side_view",
                 "problem_name": "Binary Tree Right Side View",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/binary-tree-right-side-view",
@@ -720,8 +988,15 @@
                 "reason_for_selection": "Level order with rightmost selection",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["BFS O(n)", "DFS with level tracking O(n)"],
-                "tags": ["tree", "bfs", "level-order"]
+                "solution_approaches": [
+                  "BFS O(n)",
+                  "DFS with level tracking O(n)"
+                ],
+                "tags": [
+                  "tree",
+                  "bfs",
+                  "level-order"
+                ]
               }
             ]
           }
@@ -733,15 +1008,25 @@
           "solved_validate_bst": true,
           "solved_max_path_sum": true
         },
-        "review_schedule_days": [3, 7, 14, 30, 60]
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30,
+          60
+        ]
       },
       {
-        "pattern_id": "ft_08",
+        "pattern_id": "graphs",
         "sequence_order": 8,
         "pattern_name": "Graphs",
         "tier": "must_master",
-        "prerequisites": ["ft_07"],
-        "unlocks": ["ft_09"],
+        "prerequisites": [
+          "trees"
+        ],
+        "unlocks": [
+          "dynamic_programming"
+        ],
         "importance": "Critical",
         "estimated_time_hours": 25,
         "skip_allowed": false,
@@ -754,13 +1039,13 @@
         ],
         "concepts": [
           {
-            "concept_id": "ft_08_c1",
+            "concept_id": "graphs_dfs_connected_components",
             "concept_name": "Graph DFS - Connected Components",
             "explanation_goal": "Traverse graphs with DFS and track visited nodes",
             "estimated_time_hours": 6,
             "practice_problems": [
               {
-                "problem_id": "ft_08_c1_p1",
+                "problem_id": "graphs_number_of_islands",
                 "problem_name": "Number of Islands",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/number-of-islands",
@@ -768,11 +1053,20 @@
                 "reason_for_selection": "Perfect DFS intro; implicit graph on grid",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DFS O(m*n)", "BFS O(m*n)", "Union-Find O(m*n)"],
-                "tags": ["graph", "dfs", "grid", "blind-75"]
+                "solution_approaches": [
+                  "DFS O(m*n)",
+                  "BFS O(m*n)",
+                  "Union-Find O(m*n)"
+                ],
+                "tags": [
+                  "graph",
+                  "dfs",
+                  "grid",
+                  "blind-75"
+                ]
               },
               {
-                "problem_id": "ft_08_c1_p2",
+                "problem_id": "graphs_clone_graph",
                 "problem_name": "Clone Graph",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/clone-graph",
@@ -780,19 +1074,27 @@
                 "reason_for_selection": "DFS with hash map; deep copy pattern",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DFS with hash map O(V+E)", "BFS O(V+E)"],
-                "tags": ["graph", "dfs", "hash-map", "clone"]
+                "solution_approaches": [
+                  "DFS with hash map O(V+E)",
+                  "BFS O(V+E)"
+                ],
+                "tags": [
+                  "graph",
+                  "dfs",
+                  "hash-map",
+                  "clone"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_08_c2",
+            "concept_id": "graphs_bfs_shortest_paths",
             "concept_name": "Graph BFS - Shortest Paths",
             "explanation_goal": "Use BFS for shortest paths in unweighted graphs",
             "estimated_time_hours": 6,
             "practice_problems": [
               {
-                "problem_id": "ft_08_c2_p1",
+                "problem_id": "graphs_rotting_oranges",
                 "problem_name": "Rotting Oranges",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/rotting-oranges",
@@ -800,11 +1102,18 @@
                 "reason_for_selection": "Multi-source BFS; time-based spreading",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Multi-source BFS O(m*n)"],
-                "tags": ["graph", "bfs", "multi-source", "grid"]
+                "solution_approaches": [
+                  "Multi-source BFS O(m*n)"
+                ],
+                "tags": [
+                  "graph",
+                  "bfs",
+                  "multi-source",
+                  "grid"
+                ]
               },
               {
-                "problem_id": "ft_08_c2_p2",
+                "problem_id": "graphs_01_matrix",
                 "problem_name": "01 Matrix",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/01-matrix",
@@ -812,19 +1121,26 @@
                 "reason_for_selection": "Multi-source BFS for distance",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Multi-source BFS O(m*n)"],
-                "tags": ["graph", "bfs", "distance", "grid"]
+                "solution_approaches": [
+                  "Multi-source BFS O(m*n)"
+                ],
+                "tags": [
+                  "graph",
+                  "bfs",
+                  "distance",
+                  "grid"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_08_c3",
+            "concept_id": "graphs_cycle_detection_topological_sort",
             "concept_name": "Cycle Detection & Topological Sort",
             "explanation_goal": "Detect cycles and order DAG nodes",
             "estimated_time_hours": 7,
             "practice_problems": [
               {
-                "problem_id": "ft_08_c3_p1",
+                "problem_id": "graphs_course_schedule",
                 "problem_name": "Course Schedule",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/course-schedule",
@@ -832,11 +1148,19 @@
                 "reason_for_selection": "Cycle detection in directed graph; topo sort foundation",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DFS with state O(V+E)", "Kahn's algorithm O(V+E)"],
-                "tags": ["graph", "cycle", "topological-sort", "blind-75"]
+                "solution_approaches": [
+                  "DFS with state O(V+E)",
+                  "Kahn's algorithm O(V+E)"
+                ],
+                "tags": [
+                  "graph",
+                  "cycle",
+                  "topological-sort",
+                  "blind-75"
+                ]
               },
               {
-                "problem_id": "ft_08_c3_p2",
+                "problem_id": "graphs_course_schedule_ii",
                 "problem_name": "Course Schedule II",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/course-schedule-ii",
@@ -844,19 +1168,26 @@
                 "reason_for_selection": "Return topological order; extends cycle detection",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DFS postorder O(V+E)", "Kahn's O(V+E)"],
-                "tags": ["graph", "topological-sort", "dfs"]
+                "solution_approaches": [
+                  "DFS postorder O(V+E)",
+                  "Kahn's O(V+E)"
+                ],
+                "tags": [
+                  "graph",
+                  "topological-sort",
+                  "dfs"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_08_c4",
+            "concept_id": "graphs_union_find",
             "concept_name": "Union Find",
             "explanation_goal": "Track connected components efficiently with path compression",
             "estimated_time_hours": 6,
             "practice_problems": [
               {
-                "problem_id": "ft_08_c4_p1",
+                "problem_id": "graphs_number_of_provinces",
                 "problem_name": "Number of Provinces",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/number-of-provinces",
@@ -864,11 +1195,18 @@
                 "reason_for_selection": "Union-find alternative to DFS; compare approaches",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DFS O(n^2)", "Union-Find O(n^2 * α(n))"],
-                "tags": ["graph", "union-find", "connected-components"]
+                "solution_approaches": [
+                  "DFS O(n^2)",
+                  "Union-Find O(n^2 * \u03b1(n))"
+                ],
+                "tags": [
+                  "graph",
+                  "union-find",
+                  "connected-components"
+                ]
               },
               {
-                "problem_id": "ft_08_c4_p2",
+                "problem_id": "graphs_redundant_connection",
                 "problem_name": "Redundant Connection",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/redundant-connection",
@@ -876,8 +1214,14 @@
                 "reason_for_selection": "Find edge creating cycle using union-find",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["Union-Find O(E * α(V))"],
-                "tags": ["graph", "union-find", "cycle"]
+                "solution_approaches": [
+                  "Union-Find O(E * \u03b1(V))"
+                ],
+                "tags": [
+                  "graph",
+                  "union-find",
+                  "cycle"
+                ]
               }
             ]
           }
@@ -889,19 +1233,28 @@
           "knows_topological_sort": true,
           "implemented_union_find": true
         },
-        "review_schedule_days": [3, 7, 14, 30, 60, 90]
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30,
+          60,
+          90
+        ]
       },
       {
-        "pattern_id": "ft_09",
+        "pattern_id": "dynamic_programming",
         "sequence_order": 9,
         "pattern_name": "Dynamic Programming (Core Patterns Only)",
         "tier": "must_master",
-        "prerequisites": ["ft_06"],
+        "prerequisites": [
+          "recursion"
+        ],
         "unlocks": [],
         "importance": "Critical",
         "estimated_time_hours": 30,
         "skip_allowed": false,
-        "warning": "🔥 HIGHEST DIFFICULTY: Invest heavily here (383+ problems on LeetCode)",
+        "warning": "\ud83d\udd25 HIGHEST DIFFICULTY: Invest heavily here (383+ problems on LeetCode)",
         "system_design_connections": [
           "Resource allocation optimization",
           "Text diff algorithms (Git uses LCS)",
@@ -910,13 +1263,13 @@
         ],
         "concepts": [
           {
-            "concept_id": "ft_09_c1",
+            "concept_id": "dynamic_programming_1d_linear",
             "concept_name": "1D Linear DP",
             "explanation_goal": "State depends on previous 1-2 states",
             "estimated_time_hours": 10,
             "practice_problems": [
               {
-                "problem_id": "ft_09_c1_p1",
+                "problem_id": "dynamic_programming_house_robber",
                 "problem_name": "House Robber",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/house-robber",
@@ -924,11 +1277,18 @@
                 "reason_for_selection": "Classic rob-or-skip decision; max of adjacent",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DP O(n)", "DP with O(1) space"],
-                "tags": ["dp", "1d", "linear"]
+                "solution_approaches": [
+                  "DP O(n)",
+                  "DP with O(1) space"
+                ],
+                "tags": [
+                  "dp",
+                  "1d",
+                  "linear"
+                ]
               },
               {
-                "problem_id": "ft_09_c1_p2",
+                "problem_id": "dynamic_programming_longest_increasing_subsequence",
                 "problem_name": "Longest Increasing Subsequence",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/longest-increasing-subsequence",
@@ -936,19 +1296,27 @@
                 "reason_for_selection": "FAANG favorite; O(n^2) DP or O(n log n) binary search",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DP O(n^2)", "DP + Binary Search O(n log n)"],
-                "tags": ["dp", "1d", "lis", "binary-search"]
+                "solution_approaches": [
+                  "DP O(n^2)",
+                  "DP + Binary Search O(n log n)"
+                ],
+                "tags": [
+                  "dp",
+                  "1d",
+                  "lis",
+                  "binary-search"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_09_c2",
+            "concept_id": "dynamic_programming_2d_grid",
             "concept_name": "2D Grid DP",
             "explanation_goal": "Navigate grids with cumulative values",
             "estimated_time_hours": 8,
             "practice_problems": [
               {
-                "problem_id": "ft_09_c2_p1",
+                "problem_id": "dynamic_programming_unique_paths",
                 "problem_name": "Unique Paths",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/unique-paths",
@@ -956,11 +1324,18 @@
                 "reason_for_selection": "Simplest 2D DP; dp[i][j] = dp[i-1][j] + dp[i][j-1]",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["2D DP O(m*n)", "1D DP O(n)"],
-                "tags": ["dp", "2d", "grid"]
+                "solution_approaches": [
+                  "2D DP O(m*n)",
+                  "1D DP O(n)"
+                ],
+                "tags": [
+                  "dp",
+                  "2d",
+                  "grid"
+                ]
               },
               {
-                "problem_id": "ft_09_c2_p2",
+                "problem_id": "dynamic_programming_minimum_path_sum",
                 "problem_name": "Minimum Path Sum",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/minimum-path-sum",
@@ -968,19 +1343,27 @@
                 "reason_for_selection": "Add cell values to path costs",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["2D DP O(m*n)", "In-place O(1) space"],
-                "tags": ["dp", "2d", "grid", "path"]
+                "solution_approaches": [
+                  "2D DP O(m*n)",
+                  "In-place O(1) space"
+                ],
+                "tags": [
+                  "dp",
+                  "2d",
+                  "grid",
+                  "path"
+                ]
               }
             ]
           },
           {
-            "concept_id": "ft_09_c3",
+            "concept_id": "dynamic_programming_knapsack",
             "concept_name": "Knapsack Patterns",
             "explanation_goal": "Optimize selection with capacity constraints",
             "estimated_time_hours": 12,
             "practice_problems": [
               {
-                "problem_id": "ft_09_c3_p1",
+                "problem_id": "dynamic_programming_coin_change",
                 "problem_name": "Coin Change",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/coin-change",
@@ -988,11 +1371,19 @@
                 "reason_for_selection": "Unbounded knapsack; min coins for target; Blind 75",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DP O(amount * coins)", "BFS O(amount * coins)"],
-                "tags": ["dp", "knapsack", "unbounded", "blind-75"]
+                "solution_approaches": [
+                  "DP O(amount * coins)",
+                  "BFS O(amount * coins)"
+                ],
+                "tags": [
+                  "dp",
+                  "knapsack",
+                  "unbounded",
+                  "blind-75"
+                ]
               },
               {
-                "problem_id": "ft_09_c3_p2",
+                "problem_id": "dynamic_programming_partition_equal_subset_sum",
                 "problem_name": "Partition Equal Subset Sum",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/partition-equal-subset-sum",
@@ -1000,11 +1391,19 @@
                 "reason_for_selection": "0/1 knapsack; subset sum = total/2",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DP O(n * sum)", "DP with O(sum) space"],
-                "tags": ["dp", "knapsack", "0-1", "subset-sum"]
+                "solution_approaches": [
+                  "DP O(n * sum)",
+                  "DP with O(sum) space"
+                ],
+                "tags": [
+                  "dp",
+                  "knapsack",
+                  "0-1",
+                  "subset-sum"
+                ]
               },
               {
-                "problem_id": "ft_09_c3_p3",
+                "problem_id": "dynamic_programming_target_sum",
                 "problem_name": "Target Sum",
                 "difficulty": "Medium",
                 "url": "https://leetcode.com/problems/target-sum",
@@ -1012,8 +1411,16 @@
                 "reason_for_selection": "Transforms to subset sum; +/- assignment",
                 "is_completed": false,
                 "attempts": 0,
-                "solution_approaches": ["DP O(n * sum)", "Memoization O(n * sum)"],
-                "tags": ["dp", "knapsack", "subset-sum", "transform"]
+                "solution_approaches": [
+                  "DP O(n * sum)",
+                  "Memoization O(n * sum)"
+                ],
+                "tags": [
+                  "dp",
+                  "knapsack",
+                  "subset-sum",
+                  "transform"
+                ]
               }
             ]
           }
@@ -1025,7 +1432,15 @@
           "solved_coin_change": true,
           "comfortable_with_2d_dp": true
         },
-        "review_schedule_days": [3, 7, 14, 30, 60, 90, 120]
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30,
+          60,
+          90,
+          120
+        ]
       }
     ],
     "complete": [
@@ -1171,27 +1586,27 @@
       "triggers": [
         {
           "trigger": "pattern_completed",
-          "message": "🎉 Pattern complete! You've unlocked: {system_design_connections}. This directly maps to real-world systems you know!"
+          "message": "\ud83c\udf89 Pattern complete! You've unlocked: {system_design_connections}. This directly maps to real-world systems you know!"
         },
         {
           "trigger": "tier_completed",
-          "message": "🔥 Tier {tier} complete! You've mastered the {tier} patterns. {patterns_remaining} patterns to go!"
+          "message": "\ud83d\udd25 Tier {tier} complete! You've mastered the {tier} patterns. {patterns_remaining} patterns to go!"
         },
         {
           "trigger": "50_percent_complete",
-          "message": "🚀 Halfway there! You've invested {hours} hours and solved {problems} problems. Keep the momentum!"
+          "message": "\ud83d\ude80 Halfway there! You've invested {hours} hours and solved {problems} problems. Keep the momentum!"
         },
         {
           "trigger": "recursion_mastery",
-          "message": "⚡ CRITICAL GATE PASSED: You've mastered recursion. Trees, DP, and Backtracking are now unlocked!"
+          "message": "\u26a1 CRITICAL GATE PASSED: You've mastered recursion. Trees, DP, and Backtracking are now unlocked!"
         },
         {
           "trigger": "dp_started",
-          "message": "🧠 DP is the BOSS pattern. This will take time, but mastering this is what separates Senior from Principal engineers."
+          "message": "\ud83e\udde0 DP is the BOSS pattern. This will take time, but mastering this is what separates Senior from Principal engineers."
         },
         {
           "trigger": "streak_milestone",
-          "message": "🔥 {streak_days}-day streak! Consistency beats intensity in DSA mastery."
+          "message": "\ud83d\udd25 {streak_days}-day streak! Consistency beats intensity in DSA mastery."
         }
       ]
     },
@@ -1231,12 +1646,17 @@
         {
           "widget": "pattern_list",
           "data": "curriculum[active_mode]",
-          "columns": ["pattern_name", "status", "completion_percentage", "time_spent"],
+          "columns": [
+            "pattern_name",
+            "status",
+            "completion_percentage",
+            "time_spent"
+          ],
           "status_legend": {
-            "locked": "🔒 Prerequisites not met",
-            "unlocked": "🔓 Ready to start",
-            "in_progress": "⏳ In progress",
-            "completed": "✅ Mastered"
+            "locked": "\ud83d\udd12 Prerequisites not met",
+            "unlocked": "\ud83d\udd13 Ready to start",
+            "in_progress": "\u23f3 In progress",
+            "completed": "\u2705 Mastered"
           }
         },
         {
@@ -1258,12 +1678,17 @@
         {
           "widget": "concept_list",
           "data": "concepts",
-          "columns": ["concept_name", "problems_completed", "time_spent", "status"]
+          "columns": [
+            "concept_name",
+            "problems_completed",
+            "time_spent",
+            "status"
+          ]
         },
         {
           "widget": "system_design_callout",
           "data": "system_design_connections",
-          "label": "🎯 How This Connects to Your System Design Knowledge"
+          "label": "\ud83c\udfaf How This Connects to Your System Design Knowledge"
         },
         {
           "widget": "mastery_checklist",
@@ -1273,7 +1698,13 @@
         {
           "widget": "problem_history",
           "data": "concepts[].practice_problems",
-          "columns": ["problem_name", "difficulty", "attempts", "last_attempted", "status"]
+          "columns": [
+            "problem_name",
+            "difficulty",
+            "attempts",
+            "last_attempted",
+            "status"
+          ]
         }
       ]
     }
