@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
+import sys
+
+print(
+    "⚠️  DEPRECATED: This script is no longer valid after the slug ID migration (January 2025)."
+)
+print(
+    "   Canonical IDs are now human-readable slugs (e.g., 'sliding_window', 'arrays_hashing_two_sum')."
+)
+print("   See dsa_coach/id_mappings.py for the mapping from old ft_* IDs to new slugs.")
+sys.exit(1)
+
 """Cleanup script: Remove V1 records after migration.
 
 This script removes old V1 quest and pattern records that have been migrated to V2.
 """
 
-import asyncio
+import asyncio  # noqa: E402
 
 # V1 pattern IDs to remove
 V1_PATTERN_IDS = [

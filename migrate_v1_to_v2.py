@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+import sys
+
+print(
+    "⚠️  DEPRECATED: This script is no longer valid after the slug ID migration (January 2025)."
+)
+print(
+    "   Canonical IDs are now human-readable slugs (e.g., 'sliding_window', 'arrays_hashing_two_sum')."
+)
+print("   See dsa_coach/id_mappings.py for the mapping from old ft_* IDs to new slugs.")
+sys.exit(1)
+
 """Migration script: V1 to V2 data structure.
 
 This script migrates the database from V1 quest/pattern IDs to V2 IDs:
@@ -8,10 +19,10 @@ This script migrates the database from V1 quest/pattern IDs to V2 IDs:
 Matches quests by LeetCode URL for accurate mapping.
 """
 
-import asyncio
-import json
-from pathlib import Path
-from urllib.parse import urlparse
+import asyncio  # noqa: E402
+import json  # noqa: E402
+from pathlib import Path  # noqa: E402
+from urllib.parse import urlparse  # noqa: E402
 
 
 def load_quests_v2() -> dict:
