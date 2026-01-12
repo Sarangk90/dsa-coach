@@ -7,6 +7,7 @@ Uses the same advanced input UX from mentor.py for consistency.
 from __future__ import annotations
 
 import os
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -55,8 +56,25 @@ class TerminalUI:
             self.console = None
 
         self.session = None
+        self.session_start_time: datetime | None = None
         if PROMPT_TOOLKIT_AVAILABLE:
             self._setup_prompt_session()
+
+    def start_session_timer(self) -> None:
+        """Start the session timer."""
+        self.session_start_time = datetime.now()
+
+    def _format_elapsed_time(self) -> str:
+        """Format elapsed session time as MM:SS or HH:MM:SS."""
+        if not self.session_start_time:
+            return ""
+        elapsed = datetime.now() - self.session_start_time
+        total_seconds = int(elapsed.total_seconds())
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        if hours:
+            return f"{hours}:{minutes:02d}:{seconds:02d}"
+        return f"{minutes:02d}:{seconds:02d}"
 
     def _setup_prompt_session(self):
         """Initialize prompt_toolkit session."""
@@ -79,6 +97,9 @@ class TerminalUI:
             """Enter → send message."""
             event.current_buffer.validate_and_handle()
 
+        # Capture self for closure
+        ui_self = self
+
         # Dynamic toolbar
         def bottom_toolbar():
             from prompt_toolkit.application import get_app
@@ -92,11 +113,18 @@ class TerminalUI:
 
             line_info = f"{line_count} line{'s' if line_count != 1 else ''}"
 
+            # Get elapsed time from session timer
+            elapsed = ui_self._format_elapsed_time()
+            timer_part = ""
+            if elapsed:
+                timer_part = f' │ <style fg="#ffcc00">⏱️ {elapsed}</style>'
+
             return HTML(
                 f'<style bg="#333333" fg="#888888">'
                 f" <b>Ctrl+J</b> newline │ <b>Enter</b> send │ <b>Ctrl+D</b> exit │ "
-                f'<style fg="#aaddff">{line_info}</style> '
-                f"</style>"
+                f'<style fg="#aaddff">{line_info}</style>'
+                f"{timer_part}"
+                f" </style>"
             )
 
         # Style
@@ -265,6 +293,20 @@ class TerminalUI:
             )
         else:
             print(f"\n❌ Error: {message}\n")
+
+    def render_tool_error(self, tool_name: str, error: str) -> None:
+        """Render a tool error prominently (more visible than regular errors)."""
+        if self.console:
+            self.console.print(
+                Panel(
+                    f"[bold red]⚠️ {tool_name} failed:[/bold red]\n{error}",
+                    title="[bold red]Tool Error[/bold red]",
+                    border_style="red",
+                    box=box.HEAVY,  # More prominent border
+                )
+            )
+        else:
+            print(f"\n⚠️ TOOL ERROR [{tool_name}]: {error}\n")
 
     def render_success(self, message: str) -> None:
         """Render a success message."""

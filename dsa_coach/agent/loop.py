@@ -64,6 +64,9 @@ async def run_agent_loop(db_path: Path | None = None) -> None:
         greeting = await agent.get_greeting()
         ui.render_welcome(greeting)
 
+        # Start session timer (visible in bottom toolbar)
+        ui.start_session_timer()
+
         # Show input hint
         ui.render_info(
             "💡 Ctrl+J for newlines, Enter to send, Ctrl+D to exit. Type 'help' for commands."
@@ -116,6 +119,10 @@ async def run_agent_loop(db_path: Path | None = None) -> None:
                 # Show tool activity
                 for tc in response.tool_calls_made:
                     ui.render_tool_activity(tc["name"])
+
+                # Show tool errors prominently
+                for te in response.tool_errors:
+                    ui.render_tool_error(te["tool"], te["error"])
 
                 # Refresh dashboard if state changed
                 if response.state_updated and agent.dashboard:

@@ -30,6 +30,7 @@ class AgentResponse:
 
     content: str
     tool_calls_made: list[dict] = field(default_factory=list)
+    tool_errors: list[dict] = field(default_factory=list)  # {tool: str, error: str}
     state_updated: bool = False
     error: str | None = None
 
@@ -132,6 +133,7 @@ class CoachAgent:
 
         # Handle tool calls in a loop
         tool_calls_made = []
+        all_tool_errors = []
         iterations = 0
 
         # Show reasoning for initial response if it has tool calls
@@ -142,10 +144,13 @@ class CoachAgent:
             iterations += 1
 
             # Execute tool calls
-            tool_results = await self._execute_tool_calls(response.tool_calls)
+            tool_results, tool_errors = await self._execute_tool_calls(
+                response.tool_calls
+            )
             tool_calls_made.extend(
                 [{"name": tc.name, "args": tc.arguments} for tc in response.tool_calls]
             )
+            all_tool_errors.extend(tool_errors)
 
             # Build messages with tool results
             # For Anthropic, we need to include the assistant's response with tool_use
@@ -205,14 +210,21 @@ class CoachAgent:
         return AgentResponse(
             content=content,
             tool_calls_made=tool_calls_made,
+            tool_errors=all_tool_errors,
             state_updated=bool(tool_calls_made),
         )
 
     async def _execute_tool_calls(
         self, tool_calls: list[ToolCall]
-    ) -> list[LLMToolResult]:
-        """Execute tool calls and return results."""
+    ) -> tuple[list[LLMToolResult], list[dict]]:
+        """Execute tool calls and return results with any errors.
+
+        Returns:
+            Tuple of (LLM results, list of errors for UI display)
+            Each error is a dict with 'tool' and 'error' keys.
+        """
         results = []
+        errors_for_ui = []
 
         for tc in tool_calls:
             # Record tool call
@@ -233,6 +245,10 @@ class CoachAgent:
                         content = result.message or "Success"
                 else:
                     content = f"Error: {result.error}"
+                    # Track error for UI display
+                    errors_for_ui.append(
+                        {"tool": tc.name, "error": result.error or "Unknown error"}
+                    )
 
                 results.append(
                     LLMToolResult(
@@ -249,6 +265,8 @@ class CoachAgent:
 
             except Exception as e:
                 error_msg = f"Tool execution failed: {str(e)}"
+                # Track error for UI display
+                errors_for_ui.append({"tool": tc.name, "error": str(e)})
                 results.append(
                     LLMToolResult(
                         tool_use_id=tc.id,
@@ -260,7 +278,7 @@ class CoachAgent:
                     tc.name, tc.id, error_msg, is_error=True
                 )
 
-        return results
+        return results, errors_for_ui
 
     async def get_greeting(self) -> str:
         """Get a contextual greeting for a new session."""
