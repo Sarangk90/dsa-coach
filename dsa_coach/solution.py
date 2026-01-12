@@ -8,12 +8,16 @@ def create_solution_file(problem: dict[str, Any]) -> Path:
     """
     Create a solution file for the problem.
 
-    Uses pattern_name for directory structure: solutions/<pattern_name>/<problem_id>.py
+    Uses pattern_id for directory structure: solutions/<pattern_id>/<problem_id>.py
+    Pattern IDs are now human-readable slugs like 'sliding_window', 'binary_search'.
     """
-    # Use pattern_name if available, else fall back to pattern_id or "misc"
-    pattern_name = problem.get("pattern_name", problem.get("pattern_id", "misc"))
-    # Sanitize pattern name for filesystem
-    pattern_dir = pattern_name.replace(" ", "_").replace("&", "and").lower()
+    # Use pattern_id (now human-readable), fall back to sanitized pattern_name
+    pattern_id = problem.get("pattern_id")
+    pattern_name = problem.get("pattern_name", pattern_id or "misc")
+    if pattern_id:
+        pattern_dir = pattern_id
+    else:
+        pattern_dir = pattern_name.replace(" ", "_").replace("&", "and").lower()
 
     target_dir = paths.SOLUTIONS_DIR / pattern_dir
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -72,7 +76,11 @@ if __name__ == "__main__":
 
 def get_solution_path(problem: dict[str, Any]) -> Path:
     """Get the path where a problem's solution file should be stored."""
-    pattern_name = problem.get("pattern_name", problem.get("pattern_id", "misc"))
-    pattern_dir = pattern_name.replace(" ", "_").replace("&", "and").lower()
+    pattern_id = problem.get("pattern_id")
+    if pattern_id:
+        pattern_dir = pattern_id
+    else:
+        pattern_name = problem.get("pattern_name", "misc")
+        pattern_dir = pattern_name.replace(" ", "_").replace("&", "and").lower()
     problem_id = problem.get("problem_id", problem.get("id", "unknown"))
     return Path(paths.SOLUTIONS_DIR / pattern_dir / f"{problem_id}.py")

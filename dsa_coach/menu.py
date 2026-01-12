@@ -214,10 +214,10 @@ def cmd_continue_quest() -> None:
     ui.print_styled(f"\n  📌 Pattern: {pattern}", "cyan")
     ui.print_styled(f"  📊 Difficulty: {difficulty}", "cyan")
 
-    # Find solution file
+    # Find solution file - use pattern_id as directory
     load_json(paths.QUESTS_FILE)
-    quest_id = quest.get("id", quest.get("problem_id", "unknown"))
-    solution_file = paths.SOLUTIONS_DIR / f"{quest_id}.py"
+    quest_id = quest.get("problem_id", quest.get("id", "unknown"))
+    solution_file = paths.SOLUTIONS_DIR / pattern_id / f"{quest_id}.py"
 
     ui.print_styled("\n  📂 Solution File:", "yellow")
     ui.print_styled(f"     {solution_file}", "white")

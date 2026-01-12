@@ -45,21 +45,20 @@ def get_pattern_name(pattern_id: str, mode: str = "fast_track") -> str:
     """
     Get human-readable pattern name from pattern_id.
 
-    Handles both V2 IDs (ft_02) and V1 legacy names (sliding_window).
+    Pattern IDs use human-readable slugs (e.g., sliding_window, arrays_hashing).
 
     Examples:
-        ft_02 -> "Arrays & Hashing"
-        ft_04 -> "Sliding Window"
+        arrays_hashing -> "Arrays & Hashing"
         sliding_window -> "Sliding Window"
+        two_pointers -> "Two Pointers"
 
     Falls back to title-cased pattern_id if not found.
     """
-    # Try V2 lookup first
     pattern = get_pattern_by_id(pattern_id, mode)
     if pattern:
         return pattern.get("pattern_name", pattern_id)
 
-    # V1 legacy: format nicely (sliding_window -> Sliding Window)
+    # Fallback: format nicely (sliding_window -> Sliding Window)
     return pattern_id.replace("_", " ").title()
 
 
@@ -67,22 +66,21 @@ def get_problem_name(problem_id: str, mode: str = "fast_track") -> str:
     """
     Get human-readable problem name from problem_id.
 
-    Handles both V2 IDs (ft_02_c1_p1) and V1 legacy IDs (two_sum).
+    Problem IDs use human-readable slugs: <pattern_slug>_<problem_slug>
+    (e.g., arrays_hashing_two_sum, sliding_window_minimum_window_substring).
 
     Examples:
-        ft_02_c1_p1 -> "Two Sum"
-        ft_04_c1_p1 -> "Longest Substring Without Repeating Characters"
-        max_consecutive_ones -> "Max Consecutive Ones"
-        two_sum_ii -> "Two Sum II"
+        arrays_hashing_two_sum -> "Two Sum"
+        sliding_window_longest_substring_without_repeating -> "Longest Substring Without Repeating Characters"
+        two_pointers_3sum -> "3Sum"
 
     Falls back to title-cased problem_id if not found.
     """
-    # Try V2 lookup first
     problem = get_problem_by_id(problem_id, mode)
     if problem:
         return problem.get("problem_name", problem_id)
 
-    # V1 legacy: format nicely (max_consecutive_ones -> Max Consecutive Ones)
+    # Fallback: format nicely (arrays_hashing_two_sum -> Arrays Hashing Two Sum)
     return problem_id.replace("_", " ").title()
 
 
