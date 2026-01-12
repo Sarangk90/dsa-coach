@@ -572,10 +572,10 @@ class CoachTestHarness:
 
         # Create pattern progress with varying levels
         patterns_data = [
-            ("ft_02", 75, 4, 6, True),  # Arrays - mastered
-            ("ft_03", 50, 2, 5, False),  # Two Pointers - in progress
-            ("ft_04", 25, 1, 4, False),  # Sliding Window - started
-            ("ft_05", 0, 0, 5, False),  # Binary Search - not started
+            ("arrays_hashing", 75, 4, 6, True),  # Arrays - mastered
+            ("two_pointers", 50, 2, 5, False),  # Two Pointers - in progress
+            ("sliding_window", 25, 1, 4, False),  # Sliding Window - started
+            ("binary_search", 0, 0, 5, False),  # Binary Search - not started
         ]
 
         for pid, conf, completed, total, mastered in patterns_data:
@@ -593,11 +593,23 @@ class CoachTestHarness:
 
         # Create some quest completions
         quests_data = [
-            ("ft_02_c1_p1", "ft_02", days_ago(10), 25, 1),
-            ("ft_02_c1_p2", "ft_02", days_ago(8), 20, 0),
-            ("ft_02_c2_p1", "ft_02", days_ago(6), 30, 2),
-            ("ft_03_c1_p1", "ft_03", days_ago(4), 35, 1),
-            ("ft_04_c1_p1", "ft_04", days_ago(2), 45, 2),
+            ("arrays_hashing_two_sum", "arrays_hashing", days_ago(10), 25, 1),
+            ("arrays_hashing_group_anagrams", "arrays_hashing", days_ago(8), 20, 0),
+            (
+                "arrays_hashing_subarray_sum_equals_k",
+                "arrays_hashing",
+                days_ago(6),
+                30,
+                2,
+            ),
+            ("two_pointers_3sum", "two_pointers", days_ago(4), 35, 1),
+            (
+                "sliding_window_longest_substring_without_repeating",
+                "sliding_window",
+                days_ago(2),
+                45,
+                2,
+            ),
         ]
 
         for qid, pid, completed_at, time_mins, hints in quests_data:
@@ -615,8 +627,8 @@ class CoachTestHarness:
         # Create a mistake
         await self.db.add_mistake(
             user_id=self._user_id,
-            quest_id="ft_04_c1_p1",
-            pattern_id="ft_04",
+            quest_id="sliding_window_longest_substring_without_repeating",
+            pattern_id="sliding_window",
             mistake_type="off_by_one",
             description="Window boundary was inclusive instead of exclusive",
             lesson_learned="Always clarify boundary conditions",
@@ -627,7 +639,7 @@ class CoachTestHarness:
             user_id=self._user_id,
             milestone_type="pattern_mastered",
             description="Mastered Arrays & Hashing pattern",
-            pattern_id="ft_02",
+            pattern_id="arrays_hashing",
         )
 
     # =========================================================================

@@ -78,9 +78,9 @@ USER_PROFILE = {
 PATTERN_PROGRESS = [
     # Mastered pattern - high confidence, all quests done
     {
-        "id": "default_ft_02",
+        "id": "default_arrays_hashing",
         "user_id": "default",
-        "pattern_id": "ft_02",
+        "pattern_id": "arrays_hashing",
         "confidence": 85,
         "quests_completed": 6,
         "quests_total": 6,
@@ -95,9 +95,9 @@ PATTERN_PROGRESS = [
     },
     # Strong pattern - good confidence, most quests done
     {
-        "id": "default_ft_03",
+        "id": "default_two_pointers",
         "user_id": "default",
-        "pattern_id": "ft_03",
+        "pattern_id": "two_pointers",
         "confidence": 65,
         "quests_completed": 4,
         "quests_total": 5,
@@ -108,9 +108,9 @@ PATTERN_PROGRESS = [
     },
     # Learning pattern - medium confidence
     {
-        "id": "default_ft_04",
+        "id": "default_sliding_window",
         "user_id": "default",
-        "pattern_id": "ft_04",
+        "pattern_id": "sliding_window",
         "confidence": 45,
         "quests_completed": 2,
         "quests_total": 4,
@@ -121,9 +121,9 @@ PATTERN_PROGRESS = [
     },
     # Weak pattern - low confidence, just started
     {
-        "id": "default_ft_05",
+        "id": "default_binary_search",
         "user_id": "default",
-        "pattern_id": "ft_05",
+        "pattern_id": "binary_search",
         "confidence": 20,
         "quests_completed": 1,
         "quests_total": 5,
@@ -134,9 +134,9 @@ PATTERN_PROGRESS = [
     },
     # New pattern - not started
     {
-        "id": "default_ft_06",
+        "id": "default_recursion",
         "user_id": "default",
-        "pattern_id": "ft_06",
+        "pattern_id": "recursion",
         "confidence": 0,
         "quests_completed": 0,
         "quests_total": 4,
@@ -149,12 +149,12 @@ PATTERN_PROGRESS = [
 
 # Quest Completions - Various scenarios
 QUEST_COMPLETIONS = [
-    # ft_02 - All completed (mastered pattern)
+    # arrays_hashing - All completed (mastered pattern)
     {
-        "id": "default_ft_02_c1_p1",
+        "id": "default_arrays_hashing_two_sum",
         "user_id": "default",
-        "quest_id": "ft_02_c1_p1",
-        "pattern_id": "ft_02",
+        "quest_id": "arrays_hashing_two_sum",
+        "pattern_id": "arrays_hashing",
         "completed_at": days_ago(10),
         "time_minutes": 25,
         "hints_used": 2,
@@ -164,10 +164,10 @@ QUEST_COMPLETIONS = [
         "next_review_in": 7,
     },
     {
-        "id": "default_ft_02_c1_p2",
+        "id": "default_arrays_hashing_group_anagrams",
         "user_id": "default",
-        "quest_id": "ft_02_c1_p2",
-        "pattern_id": "ft_02",
+        "quest_id": "arrays_hashing_group_anagrams",
+        "pattern_id": "arrays_hashing",
         "completed_at": days_ago(9),
         "time_minutes": 20,
         "hints_used": 1,
@@ -177,10 +177,10 @@ QUEST_COMPLETIONS = [
         "next_review_in": 7,
     },
     {
-        "id": "default_ft_02_c2_p1",
+        "id": "default_arrays_hashing_subarray_sum_equals_k",
         "user_id": "default",
-        "quest_id": "ft_02_c2_p1",
-        "pattern_id": "ft_02",
+        "quest_id": "arrays_hashing_subarray_sum_equals_k",
+        "pattern_id": "arrays_hashing",
         "completed_at": days_ago(8),
         "time_minutes": 30,
         "hints_used": 0,  # No hints - good!
@@ -189,12 +189,12 @@ QUEST_COMPLETIONS = [
         "last_reviewed": days_ago(4),
         "next_review_in": 14,
     },
-    # ft_03 - Most completed
+    # two_pointers - Most completed
     {
-        "id": "default_ft_03_c1_p1",
+        "id": "default_two_pointers_3sum",
         "user_id": "default",
-        "quest_id": "ft_03_c1_p1",
-        "pattern_id": "ft_03",
+        "quest_id": "two_pointers_3sum",
+        "pattern_id": "two_pointers",
         "completed_at": days_ago(6),
         "time_minutes": 35,
         "hints_used": 1,
@@ -204,10 +204,10 @@ QUEST_COMPLETIONS = [
         "next_review_in": 1,  # Due for first review!
     },
     {
-        "id": "default_ft_03_c1_p2",
+        "id": "default_two_pointers_container_with_most_water",
         "user_id": "default",
-        "quest_id": "ft_03_c1_p2",
-        "pattern_id": "ft_03",
+        "quest_id": "two_pointers_container_with_most_water",
+        "pattern_id": "two_pointers",
         "completed_at": days_ago(5),
         "time_minutes": 28,
         "hints_used": 0,
@@ -217,10 +217,10 @@ QUEST_COMPLETIONS = [
         "next_review_in": 1,
     },
     {
-        "id": "default_ft_03_c2_p1",
+        "id": "default_two_pointers_linked_list_cycle",
         "user_id": "default",
-        "quest_id": "ft_03_c2_p1",
-        "pattern_id": "ft_03",
+        "quest_id": "two_pointers_linked_list_cycle",
+        "pattern_id": "two_pointers",
         "completed_at": days_ago(3),
         "time_minutes": 40,
         "hints_used": 2,
@@ -230,10 +230,10 @@ QUEST_COMPLETIONS = [
         "next_review_in": 3,
     },
     {
-        "id": "default_ft_03_c2_p2",
+        "id": "default_two_pointers_find_duplicate_number",
         "user_id": "default",
-        "quest_id": "ft_03_c2_p2",
-        "pattern_id": "ft_03",
+        "quest_id": "two_pointers_find_duplicate_number",
+        "pattern_id": "two_pointers",
         "completed_at": days_ago(1),
         "time_minutes": 22,
         "hints_used": 0,
@@ -242,12 +242,12 @@ QUEST_COMPLETIONS = [
         "last_reviewed": None,
         "next_review_in": 1,
     },
-    # ft_04 - Some completed
+    # sliding_window - Some completed
     {
-        "id": "default_ft_04_c1_p1",
+        "id": "default_sliding_window_longest_substring_without_repeating",
         "user_id": "default",
-        "quest_id": "ft_04_c1_p1",
-        "pattern_id": "ft_04",
+        "quest_id": "sliding_window_longest_substring_without_repeating",
+        "pattern_id": "sliding_window",
         "completed_at": days_ago(4),
         "time_minutes": 45,
         "hints_used": 3,  # Needed help
@@ -257,10 +257,10 @@ QUEST_COMPLETIONS = [
         "next_review_in": 1,
     },
     {
-        "id": "default_ft_04_c1_p2",
+        "id": "default_sliding_window_minimum_window_substring",
         "user_id": "default",
-        "quest_id": "ft_04_c1_p2",
-        "pattern_id": "ft_04",
+        "quest_id": "sliding_window_minimum_window_substring",
+        "pattern_id": "sliding_window",
         "completed_at": days_ago(2),
         "time_minutes": 38,
         "hints_used": 2,
@@ -269,12 +269,12 @@ QUEST_COMPLETIONS = [
         "last_reviewed": None,
         "next_review_in": 1,
     },
-    # ft_05 - Just one completed (weak pattern)
+    # binary_search - Just one completed (weak pattern)
     {
-        "id": "default_ft_05_c1_p1",
+        "id": "default_binary_search_basic",
         "user_id": "default",
-        "quest_id": "ft_05_c1_p1",
-        "pattern_id": "ft_05",
+        "quest_id": "binary_search_basic",
+        "pattern_id": "binary_search",
         "completed_at": days_ago(7),
         "time_minutes": 50,
         "hints_used": 3,
@@ -292,49 +292,49 @@ DAILY_LOGS = [
         "problems_solved": 1,
         "time_spent_mins": 35,
         "hints_used": 0,
-        "patterns_worked": ["ft_03"],
+        "patterns_worked": ["two_pointers"],
     },
     {
         "date": days_ago(1).strftime("%Y-%m-%d"),
         "problems_solved": 2,
         "time_spent_mins": 60,
         "hints_used": 1,
-        "patterns_worked": ["ft_03", "ft_04"],
+        "patterns_worked": ["two_pointers", "sliding_window"],
     },
     {
         "date": days_ago(2).strftime("%Y-%m-%d"),
         "problems_solved": 1,
         "time_spent_mins": 40,
         "hints_used": 2,
-        "patterns_worked": ["ft_04"],
+        "patterns_worked": ["sliding_window"],
     },
     {
         "date": days_ago(3).strftime("%Y-%m-%d"),
         "problems_solved": 1,
         "time_spent_mins": 45,
         "hints_used": 1,
-        "patterns_worked": ["ft_03"],
+        "patterns_worked": ["two_pointers"],
     },
     {
         "date": days_ago(4).strftime("%Y-%m-%d"),
         "problems_solved": 1,
         "time_spent_mins": 50,
         "hints_used": 3,
-        "patterns_worked": ["ft_04"],
+        "patterns_worked": ["sliding_window"],
     },
     {
         "date": days_ago(5).strftime("%Y-%m-%d"),
         "problems_solved": 2,
         "time_spent_mins": 55,
         "hints_used": 0,
-        "patterns_worked": ["ft_03"],
+        "patterns_worked": ["two_pointers"],
     },
     {
         "date": days_ago(6).strftime("%Y-%m-%d"),
         "problems_solved": 1,
         "time_spent_mins": 35,
         "hints_used": 1,
-        "patterns_worked": ["ft_03"],
+        "patterns_worked": ["two_pointers"],
     },
 ]
 
@@ -343,7 +343,7 @@ MILESTONES = [
     {
         "user_id": "default",
         "milestone_type": "pattern_mastered",
-        "pattern_id": "ft_02",
+        "pattern_id": "arrays_hashing",
         "quest_id": None,
         "description": "Mastered Arrays & Hashing pattern",
         "achieved_at": days_ago(3),
@@ -359,16 +359,16 @@ MILESTONES = [
     {
         "user_id": "default",
         "milestone_type": "no_hints",
-        "pattern_id": "ft_03",
-        "quest_id": "ft_03_c1_p2",
+        "pattern_id": "two_pointers",
+        "quest_id": "two_pointers_container_with_most_water",
         "description": "Solved Two Pointers problem without hints",
         "achieved_at": days_ago(5),
     },
     {
         "user_id": "default",
         "milestone_type": "first_quest",
-        "pattern_id": "ft_02",
-        "quest_id": "ft_02_c1_p1",
+        "pattern_id": "arrays_hashing",
+        "quest_id": "arrays_hashing_two_sum",
         "description": "Completed first quest",
         "achieved_at": days_ago(10),
     },
@@ -378,8 +378,8 @@ MILESTONES = [
 MISTAKES = [
     {
         "user_id": "default",
-        "quest_id": "ft_04_c1_p1",
-        "pattern_id": "ft_04",
+        "quest_id": "sliding_window_longest_substring_without_repeating",
+        "pattern_id": "sliding_window",
         "mistake_type": "off_by_one",
         "description": "Window boundary was inclusive instead of exclusive",
         "lesson_learned": "Always clarify if boundaries are inclusive or exclusive",
@@ -388,8 +388,8 @@ MISTAKES = [
     },
     {
         "user_id": "default",
-        "quest_id": "ft_04_c1_p2",
-        "pattern_id": "ft_04",
+        "quest_id": "sliding_window_minimum_window_substring",
+        "pattern_id": "sliding_window",
         "mistake_type": "off_by_one",
         "description": "Forgot to handle window size 0 case",
         "lesson_learned": "Check edge case: what if window is empty?",
@@ -398,8 +398,8 @@ MISTAKES = [
     },
     {
         "user_id": "default",
-        "quest_id": "ft_05_c1_p1",
-        "pattern_id": "ft_05",
+        "quest_id": "binary_search_basic",
+        "pattern_id": "binary_search",
         "mistake_type": "wrong_pattern",
         "description": "Tried linear search instead of binary search",
         "lesson_learned": "When array is sorted, consider binary search first",
@@ -408,8 +408,8 @@ MISTAKES = [
     },
     {
         "user_id": "default",
-        "quest_id": "ft_03_c2_p1",
-        "pattern_id": "ft_03",
+        "quest_id": "two_pointers_linked_list_cycle",
+        "pattern_id": "two_pointers",
         "mistake_type": "edge_case",
         "description": "Didn't handle duplicate elements in array",
         "lesson_learned": "Ask: can input have duplicates? How to handle them?",
@@ -422,7 +422,7 @@ MISTAKES = [
 TEACHING_HISTORY = [
     {
         "user_id": "default",
-        "pattern_id": "ft_02",
+        "pattern_id": "arrays_hashing",
         "concept": "hash_map_fundamentals",
         "explanation_count": 1,
         "last_explained": days_ago(10),
@@ -430,7 +430,7 @@ TEACHING_HISTORY = [
     },
     {
         "user_id": "default",
-        "pattern_id": "ft_02",
+        "pattern_id": "arrays_hashing",
         "concept": "collision_handling",
         "explanation_count": 2,  # Needed re-explanation
         "last_explained": days_ago(8),
@@ -438,7 +438,7 @@ TEACHING_HISTORY = [
     },
     {
         "user_id": "default",
-        "pattern_id": "ft_04",
+        "pattern_id": "sliding_window",
         "concept": "window_basics",
         "explanation_count": 1,
         "last_explained": days_ago(4),
@@ -446,7 +446,7 @@ TEACHING_HISTORY = [
     },
     {
         "user_id": "default",
-        "pattern_id": "ft_04",
+        "pattern_id": "sliding_window",
         "concept": "window_shrink_condition",
         "explanation_count": 3,  # Struggling with this
         "last_explained": days_ago(2),
@@ -454,7 +454,7 @@ TEACHING_HISTORY = [
     },
     {
         "user_id": "default",
-        "pattern_id": "ft_03",
+        "pattern_id": "two_pointers",
         "concept": "two_pointer_technique",
         "explanation_count": 1,
         "last_explained": days_ago(6),
@@ -466,7 +466,7 @@ TEACHING_HISTORY = [
 CONCEPT_UNDERSTANDING = [
     {
         "user_id": "default",
-        "pattern_id": "ft_02",
+        "pattern_id": "arrays_hashing",
         "concept": "hash_map_fundamentals",
         "understood": True,
         "diagnosed_at": days_ago(10),
@@ -474,7 +474,7 @@ CONCEPT_UNDERSTANDING = [
     },
     {
         "user_id": "default",
-        "pattern_id": "ft_02",
+        "pattern_id": "arrays_hashing",
         "concept": "collision_handling",
         "understood": True,
         "diagnosed_at": days_ago(9),
@@ -482,7 +482,7 @@ CONCEPT_UNDERSTANDING = [
     },
     {
         "user_id": "default",
-        "pattern_id": "ft_04",
+        "pattern_id": "sliding_window",
         "concept": "window_basics",
         "understood": True,
         "diagnosed_at": days_ago(4),
@@ -490,7 +490,7 @@ CONCEPT_UNDERSTANDING = [
     },
     {
         "user_id": "default",
-        "pattern_id": "ft_04",
+        "pattern_id": "sliding_window",
         "concept": "window_shrink_condition",
         "understood": False,  # Still struggling
         "diagnosed_at": days_ago(4),
@@ -498,7 +498,7 @@ CONCEPT_UNDERSTANDING = [
     },
     {
         "user_id": "default",
-        "pattern_id": "ft_03",
+        "pattern_id": "two_pointers",
         "concept": "two_pointer_technique",
         "understood": True,
         "diagnosed_at": days_ago(6),
@@ -550,11 +550,8 @@ def reset_database() -> None:
 
 
 def hydrate_user_profile(db: SyncDatabase, user_id: str = "test") -> None:
-    """Create or update the test user profile."""
+    """Create the test user profile."""
     print("👤 Hydrating user profile...")
-
-    # First ensure profile exists, then update it with our test data
-    db.get_or_create_profile(user_id)
 
     profile = UserProfile(
         id=user_id,
@@ -564,63 +561,60 @@ def hydrate_user_profile(db: SyncDatabase, user_id: str = "test") -> None:
         last_active=USER_PROFILE["last_active"],
     )
     db.update_profile(profile)
-    print(f"   Created profile: {profile.name} (user_id={user_id})")
+    print(f"   Created profile: {profile.name} ({user_id})")
 
 
 def hydrate_pattern_progress(db: SyncDatabase, user_id: str = "test") -> None:
     """Create pattern progress records."""
     print("📊 Hydrating pattern progress...")
 
-    for pp_data in PATTERN_PROGRESS:
-        pp = PatternProgress(
-            id=f"{user_id}_{pp_data['pattern_id']}",
+    for pp in PATTERN_PROGRESS:
+        progress = PatternProgress(
+            id=f"{user_id}_{pp['pattern_id']}",
             user_id=user_id,
-            pattern_id=pp_data["pattern_id"],
-            confidence=pp_data["confidence"],
-            quests_completed=pp_data["quests_completed"],
-            quests_total=pp_data["quests_total"],
-            concepts_understood=pp_data["concepts_understood"],
-            last_practiced=pp_data["last_practiced"],
-            next_review=pp_data["next_review"],
-            mastered=pp_data["mastered"],
+            pattern_id=pp["pattern_id"],
+            confidence=pp["confidence"],
+            quests_completed=pp["quests_completed"],
+            quests_total=pp["quests_total"],
+            concepts_understood=pp["concepts_understood"],
+            last_practiced=pp["last_practiced"],
+            next_review=pp["next_review"],
+            mastered=pp["mastered"],
         )
-        db.upsert_pattern_progress(pp)
-        status = "✓ MASTERED" if pp.mastered else f"{pp.confidence}%"
-        print(f"   {pp.pattern_id}: {status}")
+        db.upsert_pattern_progress(progress)
+        status = "MASTERED" if pp["mastered"] else f"{pp['confidence']}%"
+        print(f"   {pp['pattern_id']}: {status}")
 
 
 def hydrate_quest_completions(db: SyncDatabase, user_id: str = "test") -> None:
     """Create quest completion records."""
     print("✅ Hydrating quest completions...")
 
-    for qc_data in QUEST_COMPLETIONS:
-        qc = QuestCompletion(
-            id=f"{user_id}_{qc_data['quest_id']}",
+    for qc in QUEST_COMPLETIONS:
+        completion = QuestCompletion(
+            id=f"{user_id}_{qc['quest_id']}",
             user_id=user_id,
-            quest_id=qc_data["quest_id"],
-            pattern_id=qc_data["pattern_id"],
-            completed_at=qc_data["completed_at"],
-            time_minutes=qc_data["time_minutes"],
-            hints_used=qc_data["hints_used"],
-            success=qc_data["success"],
-            review_count=qc_data["review_count"],
-            last_reviewed=qc_data["last_reviewed"],
-            next_review_in=qc_data["next_review_in"],
+            quest_id=qc["quest_id"],
+            pattern_id=qc["pattern_id"],
+            completed_at=qc["completed_at"],
+            time_minutes=qc["time_minutes"],
+            hints_used=qc["hints_used"],
+            success=qc["success"],
+            review_count=qc["review_count"],
+            last_reviewed=qc["last_reviewed"],
+            next_review_in=qc["next_review_in"],
         )
-        db.upsert_quest_completion(qc)
-        hints_str = f"({qc.hints_used} hints)" if qc.hints_used else "(no hints)"
-        print(f"   {qc.quest_id} {hints_str}")
+        db.upsert_quest_completion(completion)
+        print(f"   {qc['quest_id']}")
 
 
 def hydrate_daily_logs(db: SyncDatabase, user_id: str = "test") -> None:
-    """Create daily activity logs using direct SQL for historical data."""
-    print("📅 Hydrating daily logs...")
-
-    # Use direct SQL to insert historical daily logs
-    # (upsert_daily_log only supports "today")
+    """Create daily log entries."""
     import sqlite3
 
     from dsa_coach.paths import BASE_DIR
+
+    print("📅 Hydrating daily logs...")
 
     db_path = BASE_DIR / "coach.db"
     conn = sqlite3.connect(db_path)
@@ -629,26 +623,25 @@ def hydrate_daily_logs(db: SyncDatabase, user_id: str = "test") -> None:
     for log in DAILY_LOGS:
         log_id = f"{user_id}_{log['date']}"
         patterns_json = json.dumps(log["patterns_worked"])
-
         cursor.execute(
             """
             INSERT OR REPLACE INTO daily_logs
-            (id, user_id, date, problems_solved, time_spent_mins, patterns_worked, hints_used)
+            (id, user_id, date, problems_solved, time_spent_mins, hints_used, patterns_worked)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """,
+            """,
             (
                 log_id,
                 user_id,
                 log["date"],
                 log["problems_solved"],
                 log["time_spent_mins"],
-                patterns_json,
                 log["hints_used"],
+                patterns_json,
             ),
         )
-
         print(
-            f"   {log['date']}: {log['problems_solved']} problems, {log['time_spent_mins']}min"
+            f"   {log['date']}: {log['problems_solved']} problems, "
+            f"{log['time_spent_mins']}min"
         )
 
     conn.commit()
@@ -663,11 +656,11 @@ def hydrate_milestones(db: SyncDatabase, user_id: str = "test") -> None:
         db.add_milestone(
             user_id=user_id,
             milestone_type=m["milestone_type"],
+            pattern_id=m["pattern_id"],
+            quest_id=m["quest_id"],
             description=m["description"],
-            pattern_id=m.get("pattern_id"),
-            quest_id=m.get("quest_id"),
         )
-        print(f"   {m['milestone_type']}: {m['description']}")
+        print(f"   {m['milestone_type']}: {m['description'][:40]}...")
 
 
 def hydrate_mistakes(db: SyncDatabase, user_id: str = "test") -> None:

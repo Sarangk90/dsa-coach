@@ -42,9 +42,9 @@ async def test_list_patterns(test_db):
     assert result.data is not None
     assert len(result.data) > 0
 
-    # Check that ft_04 (Sliding Window) is present
+    # Check that sliding_window is present
     pattern_ids = [p["pattern_id"] for p in result.data]
-    assert "ft_04" in pattern_ids
+    assert "sliding_window" in pattern_ids
 
 
 @pytest.mark.asyncio
@@ -64,11 +64,11 @@ async def test_list_patterns_includes_confidence(test_db):
 @pytest.mark.asyncio
 async def test_get_pattern_details(test_db):
     """Test getting details for a specific pattern."""
-    result = await get_pattern_details(test_db, "ft_04")  # Sliding Window
+    result = await get_pattern_details(test_db, "sliding_window")
 
     assert result.success
     assert result.data is not None
-    assert result.data["pattern_id"] == "ft_04"
+    assert result.data["pattern_id"] == "sliding_window"
     assert "concepts" in result.data
     assert "essential_quests" in result.data
 
@@ -102,10 +102,10 @@ async def test_get_weak_patterns(test_db):
 @pytest.mark.asyncio
 async def test_get_next_essential_quest(test_db):
     """Test getting next essential quest for a pattern."""
-    result = await get_next_essential_quest(test_db, "ft_04")  # Sliding Window
+    result = await get_next_essential_quest(test_db, "sliding_window")
 
     assert result.success
-    # ft_04 (Sliding Window) has essential problems defined
+    # sliding_window has essential problems defined
     if result.data:
         assert "quest_id" in result.data or "problem_id" in result.data
         assert "title" in result.data or "problem_name" in result.data

@@ -87,13 +87,15 @@ class TestStateInspection:
         async with CoachTestHarness(db_path=db_path, auto_hydrate=True) as harness:
             patterns = await harness.inspect_patterns()
 
-            assert len(patterns) == 4  # ft_02, ft_03, ft_04, ft_05
+            assert (
+                len(patterns) == 4
+            )  # arrays_hashing, two_pointers, sliding_window, binary_search
 
             # Check specific pattern
-            ft_02 = await harness.inspect_pattern("ft_02")
-            assert ft_02 is not None
-            assert ft_02.confidence == 75
-            assert ft_02.mastered is True
+            arrays_hashing = await harness.inspect_pattern("arrays_hashing")
+            assert arrays_hashing is not None
+            assert arrays_hashing.confidence == 75
+            assert arrays_hashing.mastered is True
 
     @pytest.mark.asyncio
     async def test_inspect_quests(self, tmp_path):
@@ -105,7 +107,7 @@ class TestStateInspection:
             assert len(quests) == 5
 
             # Check specific quest
-            quest = await harness.inspect_quest("ft_02_c1_p1")
+            quest = await harness.inspect_quest("arrays_hashing_two_sum")
             assert quest is not None
             assert quest.hints_used == 1
 
@@ -131,8 +133,8 @@ class TestStateInspection:
 
             assert len(milestones) >= 1
 
-            # Check for pattern mastered milestone (milestones are dicts)
-            types = [m["milestone_type"] for m in milestones]
+            # Check for pattern mastered milestone (milestones are dicts with 'type' key)
+            types = [m["type"] for m in milestones]
             assert "pattern_mastered" in types
 
 
@@ -174,7 +176,7 @@ class TestSnapshotAndDiff:
             await harness.db.add_mistake(
                 user_id="test_user",
                 quest_id="test_quest",
-                pattern_id="ft_03",
+                pattern_id="two_pointers",
                 mistake_type="edge_case",
                 description="Test mistake for diff",
             )
@@ -194,15 +196,15 @@ class TestAssertionHelpers:
         """Can assert pattern confidence levels."""
         db_path = tmp_path / "test.db"
         async with CoachTestHarness(db_path=db_path, auto_hydrate=True) as harness:
-            # Should pass - ft_02 has 75% confidence
-            await harness.assert_pattern_confidence("ft_02", 75)
+            # Should pass - arrays_hashing has 75% confidence
+            await harness.assert_pattern_confidence("arrays_hashing", 75)
 
             # Should pass with tolerance
-            await harness.assert_pattern_confidence("ft_02", 77, tolerance=5)
+            await harness.assert_pattern_confidence("arrays_hashing", 77, tolerance=5)
 
             # Should fail - wrong confidence
             with pytest.raises(AssertionError):
-                await harness.assert_pattern_confidence("ft_02", 50)
+                await harness.assert_pattern_confidence("arrays_hashing", 50)
 
     @pytest.mark.asyncio
     async def test_assert_quest_completed(self, tmp_path):
@@ -210,7 +212,7 @@ class TestAssertionHelpers:
         db_path = tmp_path / "test.db"
         async with CoachTestHarness(db_path=db_path, auto_hydrate=True) as harness:
             # Should pass - quest is completed
-            await harness.assert_quest_completed("ft_02_c1_p1")
+            await harness.assert_quest_completed("arrays_hashing_two_sum")
 
             # Should fail - quest not completed
             with pytest.raises(AssertionError):

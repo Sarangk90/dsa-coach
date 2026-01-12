@@ -15,9 +15,9 @@ def test_status_output(capsys):
         )
         mock_db.get_all_pattern_progress.return_value = [
             PatternProgress(
-                id="default_ft_02",
+                id="default_arrays_hashing",
                 user_id="default",
-                pattern_id="ft_02",
+                pattern_id="arrays_hashing",
                 confidence=80,
             )
         ]

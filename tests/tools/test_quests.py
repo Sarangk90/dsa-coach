@@ -35,7 +35,7 @@ async def test_db():
 @pytest.mark.asyncio
 async def test_get_quests_for_pattern(test_db):
     """Test getting quests for a specific pattern."""
-    result = await get_quests_for_pattern(test_db, "ft_04")  # Sliding Window
+    result = await get_quests_for_pattern(test_db, "sliding_window")
 
     assert result.success
     assert result.data is not None
@@ -59,17 +59,17 @@ async def test_get_current_quest_none(test_db):
 @pytest.mark.asyncio
 async def test_assign_quest(test_db):
     """Test assigning a quest."""
-    # Use a real V2 quest ID (ft_02_c1_p1 - Arrays & Hashing, concept 1, problem 1)
+    # Use a real quest ID (arrays_hashing_two_sum - Arrays & Hashing, Two Sum problem)
     with patch("webbrowser.open"):
         result = await assign_quest(
             test_db,
-            "ft_02_c1_p1",
+            "arrays_hashing_two_sum",
             open_browser=False,
         )
 
     assert result.success
     assert result.data is not None
-    assert result.data["quest_id"] == "ft_02_c1_p1"
+    assert result.data["quest_id"] == "arrays_hashing_two_sum"
     assert "solution_file" in result.data
 
 
@@ -94,9 +94,9 @@ async def test_mark_quest_complete_no_current(test_db):
 @pytest.mark.asyncio
 async def test_mark_quest_complete_flow(test_db):
     """Test the full assign -> complete flow."""
-    # Assign a quest (ft_02_c1_p1 is from Arrays & Hashing pattern)
+    # Assign a quest (arrays_hashing_two_sum is from Arrays & Hashing pattern)
     with patch("webbrowser.open"):
-        await assign_quest(test_db, "ft_02_c1_p1", open_browser=False)
+        await assign_quest(test_db, "arrays_hashing_two_sum", open_browser=False)
 
     # Mark complete
     result = await mark_quest_complete(test_db, success=True, hints_used=0)
@@ -120,9 +120,9 @@ async def test_get_hint_no_current(test_db):
 @pytest.mark.asyncio
 async def test_get_hint_with_quest(test_db):
     """Test getting hint for assigned quest."""
-    # Assign a quest (ft_02_c1_p1)
+    # Assign a quest (arrays_hashing_two_sum)
     with patch("webbrowser.open"):
-        await assign_quest(test_db, "ft_02_c1_p1", open_browser=False)
+        await assign_quest(test_db, "arrays_hashing_two_sum", open_browser=False)
 
     # Get hint
     result = await get_hint(test_db, level="low")

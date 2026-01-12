@@ -17,7 +17,7 @@ def test_hint_no_active_quest(capsys):
 
 
 def test_hint_static(capsys):
-    quest = {"id": "q1", "pattern": "ft_04", "hints": {"low": "Static Hint"}}
+    quest = {"id": "q1", "pattern": "sliding_window", "hints": {"low": "Static Hint"}}
 
     # Mock the AI import to fail, forcing static hints
     import sys
@@ -34,9 +34,9 @@ def test_hint_static(capsys):
         mock_db_class.return_value.__enter__.return_value = mock_db
         mock_db.get_latest_session.return_value = Session(id="test", current_quest="q1")
         mock_db.get_pattern_progress.return_value = PatternProgress(
-            id="default_ft_04",
+            id="default_sliding_window",
             user_id="default",
-            pattern_id="ft_04",
+            pattern_id="sliding_window",
             confidence=10,
         )
 
@@ -47,7 +47,7 @@ def test_hint_static(capsys):
 
 
 def test_hint_ai(capsys):
-    quest = {"id": "q1", "pattern": "ft_04", "hints": {"low": "Static Hint"}}
+    quest = {"id": "q1", "pattern": "sliding_window", "hints": {"low": "Static Hint"}}
 
     with (
         patch("dsa_coach.commands.hint.SyncDatabase") as mock_db_class,
@@ -58,9 +58,9 @@ def test_hint_ai(capsys):
         mock_db_class.return_value.__enter__.return_value = mock_db
         mock_db.get_latest_session.return_value = Session(id="test", current_quest="q1")
         mock_db.get_pattern_progress.return_value = PatternProgress(
-            id="default_ft_04",
+            id="default_sliding_window",
             user_id="default",
-            pattern_id="ft_04",
+            pattern_id="sliding_window",
             confidence=10,
         )
 
