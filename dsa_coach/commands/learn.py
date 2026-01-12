@@ -1,8 +1,6 @@
-from dsa_coach import paths
 from dsa_coach.curriculum import get_pattern_name
 from dsa_coach.pattern_manager import PatternManager
 from dsa_coach.quests import get_all_quests
-from dsa_coach.storage import load_json
 from dsa_coach.storage.sync import SyncDatabase
 from dsa_coach.ui import UI
 
@@ -36,7 +34,7 @@ def _run_learning_session(
         ui.print_styled("  ✅ Great learning session!", "green")
 
         # Reload progress
-        pm = PatternManager()
+        pm = PatternManager(mode=mode)
         status = pm.get_pattern_status(pattern)
         next_quest = status["next_quest"]
 
@@ -105,8 +103,13 @@ def cmd_learn(pattern: str | None = None):
 
     # If pattern not specified, show comprehensive menu
     if not pattern:
-        quests_data = load_json(paths.QUESTS_FILE)
-        patterns_config = quests_data.get("metadata", {}).get("patterns", {})
+        from dsa_coach.curriculum import get_curriculum
+
+        # Get patterns from V2 curriculum
+        curriculum = get_curriculum(
+            progress_compat.get("profile", {}).get("active_mode", "fast_track")
+        )
+        patterns_config = {p["pattern_id"]: p for p in curriculum}
 
         ui.print_styled("\n" + "=" * 70, "cyan")
         ui.print_styled("  📚 INTERACTIVE LEARNING - CHOOSE YOUR PATTERN", "bold cyan")
@@ -127,16 +130,19 @@ def cmd_learn(pattern: str | None = None):
         pattern_options = []
         option_num = 1
 
-        # Sort patterns by title
+        # Sort patterns by sequence_order (curriculum order) for V2
         sorted_patterns = sorted(
-            patterns_config.items(), key=lambda x: x[1].get("title", x[0])
+            patterns_config.items(), key=lambda x: x[1].get("sequence_order", 999)
         )
 
         for pat_id, pat_data in sorted_patterns:
             conf = pattern_conf_map.get(pat_id, 0)
             badge, color = _format_confidence_badge(conf)
 
-            pattern_display = pat_data.get("title", pat_id.replace("_", " ").title())
+            # Use pattern_name for V2 (or fall back to title for compatibility)
+            pattern_display = pat_data.get(
+                "pattern_name", pat_data.get("title", pat_id.replace("_", " ").title())
+            )
             is_current = pat_id == current_quest_pattern
             current_marker = " 👈 YOUR QUEST" if is_current else ""
 
@@ -172,17 +178,23 @@ def cmd_learn(pattern: str | None = None):
                 return
     else:
         # Pattern provided as argument - normalize it
+        from dsa_coach.curriculum import get_curriculum
+
         pattern = _normalize_pattern(pattern)
         # Allow patterns from config even if no progress yet
-        quests_data = load_json(paths.QUESTS_FILE)
-        patterns_config = quests_data.get("metadata", {}).get("patterns", {})
+        curriculum = get_curriculum(
+            progress_compat.get("profile", {}).get("active_mode", "fast_track")
+        )
+        patterns_config = {p["pattern_id"]: p for p in curriculum}
         if pattern not in pattern_ids and pattern not in patterns_config:
             ui.print_styled(f"  ❌ Pattern '{pattern}' not found.", "red")
             return
 
     # --- Pattern Dashboard & Action Menu ---
 
-    pm = PatternManager()
+    pm = PatternManager(
+        mode=progress_compat.get("profile", {}).get("active_mode", "fast_track")
+    )
     status = pm.get_pattern_status(pattern)
     syllabus = pm.get_pattern_syllabus(pattern)
 
@@ -259,7 +271,11 @@ def cmd_learn(pattern: str | None = None):
             )
             if want_practice:
                 # Reload and start next quest
-                pm = PatternManager()
+                pm = PatternManager(
+                    mode=progress_compat.get("profile", {}).get(
+                        "active_mode", "fast_track"
+                    )
+                )
                 status = pm.get_pattern_status(pattern)
                 if status["next_quest"]:
                     from dsa_coach.commands.next_quest import start_quest
@@ -272,7 +288,11 @@ def cmd_learn(pattern: str | None = None):
                 pattern, progress_compat, "teach_first", ui
             )
             if want_practice:
-                pm = PatternManager()
+                pm = PatternManager(
+                    mode=progress_compat.get("profile", {}).get(
+                        "active_mode", "fast_track"
+                    )
+                )
                 status = pm.get_pattern_status(pattern)
                 if status["next_quest"]:
                     from dsa_coach.commands.next_quest import start_quest
@@ -295,7 +315,7 @@ def cmd_learn(pattern: str | None = None):
         elif action == "4":
             # List all quests for this pattern
             all_quests = get_all_quests()
-            pattern_quests = [q for q in all_quests if q.get("pattern") == pattern]
+            pattern_quests = [q for q in all_quests if q.get("pattern_id") == pattern]
 
             if not pattern_quests:
                 ui.print_styled("  No quests found for this pattern.", "red")
@@ -305,9 +325,10 @@ def cmd_learn(pattern: str | None = None):
                 f"\n  📝 Available Quests for {get_pattern_name(pattern)}:", "cyan"
             )
             for i, q in enumerate(pattern_quests, 1):
-                status_icon = "✅" if q["id"] in completed_quest_ids else "⬜"
+                status_icon = "✅" if q["problem_id"] in completed_quest_ids else "⬜"
                 ui.print_styled(
-                    f"     {i}. {status_icon} {q['title']} ({q['difficulty']})", "white"
+                    f"     {i}. {status_icon} {q['problem_name']} ({q['difficulty']})",
+                    "white",
                 )
 
             q_idx = input(f"\n  Select quest (1-{len(pattern_quests)}): ").strip()
@@ -336,7 +357,11 @@ def cmd_learn(pattern: str | None = None):
 
                 # After session, offer practice
                 ui.print_styled("\n" + "─" * 60, "dim")
-                pm = PatternManager()
+                pm = PatternManager(
+                    mode=progress_compat.get("profile", {}).get(
+                        "active_mode", "fast_track"
+                    )
+                )
                 status = pm.get_pattern_status(pattern)
                 next_quest = status["next_quest"]
 
