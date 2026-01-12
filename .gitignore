@@ -47,6 +47,9 @@ coach.db
 solutions/
 conversations/
 
+# Backup files (migration artifacts)
+*.bak
+
 # OS
 .DS_Store
 Thumbs.db

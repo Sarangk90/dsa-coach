@@ -26,9 +26,7 @@ pydantic-ai==0.3.0
 pydantic>=2.0.0
 
 # Async SQLite
-aiosqlite==0.21.0
-
-# Development Tools (Linting & Formatting)
+aiosqlite==0.21.0# Development Tools (Linting & Formatting)
 ruff==0.14.10
 mypy==1.19.1
 pre-commit==4.5.1

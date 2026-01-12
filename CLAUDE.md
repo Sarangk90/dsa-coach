@@ -755,9 +755,7 @@ This means old code is being used. Update to use `SyncDatabase`:
 ```python
 # Old (deprecated)
 from dsa_coach.progress import load_progress
-progress = load_progress()
-
-# New (correct)
+progress = load_progress()# New (correct)
 from dsa_coach.storage.sync import SyncDatabase
 with SyncDatabase() as db:
     progress_compat = db.build_progress_compat()
