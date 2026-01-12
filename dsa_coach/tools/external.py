@@ -25,13 +25,26 @@ def _load_quests() -> dict:
     return _quests_cache
 
 
-def _find_quest(quest_id: str) -> dict[str, str] | None:
-    """Find a quest by ID."""
+def _find_quest(quest_id: str, mode: str = "fast_track") -> dict[str, str] | None:
+    """Find a quest/problem by ID in V2 curriculum structure."""
     quests = _load_quests()
 
-    for quest in quests.get("quests", []):
-        if quest.get("id") == quest_id:
-            return dict(quest)
+    # Search through V2 curriculum structure
+    for curriculum_mode in [mode, "fast_track", "complete"]:
+        curriculum = quests.get("curriculum", {}).get(curriculum_mode, [])
+        for pattern in curriculum:
+            pattern_id = pattern.get("pattern_id")
+            for concept in pattern.get("concepts", []):
+                for problem in concept.get("practice_problems", []):
+                    if problem.get("problem_id") == quest_id:
+                        # Return with V1-compatible field names
+                        return {
+                            "id": problem.get("problem_id"),
+                            "title": problem.get("problem_name"),
+                            "pattern": pattern_id,
+                            "difficulty": problem.get("difficulty", "medium"),
+                            "link": problem.get("url", ""),
+                        }
 
     return None
 
@@ -191,49 +204,59 @@ async def get_dashboard_state(
 async def search_patterns_and_quests(
     db: Database,
     query: str,
+    mode: str = "fast_track",
 ) -> ToolResult:
     """
     Search patterns and quests by keyword.
 
     :param query: Search query
+    :param mode: Curriculum mode to search
     :return: Matching patterns and quests
     """
     quests = _load_quests()
     query_lower = query.lower()
 
-    # Search patterns
+    # Search patterns in V2 curriculum
     matching_patterns = []
-    patterns = quests.get("metadata", {}).get("patterns", {})
-    for pattern_id, pattern_data in patterns.items():
+    curriculum = quests.get("curriculum", {}).get(mode, [])
+    for pattern in curriculum:
+        pattern_id = pattern.get("pattern_id", "")
+        pattern_name = pattern.get("pattern_name", "")
+        tier = pattern.get("tier", "")
         if (
             query_lower in pattern_id.lower()
-            or query_lower in pattern_data.get("title", "").lower()
-            or query_lower in pattern_data.get("description", "").lower()
+            or query_lower in pattern_name.lower()
+            or query_lower in tier.lower()
         ):
             matching_patterns.append(
                 {
                     "pattern_id": pattern_id,
-                    "title": pattern_data.get("title", pattern_id),
-                    "description": pattern_data.get("description", "")[:100],
+                    "title": pattern_name,
+                    "description": f"{tier.title()} - {pattern.get('estimated_time_hours', 0)}h",
                 }
             )
 
-    # Search quests
+    # Search quests/problems in V2 curriculum
     matching_quests = []
-    for quest in quests.get("quests", []):
-        if (
-            query_lower in quest.get("id", "").lower()
-            or query_lower in quest.get("title", "").lower()
-            or query_lower in quest.get("pattern", "").lower()
-        ):
-            matching_quests.append(
-                {
-                    "quest_id": quest["id"],
-                    "title": quest.get("title", quest["id"]),
-                    "pattern": quest.get("pattern", "unknown"),
-                    "difficulty": quest.get("difficulty", "medium"),
-                }
-            )
+    for pattern in curriculum:
+        pattern_id = pattern.get("pattern_id", "")
+        for concept in pattern.get("concepts", []):
+            for problem in concept.get("practice_problems", []):
+                problem_id = problem.get("problem_id", "")
+                problem_name = problem.get("problem_name", "")
+                if (
+                    query_lower in problem_id.lower()
+                    or query_lower in problem_name.lower()
+                    or query_lower in pattern_id.lower()
+                ):
+                    matching_quests.append(
+                        {
+                            "quest_id": problem_id,
+                            "title": problem_name,
+                            "pattern": pattern_id,
+                            "difficulty": problem.get("difficulty", "medium"),
+                        }
+                    )
 
     return ToolResult(
         success=True,

@@ -23,13 +23,36 @@ def _load_quests() -> dict:
     return _quests_cache
 
 
-def _find_quest(quest_id: str) -> dict | None:
-    """Find a quest by ID."""
+def _find_quest(quest_id: str, mode: str = "fast_track") -> dict | None:
+    """Find a quest/problem by ID in V2 curriculum structure."""
     quests = _load_quests()
 
-    for quest in quests.get("quests", []):
-        if quest.get("id") == quest_id:
-            return quest
+    # Search through V2 curriculum structure
+    for curriculum_mode in [mode, "fast_track", "complete"]:
+        curriculum = quests.get("curriculum", {}).get(curriculum_mode, [])
+        for pattern in curriculum:
+            pattern_id = pattern.get("pattern_id")
+            for concept in pattern.get("concepts", []):
+                for problem in concept.get("practice_problems", []):
+                    if problem.get("problem_id") == quest_id:
+                        # Return enriched problem data with V1-compatible fields
+                        return {
+                            "id": problem.get("problem_id"),
+                            "title": problem.get("problem_name"),
+                            "pattern": pattern_id,
+                            "difficulty": problem.get("difficulty", "medium"),
+                            "link": problem.get("url", ""),
+                            "template": problem.get("template", ""),
+                            "hints": problem.get("hints", {}),
+                            # Include V2 fields as well
+                            "problem_id": problem.get("problem_id"),
+                            "problem_name": problem.get("problem_name"),
+                            "url": problem.get("url", ""),
+                            "pattern_id": pattern_id,
+                            "pattern_name": pattern.get("pattern_name", ""),
+                            "concept_id": concept.get("concept_id"),
+                            "concept_name": concept.get("concept_name"),
+                        }
 
     return None
 

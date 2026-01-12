@@ -25,11 +25,22 @@ def _load_quests() -> dict:
     return _quests_cache
 
 
-def _get_pattern_concepts(pattern_id: str) -> list[str]:
-    """Get all concepts for a pattern."""
+def _get_pattern_concepts(pattern_id: str, mode: str = "fast_track") -> list[str]:
+    """Get all concept names for a pattern from V2 curriculum."""
     quests = _load_quests()
-    pattern_meta = quests.get("metadata", {}).get("patterns", {}).get(pattern_id, {})
-    return pattern_meta.get("concepts", [])
+
+    # Search V2 curriculum for the pattern
+    for curriculum_mode in [mode, "fast_track", "complete"]:
+        curriculum = quests.get("curriculum", {}).get(curriculum_mode, [])
+        for pattern in curriculum:
+            if pattern.get("pattern_id") == pattern_id:
+                # Extract concept names (or IDs) from concepts array
+                concepts = pattern.get("concepts", [])
+                return [
+                    c.get("concept_name", c.get("concept_id", "")) for c in concepts
+                ]
+
+    return []
 
 
 @tool(
@@ -277,11 +288,30 @@ async def get_teaching_context(
     :param concept: The concept to teach
     :return: Teaching context with related info
     """
+    # Get pattern from V2 curriculum
     quests = _load_quests()
-    pattern_meta = quests.get("metadata", {}).get("patterns", {}).get(pattern_id, {})
+    pattern_meta = None
+    for curriculum_mode in ["fast_track", "complete"]:
+        curriculum = quests.get("curriculum", {}).get(curriculum_mode, [])
+        for pattern in curriculum:
+            if pattern.get("pattern_id") == pattern_id:
+                pattern_meta = pattern
+                break
+        if pattern_meta:
+            break
 
-    all_concepts = pattern_meta.get("concepts", [])
-    description = pattern_meta.get("description", "")
+    if not pattern_meta:
+        return ToolResult(
+            success=False,
+            error=f"Pattern '{pattern_id}' not found in curriculum",
+        )
+
+    # Extract concept names from concepts array
+    concepts_data = pattern_meta.get("concepts", [])
+    all_concepts = [
+        c.get("concept_name", c.get("concept_id", "")) for c in concepts_data
+    ]
+    description = f"{pattern_meta.get('tier', 'foundation').title()} pattern - {pattern_meta.get('estimated_time_hours', 0)}h"
 
     # Get user's current understanding
     understanding = await db.get_concept_understanding(user_id, pattern_id, concept)
