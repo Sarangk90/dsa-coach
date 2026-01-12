@@ -154,7 +154,12 @@ class ToolRegistry:
             )
 
         try:
-            result = await tool.func(**kwargs)
+            # Filter kwargs to only include parameters the function accepts
+            sig = inspect.signature(tool.func)
+            valid_params = set(sig.parameters.keys())
+            filtered_kwargs = {k: v for k, v in kwargs.items() if k in valid_params}
+
+            result = await tool.func(**filtered_kwargs)
             if isinstance(result, ToolResult):
                 return result
             return ToolResult(success=True, data=result)
