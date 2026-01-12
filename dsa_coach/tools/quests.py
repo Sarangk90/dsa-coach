@@ -9,9 +9,25 @@ import webbrowser
 from datetime import datetime
 from pathlib import Path
 
+from ..id_mappings import get_new_pattern_id, get_new_problem_id, is_old_format_id
 from ..storage.db import Database
 from ..storage.models import PatternProgress, QuestCompletion
 from .registry import ToolResult, tool
+
+
+def _normalize_pattern_id(pattern_id: str) -> str:
+    """Normalize pattern ID, converting old ft_* format to new slugs if needed."""
+    if is_old_format_id(pattern_id):
+        return get_new_pattern_id(pattern_id)
+    return pattern_id
+
+
+def _normalize_quest_id(quest_id: str) -> str:
+    """Normalize quest/problem ID, converting old ft_* format to new slugs if needed."""
+    if is_old_format_id(quest_id):
+        return get_new_problem_id(quest_id)
+    return quest_id
+
 
 # Cache for quests.json data
 _quests_cache: dict | None = None
@@ -47,12 +63,17 @@ def _count_total_quests_for_pattern(pattern_id: str) -> int:
 
 
 def _find_quest(quest_id: str) -> dict | None:
-    """Find a quest/problem by ID (V2 only)."""
+    """Find a quest/problem by ID or name (V2 only).
+
+    Supports:
+    - Exact problem_id match
+    - Fuzzy name match (for when LLM guesses ID from problem name)
+    """
     quests = _load_quests()
 
     assert "curriculum" in quests, "Expected V2 quest structure with 'curriculum' key"
 
-    # Check nested curriculum structure
+    # First pass: exact ID match
     for mode in ["fast_track", "complete"]:
         curriculum = quests.get("curriculum", {}).get(mode, [])
         for pattern in curriculum:
@@ -72,7 +93,38 @@ def _find_quest(quest_id: str) -> dict | None:
                             "link": problem.get("url"),
                         }
 
-    return None
+    # Second pass: fuzzy name match (handles LLM-generated IDs like
+    # "binary_search_search_in_rotated_sorted_array" for problem "Search in Rotated Sorted Array")
+    quest_id_lower = quest_id.lower().replace("_", " ").replace("-", " ")
+
+    # Collect all matches and pick the best one (longest match wins)
+    best_match = None
+    best_match_len = 0
+
+    for mode in ["fast_track", "complete"]:
+        curriculum = quests.get("curriculum", {}).get(mode, [])
+        for pattern in curriculum:
+            for concept in pattern.get("concepts", []):
+                for problem in concept.get("practice_problems", []):
+                    problem_name = problem.get("problem_name", "").lower()
+                    # Check if the problem name is contained in the quest_id
+                    if problem_name and problem_name in quest_id_lower:
+                        # Prefer longer matches (more specific)
+                        if len(problem_name) > best_match_len:
+                            best_match_len = len(problem_name)
+                            best_match = {
+                                **problem,
+                                "id": problem.get("problem_id"),
+                                "title": problem.get("problem_name"),
+                                "pattern_id": pattern.get("pattern_id"),
+                                "pattern_name": pattern.get("pattern_name"),
+                                "pattern": pattern.get("pattern_id"),
+                                "concept_id": concept.get("concept_id"),
+                                "concept_name": concept.get("concept_name"),
+                                "link": problem.get("url"),
+                            }
+
+    return best_match
 
 
 @tool(
@@ -88,9 +140,12 @@ async def get_quests_for_pattern(
     """
     Get all quests associated with a pattern (V2 only).
 
-    :param pattern_id: The pattern identifier (e.g., 'ft_04')
+    :param pattern_id: The pattern identifier (e.g., 'sliding_window')
     :return: List of quests with completion status
     """
+    # Normalize pattern_id (accept old ft_* format for backward compatibility)
+    pattern_id = _normalize_pattern_id(pattern_id)
+
     quests = _load_quests()
     pattern_quests = []
 
@@ -187,6 +242,9 @@ async def assign_quest(
     :param open_browser: Whether to open the LeetCode problem in browser
     :return: Quest details and solution file path
     """
+    # Normalize quest_id (accept old ft_* format for backward compatibility)
+    quest_id = _normalize_quest_id(quest_id)
+
     quest = _find_quest(quest_id)
     if not quest:
         return ToolResult(
