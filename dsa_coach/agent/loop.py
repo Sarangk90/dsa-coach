@@ -7,12 +7,13 @@ from __future__ import annotations
 
 import asyncio
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from ..storage.db import Database
 from ..storage.migrations import check_migration_needed, migrate_from_json
 from .agent import CoachAgent
-from .terminal import TerminalUI
+from .terminal import TerminalUI, format_time_ago
 
 # Exit commands
 EXIT_COMMANDS = {"quit", "exit", "bye", "q"}
@@ -20,6 +21,7 @@ HELP_COMMANDS = {"help", "?", "h"}
 STATUS_COMMANDS = {"status", "progress", "me"}
 DASHBOARD_COMMANDS = {"dashboard", "dash", "d"}
 PATTERN_COMMANDS = {"patterns", "list"}
+RESUME_COMMANDS = {"resume", "/resume"}
 
 
 async def run_agent_loop(db_path: Path | None = None) -> None:
@@ -104,6 +106,58 @@ async def run_agent_loop(db_path: Path | None = None) -> None:
                     await agent._refresh_dashboard()
                     if agent.dashboard:
                         ui.render_dashboard(agent.dashboard)
+                    continue
+
+                # Handle /resume command
+                if command.lstrip("/") == "resume":
+                    # Get current session ID to exclude from list
+                    current_session_id = None
+                    if agent.session.session:
+                        current_session_id = agent.session.session.id
+
+                    # List available sessions (excluding current)
+                    sessions = await db.list_sessions(
+                        limit=10,
+                        exclude_session_id=current_session_id,
+                    )
+
+                    if not sessions:
+                        ui.render_info("No previous sessions to resume.")
+                        continue
+
+                    # Show picker
+                    ui.render_session_picker(sessions)
+                    selection = await ui.get_session_selection(len(sessions))
+
+                    if selection is None:
+                        ui.render_info("Resume cancelled.")
+                        continue
+
+                    # Resume selected session
+                    session_data = sessions[selection]
+                    resumed = await agent.session.resume_by_id(session_data["id"])
+
+                    if not resumed:
+                        ui.render_error("Failed to resume session.")
+                        continue
+
+                    # CRITICAL: Refresh agent context after resume
+                    await agent._refresh_student_context()
+                    await agent._refresh_dashboard()
+
+                    # Show FULL conversation history
+                    all_messages = agent.session.get_display_messages()
+                    if all_messages:
+                        ui.render_conversation_history(all_messages)
+
+                    # Show dashboard with updated state
+                    if agent.dashboard:
+                        ui.render_dashboard(agent.dashboard)
+
+                    time_ago = format_time_ago(
+                        datetime.fromisoformat(session_data["updated_at"])
+                    )
+                    ui.render_success(f"Resumed session from {time_ago}")
                     continue
 
                 # Echo user message

@@ -273,6 +273,66 @@ class Database:
                 return self._row_to_session(row)
             return None
 
+    async def list_sessions(
+        self,
+        user_id: str = "default",
+        limit: int = 10,
+        exclude_session_id: str | None = None,
+    ) -> list[dict]:
+        """List recent sessions with preview info for /resume picker.
+
+        Returns list of dicts with:
+        - id, created_at, updated_at, session_type
+        - current_pattern, current_quest
+        - message_count
+        - first_message (first user message content)
+
+        Filters out:
+        - Sessions with 0 messages
+        - The current session (if exclude_session_id provided)
+
+        Orders by updated_at DESC.
+        """
+        query = """
+            SELECT
+                s.id,
+                s.created_at,
+                s.updated_at,
+                s.session_type,
+                s.current_pattern,
+                s.current_quest,
+                COUNT(m.id) as message_count,
+                (SELECT content FROM messages m2
+                 WHERE m2.session_id = s.id AND m2.role = 'user'
+                 ORDER BY m2.created_at LIMIT 1) as first_message
+            FROM sessions s
+            LEFT JOIN messages m ON s.id = m.session_id
+            WHERE s.user_id = ?
+              AND (? IS NULL OR s.id != ?)
+            GROUP BY s.id
+            HAVING COUNT(m.id) > 0
+            ORDER BY s.updated_at DESC
+            LIMIT ?
+        """
+        sessions = []
+        async with self.conn.execute(
+            query, (user_id, exclude_session_id, exclude_session_id, limit)
+        ) as cursor:
+            async for row in cursor:
+                sessions.append(
+                    {
+                        "id": row["id"],
+                        "created_at": row["created_at"],
+                        "updated_at": row["updated_at"],
+                        "session_type": row["session_type"],
+                        "current_pattern": row["current_pattern"],
+                        "current_quest": row["current_quest"],
+                        "message_count": row["message_count"],
+                        "first_message": row["first_message"],
+                    }
+                )
+        return sessions
+
     async def update_session(self, session: Session) -> None:
         """Update a session."""
         session.updated_at = datetime.now()

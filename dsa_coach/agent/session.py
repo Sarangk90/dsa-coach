@@ -192,3 +192,31 @@ class SessionManager:
         Keeps only user/assistant messages for clean context.
         """
         return [m for m in self._messages if m.get("role") in ("user", "assistant")]
+
+    async def resume_by_id(self, session_id: str) -> Session | None:
+        """Resume a specific session by ID (for /resume command).
+
+        - Fetches session from DB
+        - Loads full message history
+        - Sets as current session
+        - Returns Session if found, None otherwise
+        """
+        session = await self.db.get_session(session_id)
+        if not session:
+            return None
+
+        self._current_session = session
+        await self._load_messages()  # Reuse existing method
+        return session
+
+    def get_display_messages(self) -> list[dict]:
+        """Get all user/assistant messages for display after resume.
+
+        Returns list of {"role": str, "content": str} dicts.
+        Filters to only user and assistant messages (no tool calls).
+        """
+        return [
+            {"role": m["role"], "content": m["content"]}
+            for m in self._messages
+            if m.get("role") in ("user", "assistant")
+        ]

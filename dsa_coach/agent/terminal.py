@@ -44,6 +44,40 @@ from dsa_coach.curriculum import get_pattern_name
 TERMINAL_WIDTH = int(os.environ.get("COACH_WIDTH", 88))
 
 
+def format_time_ago(dt: datetime) -> str:
+    """Format datetime as human-readable relative time.
+
+    Returns: "just now", "2 mins ago", "3 hours ago", "yesterday", "5 days ago", "Jan 10"
+    """
+    delta = datetime.now() - dt
+    total_seconds = delta.total_seconds()
+
+    if total_seconds < 60:
+        return "just now"
+    if total_seconds < 3600:
+        mins = int(total_seconds // 60)
+        return f"{mins} min{'s' if mins != 1 else ''} ago"
+    if total_seconds < 86400:
+        hours = int(total_seconds // 3600)
+        return f"{hours} hour{'s' if hours != 1 else ''} ago"
+    if delta.days == 1:
+        return "yesterday"
+    if delta.days < 7:
+        return f"{delta.days} days ago"
+    return dt.strftime("%b %d")
+
+
+def truncate_preview(text: str, max_len: int = 60) -> str:
+    """Truncate text for preview with ellipsis."""
+    if not text:
+        return ""
+    # Replace newlines with spaces for single-line preview
+    text = " ".join(text.split())
+    if len(text) <= max_len:
+        return text
+    return text[: max_len - 3].rstrip() + "..."
+
+
 class TerminalUI:
     """Rich terminal UI for the coaching experience."""
 
@@ -80,7 +114,7 @@ class TerminalUI:
         """Initialize prompt_toolkit session."""
         # Command auto-completion
         completer = WordCompleter(
-            ["quit", "exit", "help", "dashboard", "status", "patterns"],
+            ["quit", "exit", "help", "dashboard", "status", "patterns", "/resume"],
             ignore_case=True,
         )
 
@@ -398,12 +432,10 @@ class TerminalUI:
         """Render help information."""
         help_text = """
 **Commands:**
-- Type naturally to chat with your coach
+- `/resume` - Resume a previous conversation
+- `dashboard` - Refresh dashboard
 - `quit` or `exit` - End the session
 - `help` - Show this help
-- `status` - Show your progress
-- `patterns` - List all patterns
-- `dashboard` - Refresh dashboard
 
 **Quick Actions:**
 - "I want to learn [pattern]"
@@ -438,3 +470,127 @@ class TerminalUI:
             self.console.print(f"[dim italic]{content}[/dim italic]")
         else:
             print(f"  {content}")
+
+    def render_session_picker(self, sessions: list[dict]) -> None:
+        """Render a numbered list of resumable sessions."""
+        if self.console:
+            content = Text()
+            for i, s in enumerate(sessions, 1):
+                # Time ago
+                updated_at = datetime.fromisoformat(s["updated_at"])
+                time_ago = format_time_ago(updated_at)
+
+                # Preview (truncated first message)
+                preview = truncate_preview(s.get("first_message", ""), 50)
+
+                # Pattern/quest context
+                context_parts = []
+                if s.get("current_pattern"):
+                    pattern_name = get_pattern_name(s["current_pattern"])
+                    context_parts.append(f"Pattern: {pattern_name}")
+                if s.get("current_quest"):
+                    context_parts.append(f"Quest: {s['current_quest']}")
+                if not context_parts:
+                    context_parts.append("General")
+                context_parts.append(f"{s['message_count']} messages")
+                context = " • ".join(context_parts)
+
+                # Format entry
+                content.append(f"  {i}. ", style="bold cyan")
+                content.append(f"[{time_ago}] ", style="dim")
+                content.append(f'"{preview}"\n', style="white")
+                content.append(f"     {context}\n\n", style="dim")
+
+            self.console.print(
+                Panel(
+                    content,
+                    title="[bold cyan]📋 Recent Sessions[/bold cyan]",
+                    border_style="cyan",
+                    box=box.ROUNDED,
+                )
+            )
+        else:
+            # Fallback plain text
+            print("\n📋 Recent Sessions:\n")
+            for i, s in enumerate(sessions, 1):
+                updated_at = datetime.fromisoformat(s["updated_at"])
+                time_ago = format_time_ago(updated_at)
+                preview = truncate_preview(s.get("first_message", ""), 50)
+                print(f'  {i}. [{time_ago}] "{preview}"')
+                print(f"     {s['message_count']} messages\n")
+
+    async def get_session_selection(self, max_index: int) -> int | None:
+        """Get user's session selection.
+
+        Args:
+            max_index: Maximum valid selection (1-based)
+
+        Returns:
+            0-based index of selection, or None if cancelled
+        """
+        prompt = f"Select session (1-{max_index}) or 'c' to cancel: "
+
+        if self.console:
+            self.console.print(f"[dim]{prompt}[/dim]", end="")
+        else:
+            print(prompt, end="")
+
+        # Use simple input (not multiline prompt)
+        try:
+            response = input().strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            return None
+
+        if not response or response == "c":
+            return None
+
+        try:
+            selection = int(response)
+            if 1 <= selection <= max_index:
+                return selection - 1  # Convert to 0-based
+            if self.console:
+                self.console.print("[red]Invalid selection.[/red]")
+            else:
+                print("Invalid selection.")
+            return None
+        except ValueError:
+            if self.console:
+                self.console.print("[red]Invalid input.[/red]")
+            else:
+                print("Invalid input.")
+            return None
+
+    def render_conversation_history(self, messages: list[dict]) -> None:
+        """Render FULL conversation history after resume."""
+        if not messages:
+            return
+
+        if self.console:
+            content = Text()
+            for msg in messages:
+                role = msg["role"]
+                text = msg["content"]
+
+                if role == "user":
+                    content.append("You: ", style="bold blue")
+                    content.append(f"{text}\n\n", style="white")
+                else:
+                    content.append("Coach: ", style="bold green")
+                    content.append(f"{text}\n\n", style="white")
+
+            self.console.print(
+                Panel(
+                    content,
+                    title="[bold]Resumed Conversation[/bold]",
+                    border_style="dim",
+                    box=box.HORIZONTALS,
+                )
+            )
+        else:
+            print("\n" + "─" * 50)
+            print("Resumed Conversation")
+            print("─" * 50 + "\n")
+            for msg in messages:
+                role = "You" if msg["role"] == "user" else "Coach"
+                print(f"{role}: {msg['content']}\n")
+            print("─" * 50 + "\n")
