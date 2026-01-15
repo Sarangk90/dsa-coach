@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from rich.console import Console
 
+    from ..ai.client import TokenUsage
+
 try:
     from rich import box
     from rich.console import Console as RichConsole
@@ -91,12 +93,21 @@ class TerminalUI:
 
         self.session = None
         self.session_start_time: datetime | None = None
+        self._current_token_usage: TokenUsage | None = None
         if PROMPT_TOOLKIT_AVAILABLE:
             self._setup_prompt_session()
 
     def start_session_timer(self) -> None:
         """Start the session timer."""
         self.session_start_time = datetime.now()
+
+    def update_token_usage(self, token_usage: TokenUsage | None) -> None:
+        """Update the token usage state for display in toolbar.
+
+        Args:
+            token_usage: Current token usage from agent, or None
+        """
+        self._current_token_usage = token_usage
 
     def _format_elapsed_time(self) -> str:
         """Format elapsed session time as MM:SS or HH:MM:SS."""
@@ -153,11 +164,28 @@ class TerminalUI:
             if elapsed:
                 timer_part = f' │ <style fg="#ffcc00">⏱️ {elapsed}</style>'
 
+            # Get token usage display
+            token_part = ""
+            if ui_self._current_token_usage:
+                usage = ui_self._current_token_usage
+                token_display = usage.format_display()
+
+                # Color based on warning threshold (75%+)
+                if usage.is_warning_threshold:
+                    color = "#ff4444"  # Red for warning
+                    icon = "⚠️"
+                else:
+                    color = "#aaddff"  # Cyan for normal
+                    icon = "📊"
+
+                token_part = f' │ <style fg="{color}">{icon} {token_display}</style>'
+
             return HTML(
                 f'<style bg="#333333" fg="#888888">'
                 f" <b>Ctrl+J</b> newline │ <b>Enter</b> send │ <b>Ctrl+D</b> exit │ "
                 f'<style fg="#aaddff">{line_info}</style>'
                 f"{timer_part}"
+                f"{token_part}"
                 f" </style>"
             )
 

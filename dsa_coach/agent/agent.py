@@ -11,6 +11,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from ..ai.client import (
+    PREFERRED_PROVIDER,
+    TokenUsage,
     ToolCall,
     format_tool_result_for_anthropic,
     get_ai_response_with_tools,
@@ -33,6 +35,7 @@ class AgentResponse:
     tool_errors: list[dict] = field(default_factory=list)  # {tool: str, error: str}
     state_updated: bool = False
     error: str | None = None
+    token_usage: TokenUsage | None = None
 
 
 class CoachAgent:
@@ -60,11 +63,17 @@ class CoachAgent:
 
         self._dashboard_state: dict | None = None
         self._student_context: str | None = None
+        self._token_usage: TokenUsage | None = None
 
     async def initialize(self) -> None:
         """Initialize the agent, starting or resuming a session."""
         await self.session.start_or_resume()
         await self._refresh_student_context()
+
+        # Initialize token usage tracking with appropriate context limit
+        # Claude Sonnet: 200k tokens, GPT-4o: 128k tokens
+        context_limit = 200_000 if PREFERRED_PROVIDER == "anthropic" else 128_000
+        self._token_usage = TokenUsage(context_limit=context_limit)
 
     async def _refresh_dashboard(self) -> None:
         """Refresh the dashboard state for context (legacy)."""
@@ -129,7 +138,12 @@ class CoachAgent:
             return AgentResponse(
                 content="I'm having trouble connecting to the AI service. Please check your API keys.",
                 error=str(e),
+                token_usage=self._token_usage,
             )
+
+        # Update token usage from this response (shows latest call's usage)
+        if self._token_usage:
+            self._token_usage.set_from_response(response)
 
         # Handle tool calls in a loop
         tool_calls_made = []
@@ -188,7 +202,12 @@ class CoachAgent:
                     content="An error occurred while processing. Please try again.",
                     tool_calls_made=tool_calls_made,
                     error=str(e),
+                    token_usage=self._token_usage,
                 )
+
+            # Update token usage from this response (shows latest call's usage)
+            if self._token_usage:
+                self._token_usage.set_from_response(response)
 
             # Show reasoning for new response if it has more tool calls
             if response.has_tool_calls and response.content and on_reasoning:
@@ -212,6 +231,7 @@ class CoachAgent:
             tool_calls_made=tool_calls_made,
             tool_errors=all_tool_errors,
             state_updated=bool(tool_calls_made),
+            token_usage=self._token_usage,
         )
 
     async def _execute_tool_calls(

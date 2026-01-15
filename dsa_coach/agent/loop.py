@@ -170,6 +170,10 @@ async def run_agent_loop(db_path: Path | None = None) -> None:
                     on_reasoning=ui.render_reasoning,
                 )
 
+                # Update token usage in UI for toolbar display
+                if response.token_usage:
+                    ui.update_token_usage(response.token_usage)
+
                 # Show tool activity
                 for tc in response.tool_calls_made:
                     ui.render_tool_activity(tc["name"])

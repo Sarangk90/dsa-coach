@@ -72,11 +72,77 @@ class LLMResponse:
     tool_calls: list[ToolCall] = field(default_factory=list)
     stop_reason: str = "end_turn"
     raw_response: Any = None
+    # Token usage from API response
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cache_read_tokens: int = 0
+    cache_creation_tokens: int = 0
 
     @property
     def has_tool_calls(self) -> bool:
         """Check if response includes tool calls."""
         return len(self.tool_calls) > 0
+
+
+@dataclass
+class TokenUsage:
+    """Track token usage for a single LLM call.
+
+    Shows how much of the context window was used in the most recent call.
+    The context window limit (200k for Claude, 128k for GPT-4o) applies
+    per-call, not cumulatively.
+
+    Attributes:
+        input_tokens: Input tokens (prompt) for this call
+        output_tokens: Output tokens (response) for this call
+        cache_read_tokens: Tokens read from Anthropic prompt cache
+        cache_creation_tokens: Tokens written to Anthropic prompt cache
+        context_limit: Maximum context window for the model
+    """
+
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cache_read_tokens: int = 0
+    cache_creation_tokens: int = 0
+    context_limit: int = 200_000  # Default to Claude Sonnet
+
+    @property
+    def total_tokens(self) -> int:
+        """Total tokens consumed in this call (input + output)."""
+        return self.input_tokens + self.output_tokens
+
+    @property
+    def percentage_used(self) -> float:
+        """Percentage of context window consumed by this call."""
+        if self.context_limit == 0:
+            return 0.0
+        # Context window is primarily about input tokens (the prompt)
+        # but we show total for visibility
+        return (self.input_tokens / self.context_limit) * 100
+
+    @property
+    def is_warning_threshold(self) -> bool:
+        """Check if usage is at or above 75% warning threshold."""
+        return self.percentage_used >= 75.0
+
+    def set_from_response(self, response: LLMResponse) -> None:
+        """Set token usage from an LLM response (replaces, does not accumulate).
+
+        Args:
+            response: The LLM response containing token usage data
+        """
+        self.input_tokens = response.input_tokens
+        self.output_tokens = response.output_tokens
+        self.cache_read_tokens = response.cache_read_tokens
+        self.cache_creation_tokens = response.cache_creation_tokens
+
+    def format_display(self) -> str:
+        """Format token usage for terminal display.
+
+        Returns:
+            Formatted string like "15,234/200,000 (7.6%)"
+        """
+        return f"{self.input_tokens:,}/{self.context_limit:,} ({self.percentage_used:.1f}%)"
 
 
 def check_ai_available() -> tuple[bool, str]:
@@ -246,6 +312,16 @@ async def call_anthropic_with_tools(
 
     response = client.messages.create(**kwargs)
 
+    # Extract token usage from response
+    usage = response.usage
+    input_tokens = usage.input_tokens if usage else 0
+    output_tokens = usage.output_tokens if usage else 0
+    # Cache tokens are optional attributes (may not exist on older API versions)
+    cache_read = getattr(usage, "cache_read_input_tokens", 0) or 0 if usage else 0
+    cache_creation = (
+        getattr(usage, "cache_creation_input_tokens", 0) or 0 if usage else 0
+    )
+
     # Parse response
     content = ""
     tool_calls = []
@@ -267,6 +343,10 @@ async def call_anthropic_with_tools(
         tool_calls=tool_calls,
         stop_reason=response.stop_reason,
         raw_response=response,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        cache_read_tokens=cache_read,
+        cache_creation_tokens=cache_creation,
     )
 
 
@@ -305,6 +385,14 @@ async def call_openai_with_tools(
 
     response = client.chat.completions.create(**kwargs)
 
+    # Extract token usage from response
+    usage = response.usage
+    input_tokens = usage.prompt_tokens if usage else 0
+    output_tokens = usage.completion_tokens if usage else 0
+    # OpenAI doesn't have prompt caching like Anthropic
+    cache_read = 0
+    cache_creation = 0
+
     # Parse response
     message = response.choices[0].message
     content = message.content or ""
@@ -325,6 +413,10 @@ async def call_openai_with_tools(
         tool_calls=tool_calls,
         stop_reason=response.choices[0].finish_reason,
         raw_response=response,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        cache_read_tokens=cache_read,
+        cache_creation_tokens=cache_creation,
     )
 
 
