@@ -350,8 +350,8 @@ async def record_mistake(
     db: Database,
     quest_id: str,
     pattern_id: str,
-    mistake_type: str,
     description: str,
+    mistake_type: str | None = None,
     lesson_learned: str | None = None,
     user_id: str = "default",
 ) -> ToolResult:
@@ -374,7 +374,7 @@ async def record_mistake(
         "logic",
         "other",
     }
-    if mistake_type not in valid_types:
+    if not mistake_type or mistake_type not in valid_types:
         mistake_type = "other"
 
     mistake_id = await db.add_mistake(
