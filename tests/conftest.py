@@ -12,7 +12,6 @@ def mock_workspace(tmp_path):
     Monkeypatches dsa_coach.paths to point to this workspace.
     """
     # Create temp directories
-    temp_progress = tmp_path / "progress.json"
     temp_solutions = tmp_path / "solutions"
     temp_solutions.mkdir()
     temp_conversations = tmp_path / "conversations"
@@ -27,59 +26,59 @@ def mock_workspace(tmp_path):
 
     orig_base_dir = dsa_coach.paths.BASE_DIR
     orig_quests = dsa_coach.paths.QUESTS_FILE
-    orig_progress = dsa_coach.paths.PROGRESS_FILE
     orig_solutions = dsa_coach.paths.SOLUTIONS_DIR
     orig_conversations = dsa_coach.paths.CONVERSATIONS_DIR
 
     dsa_coach.paths.BASE_DIR = tmp_path
     dsa_coach.paths.QUESTS_FILE = tmp_path / "quests.json"
-    dsa_coach.paths.PROGRESS_FILE = temp_progress
     dsa_coach.paths.SOLUTIONS_DIR = temp_solutions
     dsa_coach.paths.CONVERSATIONS_DIR = temp_conversations
-
-    # Patch modules that imported constants from paths
-    import dsa_coach.progress
-
-    dsa_coach.progress.PROGRESS_FILE = temp_progress  # type: ignore[attr-defined]
-    dsa_coach.progress.QUESTS_FILE = tmp_path / "quests.json"  # type: ignore[attr-defined]
 
     import dsa_coach.quests
 
     dsa_coach.quests.QUESTS_FILE = tmp_path / "quests.json"  # type: ignore[attr-defined]
-
-    import coach
-
-    coach.BASE_DIR = tmp_path  # type: ignore[attr-defined]
-    coach.QUESTS_FILE = tmp_path / "quests.json"  # type: ignore[attr-defined]
-    coach.PROGRESS_FILE = temp_progress  # type: ignore[attr-defined]
-    coach.SOLUTIONS_DIR = temp_solutions  # type: ignore[attr-defined]
 
     yield tmp_path
 
     # Restore paths
     dsa_coach.paths.BASE_DIR = orig_base_dir
     dsa_coach.paths.QUESTS_FILE = orig_quests
-    dsa_coach.paths.PROGRESS_FILE = orig_progress
     dsa_coach.paths.SOLUTIONS_DIR = orig_solutions
     dsa_coach.paths.CONVERSATIONS_DIR = orig_conversations
 
 
 @pytest.fixture
 def clean_progress(mock_workspace):
-    """Returns a clean progress state (no file on disk yet)."""
+    """Returns a clean progress state (no file on disk yet).
+
+    DEPRECATED: Use coach_harness or hydrated_harness fixtures instead.
+    """
     return mock_workspace / "progress.json"
 
 
 @pytest.fixture
 def populated_progress(mock_workspace):
-    """Creates a progress.json with some pre-filled data."""
+    """Creates a progress.json with some pre-filled data.
+
+    DEPRECATED: Use coach_harness or hydrated_harness fixtures instead.
+    """
     import json
 
-    from dsa_coach.progress import get_default_progress
+    # Inline default progress data (replaces deprecated get_default_progress)
+    from datetime import datetime
 
-    data = get_default_progress()
-    data["profile"]["name"] = "Test User"
-    data["profile"]["xp"] = 100
+    now = datetime.now().isoformat()
+    data = {
+        "profile": {
+            "name": "Test User",
+            "started": now,
+            "last_session": now,
+            "current_quest": None,
+            "active_mode": "fast_track",
+        },
+        "pattern_proficiency": {},
+        "completed_quests": {},
+    }
 
     progress_path = mock_workspace / "progress.json"
     with open(progress_path, "w") as f:

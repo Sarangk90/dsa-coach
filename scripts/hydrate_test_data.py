@@ -26,7 +26,7 @@ Usage:
     # Use a custom user ID
     python scripts/hydrate_test_data.py --user my_test_user
 
-Note: CLI commands (coach.py, coach-menu.py) use "default" user by default.
+Note: CLI commands (coach.py) use "default" user by default.
       Test data under "test" user won't interfere with your real progress.
 """
 
@@ -911,7 +911,6 @@ def main():
     print("  python coach.py recall")
     print("  python coach.py mistakes")
     print("  python coach.py summary")
-    print("  python coach-menu.py")
 
 
 if __name__ == "__main__":

@@ -12,15 +12,13 @@ DSA Coach is an adaptive CLI tool for mastering Data Structures, Algorithms, and
 
 ### What This Means for Development
 
-1. **NEVER use `progress.json`** - It is deprecated and will be removed
-2. **NEVER import from `dsa_coach.progress`** - Functions emit deprecation warnings
-3. **ALWAYS use `SyncDatabase`** for CLI commands (synchronous code)
-4. **ALWAYS use `Database`** for agent tools (async code)
+1. **ALWAYS use `SyncDatabase`** for CLI commands (synchronous code)
+2. **ALWAYS use `Database`** for agent tools (async code)
 
 ### Quick Reference
 
 ```python
-# ✅ CORRECT - For CLI commands (synchronous)
+# For CLI commands (synchronous)
 from dsa_coach.storage.sync import SyncDatabase
 
 def my_command():
@@ -33,16 +31,12 @@ def my_command():
         # For functions expecting legacy progress dict format:
         progress_compat = db.build_progress_compat()
 
-# ✅ CORRECT - For agent tools (async)
+# For agent tools (async)
 from dsa_coach.storage.db import Database
 
 async def my_tool(db: Database, user_id: str = "default"):
     profile = await db.get_or_create_profile(user_id)
     progress_compat = await db.build_progress_compat(user_id)
-
-# ❌ WRONG - DEPRECATED
-from dsa_coach.progress import load_progress, save_progress  # DON'T DO THIS
-progress = load_progress()  # Emits DeprecationWarning
 ```
 
 ### The `build_progress_compat()` Method
@@ -107,19 +101,15 @@ cp env.example .env
 
 ### Running the Application
 
-#### Interactive Menu (Recommended)
+#### Agent Mode (Default - Recommended)
 ```bash
-# Launch interactive menu with dashboard and numbered options
-python coach-menu.py
+# Launch the interactive AI coaching agent
+python coach.py
 ```
 
-The interactive menu provides:
-- Visual dashboard showing progress, current quest, weak patterns
-- Numbered menu (no need to remember command syntax)
-- Smart alerts for due reviews
-- Auto-refresh after each command
+The agent provides natural conversation-based coaching with automatic tool use for progress tracking, quest management, hints, and more.
 
-#### Traditional CLI Commands
+#### CLI Commands
 ```bash
 python coach.py start          # Initialize user profile
 python coach.py status         # View progress and pattern confidence
@@ -238,8 +228,8 @@ python coach.py summary   # Full progress dump
 python coach.py mistakes  # Should show recurring mistake patterns
 python coach.py recall    # Should list 6 due reviews (with test data)
 
-# Test interactive menu
-python coach-menu.py
+# Test agent mode (Ctrl+C to exit)
+python coach.py
 ```
 
 #### Agent Mode Testing (Programmatic)
@@ -320,9 +310,7 @@ After migration, verify:
 - **db.py**: Async `Database` class for agent tools (uses aiosqlite)
 - **sync.py**: Sync `SyncDatabase` wrapper for CLI commands (wraps async with asyncio.run)
 - **models.py**: Pydantic models (UserProfile, PatternProgress, QuestCompletion, etc.)
-- **migrations.py**: One-time migration from progress.json to SQLite
-
-**DEPRECATED**: `progress.json` and `dsa_coach/progress.py` - Do not use
+- **migrations.py**: Schema migration logic
 
 ### Key Patterns Used
 
@@ -380,17 +368,14 @@ When API keys are configured, mentor.py provides:
 
 ```
 dsa-coach/
-├── coach.py              # CLI entrypoint (traditional commands)
-├── coach-menu.py         # Interactive menu entrypoint
+├── coach.py              # CLI entrypoint (agent mode + legacy commands)
 ├── mentor.py             # AI mentorship layer (thin wrapper for backward compat)
 ├── coach.db              # SQLite database - SINGLE SOURCE OF TRUTH
 ├── dsa_coach/            # Core package
 │   ├── __init__.py
 │   ├── main.py           # CLI orchestration
-│   ├── menu.py           # Interactive menu system
 │   ├── paths.py          # Centralized file paths
 │   ├── storage.py        # JSON I/O (for quests.json only)
-│   ├── progress.py       # DEPRECATED - do not use
 │   ├── quests.py         # Quest loading (uses SyncDatabase for mode)
 │   ├── selection.py      # Quest selection logic
 │   ├── curriculum.py     # Curriculum functions (patterns, concepts, problems)
@@ -744,19 +729,4 @@ The codebase was migrated from JSON-based storage (`progress.json`) to SQLite (`
 **What Changed:**
 1. All CLI commands now use `SyncDatabase` context manager
 2. All agent tools use async `Database` class
-3. `progress.py` is deprecated (emits warnings)
-4. `build_progress_compat()` method bridges to legacy functions
-
-**If You See Deprecation Warnings:**
-```
-DeprecationWarning: load_progress() is deprecated. Use SyncDatabase instead.
-```
-This means old code is being used. Update to use `SyncDatabase`:
-```python
-# Old (deprecated)
-from dsa_coach.progress import load_progress
-progress = load_progress()# New (correct)
-from dsa_coach.storage.sync import SyncDatabase
-with SyncDatabase() as db:
-    progress_compat = db.build_progress_compat()
-```
+3. `build_progress_compat()` method bridges to legacy functions that expect dict format

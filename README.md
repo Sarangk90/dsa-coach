@@ -26,7 +26,7 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 pip install uv
 ```
 
-### Option 1: Interactive Menu (Recommended)
+### Setup
 
 ```bash
 # Create virtual environment and install dependencies
@@ -40,66 +40,15 @@ uv sync
 cp env.example .env
 # Edit .env with your Anthropic or OpenAI API key
 
-# Launch the interactive menu
-python coach-menu.py
+# Launch the AI coaching agent (recommended)
+python coach.py
 ```
 
-The interactive menu gives you a visual dashboard and numbered options - no need to remember command syntax!
+The agent provides natural conversation-based coaching with automatic tool use for progress tracking, quest management, hints, and more.
 
-### Option 2: Traditional CLI
+### CLI Commands
 
-```bash
-# Start your journey
-python coach.py start
-
-# Get your first quest
-python coach.py next
-
-# When you're done
-python coach.py done
-```
-
-## Interactive Menu
-
-Launch the interactive menu for an easy-to-use interface:
-
-```bash
-python coach-menu.py
-```
-
-**Features:**
-- 📊 **Dashboard at a glance**: Progress, current quest, weak patterns
-- 🎯 **Smart alerts**: See due spaced repetition items
-- 🔢 **Numbered menu**: Just type a number - no need to remember commands
-- ♻️  **Auto-refresh**: Clean display after each command
-- 💡 **Contextual hints**: Get suggestions based on your confidence level
-
-**Menu Structure:**
-```
-═══ DAILY WORKFLOW ═══
-1. Today's Schedule      → See what's planned for today
-2. Next Quest           → Get your optimal next problem
-3. Mark Quest Done      → Complete current quest & build confidence
-4. View Status          → Full progress overview
-
-═══ LEARNING & HELP ═══
-5. Get Hint             → Adaptive hints based on your confidence
-6. Learn Pattern        → Interactive teaching session
-7. Review Mistakes      → Your mistake journal
-
-═══ AI FEATURES ═══
-8. Code Review          → Get AI feedback on your solution
-9. System Design        → Practice system design interviews
-
-═══ ADVANCED ═══
-10. Spaced Repetition   → Review items due today
-11. View Sessions       → Saved AI conversations
-12. Full Summary        → Complete progress dump
-```
-
-## CLI Commands
-
-For direct command-line usage, all traditional commands still work:
+You can also use direct CLI commands:
 
 | Command | Description |
 |---------|-------------|

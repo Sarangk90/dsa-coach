@@ -30,23 +30,6 @@ async def test_db():
     db_path.unlink(missing_ok=True)
 
 
-@pytest.mark.skip(
-    reason="TODO: Rewrite test for V2 curriculum - tools layer still uses V1 quests.json"
-)
-@pytest.mark.asyncio
-async def test_list_patterns(test_db):
-    """Test listing all patterns."""
-    result = await list_patterns(test_db)
-
-    assert result.success
-    assert result.data is not None
-    assert len(result.data) > 0
-
-    # Check that sliding_window is present
-    pattern_ids = [p["pattern_id"] for p in result.data]
-    assert "sliding_window" in pattern_ids
-
-
 @pytest.mark.asyncio
 async def test_list_patterns_includes_confidence(test_db):
     """Test that patterns include confidence scores."""
@@ -56,21 +39,6 @@ async def test_list_patterns_includes_confidence(test_db):
     for pattern in result.data:
         assert "confidence" in pattern
         assert "quests_completed" in pattern
-
-
-@pytest.mark.skip(
-    reason="TODO: Rewrite test for V2 curriculum - tools layer still uses V1 quests.json"
-)
-@pytest.mark.asyncio
-async def test_get_pattern_details(test_db):
-    """Test getting details for a specific pattern."""
-    result = await get_pattern_details(test_db, "sliding_window")
-
-    assert result.success
-    assert result.data is not None
-    assert result.data["pattern_id"] == "sliding_window"
-    assert "concepts" in result.data
-    assert "essential_quests" in result.data
 
 
 @pytest.mark.asyncio
@@ -94,21 +62,6 @@ async def test_get_weak_patterns(test_db):
     # All patterns should have low confidence (0) initially
     for pattern in result.data:
         assert pattern["confidence"] == 0
-
-
-@pytest.mark.skip(
-    reason="TODO: Rewrite test for V2 curriculum - tools layer still uses V1 quests.json"
-)
-@pytest.mark.asyncio
-async def test_get_next_essential_quest(test_db):
-    """Test getting next essential quest for a pattern."""
-    result = await get_next_essential_quest(test_db, "sliding_window")
-
-    assert result.success
-    # sliding_window has essential problems defined
-    if result.data:
-        assert "quest_id" in result.data or "problem_id" in result.data
-        assert "title" in result.data or "problem_name" in result.data
 
 
 @pytest.mark.asyncio

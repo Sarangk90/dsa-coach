@@ -30,7 +30,6 @@ dev = [
 
 [project.scripts]
 dsa-coach = "dsa_coach.main:main"
-dsa-coach-menu = "dsa_coach.menu:main"
 
 [tool.uv]
 dev-dependencies = [

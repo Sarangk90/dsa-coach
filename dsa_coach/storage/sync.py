@@ -1,7 +1,7 @@
 """Synchronous wrapper for async Database operations.
 
 This module provides a SyncDatabase class that wraps the async Database
-for use in synchronous CLI commands and the interactive menu.
+for use in synchronous CLI commands.
 
 Usage:
     with SyncDatabase() as db:

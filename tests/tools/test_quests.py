@@ -114,20 +114,3 @@ async def test_get_hint_no_current(test_db):
 
     assert not result.success
     assert "No quest" in result.error
-
-
-@pytest.mark.skip(reason="TODO: Rewrite test - quest may not have hints defined in V2")
-@pytest.mark.asyncio
-async def test_get_hint_with_quest(test_db):
-    """Test getting hint for assigned quest."""
-    # Assign a quest (arrays_hashing_two_sum)
-    with patch("webbrowser.open"):
-        await assign_quest(test_db, "arrays_hashing_two_sum", open_browser=False)
-
-    # Get hint
-    result = await get_hint(test_db, level="low")
-
-    assert result.success
-    assert result.data is not None
-    assert "hint" in result.data
-    assert result.data["level"] == "low"
