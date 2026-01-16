@@ -124,6 +124,34 @@ def _find_quest(quest_id: str, mode: str = "fast_track") -> dict | None:
     return best_match
 
 
+def _find_similar_quests(quest_id: str, max_results: int = 5) -> list[str]:
+    """Find quest IDs similar to the given ID (for suggestions)."""
+    quests = _load_quests()
+    quest_id_lower = quest_id.lower()
+
+    # Extract key words from the quest_id
+    words = set(quest_id_lower.replace("_", " ").replace("-", " ").split())
+
+    # Find quests with overlapping words
+    matches = []
+    for curriculum_mode in ["fast_track", "complete"]:
+        curriculum = quests.get("curriculum", {}).get(curriculum_mode, [])
+        for pattern in curriculum:
+            for concept in pattern.get("concepts", []):
+                for problem in concept.get("practice_problems", []):
+                    problem_id = problem.get("problem_id", "")
+                    problem_words = set(problem_id.lower().replace("_", " ").split())
+
+                    # Count overlapping words
+                    overlap = len(words & problem_words)
+                    if overlap > 0:
+                        matches.append((overlap, problem_id))
+
+    # Sort by overlap count (descending) and return top matches
+    matches.sort(key=lambda x: x[0], reverse=True)
+    return [m[1] for m in matches[:max_results]]
+
+
 def _get_pattern_from_curriculum(
     pattern_id: str, mode: str = "fast_track"
 ) -> dict | None:
@@ -313,9 +341,15 @@ async def start_quest(
         quest_id = _normalize_quest_id(quest_id)
         quest = _find_quest(quest_id)
         if not quest:
+            # Try to find similar quests to suggest
+            suggestions = _find_similar_quests(quest_id)
+            error_msg = f"Quest '{quest_id}' not found in curriculum."
+            if suggestions:
+                error_msg += f" Did you mean: {', '.join(suggestions[:3])}?"
+            log.error(error_msg)
             return ToolResult(
                 success=False,
-                error=f"Quest '{quest_id}' not found",
+                error=error_msg,
             )
     elif pattern_id:
         # Get next uncompleted for pattern
