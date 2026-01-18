@@ -23,7 +23,9 @@ from .models import (
 DEFAULT_DB_PATH = Path(__file__).parent.parent.parent / "coach.db"
 
 # Schema version for migrations
-SCHEMA_VERSION = 4  # v4: Added deep student model (mistakes, daily_logs, milestones, teaching_history)
+SCHEMA_VERSION = (
+    5  # v5: Added UNIQUE constraints for idempotency + derived stats methods
+)
 
 
 class Database:
@@ -166,6 +168,9 @@ class Database:
             CREATE INDEX IF NOT EXISTS idx_mistakes_user ON mistakes(user_id);
             CREATE INDEX IF NOT EXISTS idx_mistakes_type ON mistakes(user_id, mistake_type);
             CREATE INDEX IF NOT EXISTS idx_mistakes_pattern ON mistakes(user_id, pattern_id);
+            -- Prevent duplicate mistakes for same quest+type (idempotency)
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_mistakes_unique
+                ON mistakes(user_id, quest_id, mistake_type);
 
             -- Daily activity logs
             CREATE TABLE IF NOT EXISTS daily_logs (
@@ -192,6 +197,9 @@ class Database:
             );
             CREATE INDEX IF NOT EXISTS idx_milestones_user ON milestones(user_id);
             CREATE INDEX IF NOT EXISTS idx_milestones_achieved ON milestones(achieved_at DESC);
+            -- Prevent duplicate milestones (idempotency) - use COALESCE for nullable columns
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_milestones_unique
+                ON milestones(user_id, milestone_type, COALESCE(pattern_id, ''), COALESCE(quest_id, ''));
 
             -- Teaching history
             CREATE TABLE IF NOT EXISTS teaching_history (
@@ -568,6 +576,89 @@ class Database:
             else None,
             mastered=bool(row["mastered"]),
         )
+
+    # ==================== Derived Stats (Single Source of Truth) ====================
+
+    async def get_derived_pattern_stats(
+        self, user_id: str, pattern_id: str
+    ) -> dict[str, int | bool]:
+        """Compute pattern stats from quest_completions table (source of truth).
+
+        This replaces cached counters with live queries to prevent data drift.
+        Returns: {"quests_completed": int, "confidence": int, "mastered": bool}
+        """
+        async with self.conn.execute(
+            """
+            SELECT
+                COUNT(*) as quests_completed,
+                COALESCE(SUM(
+                    CASE WHEN success = 1 THEN
+                        CASE WHEN hints_used = 0 THEN 15 ELSE 10 END
+                    ELSE 0 END
+                ), 0) as raw_confidence
+            FROM quest_completions
+            WHERE user_id = ? AND pattern_id = ?
+            """,
+            (user_id, pattern_id),
+        ) as cursor:
+            row = await cursor.fetchone()
+            quests_completed = row[0] if row else 0
+            raw_confidence = row[1] if row else 0
+            confidence = min(100, raw_confidence)
+            return {
+                "quests_completed": quests_completed,
+                "confidence": confidence,
+                "mastered": confidence >= 80,
+            }
+
+    async def get_total_quests_completed(self, user_id: str = "default") -> int:
+        """Count total completed quests from records (source of truth)."""
+        async with self.conn.execute(
+            "SELECT COUNT(*) FROM quest_completions WHERE user_id = ?",
+            (user_id,),
+        ) as cursor:
+            row = await cursor.fetchone()
+            return row[0] if row else 0
+
+    async def get_derived_daily_stats(
+        self, user_id: str, date_str: str
+    ) -> dict[str, int | list[str]]:
+        """Compute daily stats from quest_completions (source of truth).
+
+        Returns: {"problems_solved": int, "time_spent_mins": int, "hints_used": int, "patterns_worked": list}
+        """
+        async with self.conn.execute(
+            """
+            SELECT
+                COUNT(*) as problems_solved,
+                COALESCE(SUM(time_minutes), 0) as time_spent_mins,
+                COALESCE(SUM(hints_used), 0) as hints_used
+            FROM quest_completions
+            WHERE user_id = ? AND DATE(completed_at) = ?
+            """,
+            (user_id, date_str),
+        ) as cursor:
+            row = await cursor.fetchone()
+            problems = row[0] if row else 0
+            time_mins = row[1] if row else 0
+            hints = row[2] if row else 0
+
+        # Get unique patterns worked that day
+        async with self.conn.execute(
+            """
+            SELECT DISTINCT pattern_id FROM quest_completions
+            WHERE user_id = ? AND DATE(completed_at) = ?
+            """,
+            (user_id, date_str),
+        ) as cursor:
+            patterns = [row[0] async for row in cursor]
+
+        return {
+            "problems_solved": problems,
+            "time_spent_mins": time_mins,
+            "hints_used": hints,
+            "patterns_worked": patterns,
+        }
 
     # ==================== Quest Completion Operations ====================
 

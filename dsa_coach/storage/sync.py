@@ -101,6 +101,24 @@ class SyncDatabase:
         """Create or update pattern progress."""
         self._run(self._db.upsert_pattern_progress(progress))
 
+    # ==================== Derived Stats (Single Source of Truth) ====================
+
+    def get_derived_pattern_stats(
+        self, user_id: str, pattern_id: str
+    ) -> dict[str, int | bool]:
+        """Compute pattern stats from quest_completions table (source of truth)."""
+        return self._run(self._db.get_derived_pattern_stats(user_id, pattern_id))
+
+    def get_total_quests_completed(self, user_id: str = "default") -> int:
+        """Count total completed quests from records (source of truth)."""
+        return self._run(self._db.get_total_quests_completed(user_id))
+
+    def get_derived_daily_stats(
+        self, user_id: str, date_str: str
+    ) -> dict[str, int | list[str]]:
+        """Compute daily stats from quest_completions (source of truth)."""
+        return self._run(self._db.get_derived_daily_stats(user_id, date_str))
+
     # ==================== Quest Completion Operations ====================
 
     def get_quest_completion(
