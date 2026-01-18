@@ -168,10 +168,7 @@ async def run_agent_loop(db_path: Path | None = None) -> None:
                     ui.render_success(f"Resumed session from {time_ago}")
                     continue
 
-                # Echo user message
-                ui.render_message("user", user_input)
-
-                # Process with agent
+                # Process with agent (user message stays visible from prompt)
                 ui.render_thinking()
                 response = await agent.run(
                     user_input,
@@ -190,9 +187,11 @@ async def run_agent_loop(db_path: Path | None = None) -> None:
                 for te in response.tool_errors:
                     ui.render_tool_error(te["tool"], te["error"])
 
-                # Refresh dashboard if state changed
-                if response.state_updated and agent.dashboard:
-                    ui.render_dashboard(agent.dashboard)
+                # Refresh dashboard if state changed (must re-fetch to get updated state)
+                if response.state_updated:
+                    await agent._refresh_dashboard()
+                    if agent.dashboard:
+                        ui.render_dashboard(agent.dashboard)
 
                 # Show response
                 if response.content:

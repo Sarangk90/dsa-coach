@@ -38,11 +38,12 @@ except ImportError:
 
 # Configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 PREFERRED_PROVIDER = os.getenv("LLM_PROVIDER", "anthropic")  # or "openai"
 
 # Model settings
-OPENAI_MODEL = "gpt-4o"
+OPENAI_MODEL = "gpt-5.2"
 ANTHROPIC_MODEL = "claude-sonnet-4-5"  # Claude 3.5 Sonnet (latest)
 
 
@@ -182,7 +183,7 @@ def call_openai(messages: list[dict], max_tokens: int = 1000) -> str:
             "OpenAI not available. Install openai and set OPENAI_API_KEY."
         )
 
-    client = openai.OpenAI(api_key=OPENAI_API_KEY)
+    client = openai.OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
 
     response = client.chat.completions.create(
         model=OPENAI_MODEL, messages=messages, max_tokens=max_tokens, temperature=0.7
@@ -448,7 +449,11 @@ async def get_ai_response_with_tools(
         )
     if PREFERRED_PROVIDER == "openai" and OPENAI_AVAILABLE and OPENAI_API_KEY:
         # OpenAI needs system message in messages list
-        openai_messages = [{"role": "system", "content": system_prompt}] + messages
+        # Also convert any Anthropic-format messages to OpenAI format
+        converted_messages = _convert_messages_to_openai(messages)
+        openai_messages = [
+            {"role": "system", "content": system_prompt}
+        ] + converted_messages
         # Convert tools to OpenAI format
         openai_tools = _convert_tools_to_openai(tools)
         return await call_openai_with_tools(
@@ -466,7 +471,11 @@ async def get_ai_response_with_tools(
             max_tokens=max_tokens,
         )
     if OPENAI_AVAILABLE and OPENAI_API_KEY:
-        openai_messages = [{"role": "system", "content": system_prompt}] + messages
+        # Convert any Anthropic-format messages to OpenAI format
+        converted_messages = _convert_messages_to_openai(messages)
+        openai_messages = [
+            {"role": "system", "content": system_prompt}
+        ] + converted_messages
         openai_tools = _convert_tools_to_openai(tools)
         return await call_openai_with_tools(
             messages=openai_messages,
@@ -498,6 +507,108 @@ def _convert_tools_to_openai(anthropic_tools: list[dict]) -> list[dict]:
             }
         )
     return openai_tools
+
+
+def _convert_messages_to_openai(messages: list[dict]) -> list[dict]:
+    """Convert Anthropic-format messages to OpenAI format.
+
+    Handles:
+    - Assistant messages with tool_use blocks in content -> tool_calls array
+    - User messages with tool_result blocks in content -> separate tool messages
+    - Plain text messages are passed through unchanged
+    """
+    openai_messages = []
+
+    for msg in messages:
+        role = msg.get("role")
+        content = msg.get("content")
+
+        # Already has tool_calls (OpenAI format) - pass through
+        if "tool_calls" in msg:
+            openai_messages.append(msg)
+            continue
+
+        # Plain string content - pass through
+        if isinstance(content, str):
+            openai_messages.append(msg)
+            continue
+
+        # None content - pass through (can happen with tool call messages)
+        if content is None:
+            openai_messages.append(msg)
+            continue
+
+        # List content - need to convert
+        if isinstance(content, list):
+            if role == "assistant":
+                # Convert tool_use blocks to tool_calls
+                text_parts = []
+                tool_calls = []
+
+                for block in content:
+                    if isinstance(block, dict):
+                        if block.get("type") == "text":
+                            text_parts.append(block.get("text", ""))
+                        elif block.get("type") == "tool_use":
+                            tool_calls.append(
+                                {
+                                    "id": block.get("id"),
+                                    "type": "function",
+                                    "function": {
+                                        "name": block.get("name"),
+                                        "arguments": json.dumps(block.get("input", {})),
+                                    },
+                                }
+                            )
+
+                assistant_msg: dict[str, Any] = {"role": "assistant"}
+                if text_parts:
+                    assistant_msg["content"] = "\n".join(text_parts)
+                else:
+                    assistant_msg["content"] = None
+
+                if tool_calls:
+                    assistant_msg["tool_calls"] = tool_calls
+
+                openai_messages.append(assistant_msg)
+
+            elif role == "user":
+                # Check if this is a tool_result message
+                tool_results = []
+                text_parts = []
+
+                for block in content:
+                    if isinstance(block, dict):
+                        if block.get("type") == "tool_result":
+                            tool_results.append(
+                                {
+                                    "role": "tool",
+                                    "tool_call_id": block.get("tool_use_id"),
+                                    "content": block.get("content", ""),
+                                }
+                            )
+                        elif block.get("type") == "text":
+                            text_parts.append(block.get("text", ""))
+
+                # If we found tool results, add them as separate messages
+                if tool_results:
+                    openai_messages.extend(tool_results)
+                elif text_parts:
+                    # Regular user message with text blocks
+                    openai_messages.append(
+                        {
+                            "role": "user",
+                            "content": "\n".join(text_parts),
+                        }
+                    )
+            else:
+                # Unknown role with list content - try to extract text
+                openai_messages.append(msg)
+        else:
+            # Unknown content type - pass through
+            openai_messages.append(msg)
+
+    return openai_messages
 
 
 def format_tool_result_for_anthropic(tool_results: list[ToolResult]) -> list[dict]:

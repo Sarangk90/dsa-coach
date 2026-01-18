@@ -97,6 +97,14 @@ class SDKCoachAgent:
         except Exception:
             self._student_context = None
 
+    async def _refresh_dashboard(self) -> None:
+        """Refresh the dashboard state for context."""
+        from ..tools.consolidated import get_dashboard
+
+        result = await get_dashboard(self.db, self.user_id)
+        if result.success:
+            self._dashboard_state = result.data
+
     def get_system_prompt(self) -> str:
         """Get the system prompt with student context."""
         return get_agent_system_prompt(
@@ -352,9 +360,12 @@ class SDKCoachAgent:
                     else:
                         content = result.message or "Success"
                 else:
-                    content = f"Error: {result.error}"
+                    content = f"Error: {result.error or result.message}"
                     errors_for_ui.append(
-                        {"tool": tc.name, "error": result.error or "Unknown error"}
+                        {
+                            "tool": tc.name,
+                            "error": result.error or result.message or "Unknown error",
+                        }
                     )
 
                 results.append(
@@ -427,13 +438,12 @@ class SDKCoachAgent:
 
     async def get_greeting(self) -> str:
         """Get a contextual greeting for a new session."""
-        from ..tools.consolidated import get_dashboard
+        await self._refresh_dashboard()
 
-        result = await get_dashboard(self.db, self.user_id)
-        if not result.success:
+        if not self._dashboard_state:
             return "Welcome to DSA Coach! What would you like to work on today?"
 
-        data = result.data
+        data = self._dashboard_state
         profile = data.get("profile", {})
         alerts = data.get("alerts", [])
         current = data.get("current_quest")

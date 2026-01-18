@@ -11,10 +11,15 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from ..ai.client import (
+    ANTHROPIC_API_KEY,
+    ANTHROPIC_AVAILABLE,
+    OPENAI_API_KEY,
+    OPENAI_AVAILABLE,
     PREFERRED_PROVIDER,
     TokenUsage,
     ToolCall,
     format_tool_result_for_anthropic,
+    format_tool_result_for_openai,
     get_ai_response_with_tools,
 )
 from ..ai.client import (
@@ -24,6 +29,21 @@ from ..ai.prompts import get_agent_system_prompt
 from ..storage.db import Database
 from ..tools import ToolRegistry
 from .session import SessionManager
+
+
+def _get_active_provider() -> str:
+    """Determine which LLM provider will be used for API calls."""
+    # Check preferred provider first
+    if PREFERRED_PROVIDER == "anthropic" and ANTHROPIC_AVAILABLE and ANTHROPIC_API_KEY:
+        return "anthropic"
+    if PREFERRED_PROVIDER == "openai" and OPENAI_AVAILABLE and OPENAI_API_KEY:
+        return "openai"
+    # Fallback
+    if ANTHROPIC_AVAILABLE and ANTHROPIC_API_KEY:
+        return "anthropic"
+    if OPENAI_AVAILABLE and OPENAI_API_KEY:
+        return "openai"
+    return "none"
 
 
 @dataclass
@@ -167,28 +187,53 @@ class CoachAgent:
             all_tool_errors.extend(tool_errors)
 
             # Build messages with tool results
-            # For Anthropic, we need to include the assistant's response with tool_use
-            # followed by a user message with tool_result
+            # Format differs between Anthropic and OpenAI
+            active_provider = _get_active_provider()
 
-            # Add assistant message with tool calls
-            assistant_content = []
-            if response.content:
-                assistant_content.append({"type": "text", "text": response.content})
-            for tc in response.tool_calls:
-                assistant_content.append(
-                    {
-                        "type": "tool_use",
-                        "id": tc.id,
-                        "name": tc.name,
-                        "input": tc.arguments,
-                    }
-                )
+            if active_provider == "openai":
+                # OpenAI format: assistant message with tool_calls, then separate tool messages
+                assistant_msg: dict = {
+                    "role": "assistant",
+                    "content": response.content or None,
+                }
+                if response.tool_calls:
+                    assistant_msg["tool_calls"] = [
+                        {
+                            "id": tc.id,
+                            "type": "function",
+                            "function": {
+                                "name": tc.name,
+                                "arguments": json.dumps(tc.arguments),
+                            },
+                        }
+                        for tc in response.tool_calls
+                    ]
+                messages.append(assistant_msg)
 
-            messages.append({"role": "assistant", "content": assistant_content})
+                # Add tool results as separate messages with role="tool"
+                for result_msg in format_tool_result_for_openai(tool_results):
+                    messages.append(result_msg)
+            else:
+                # Anthropic format: assistant message with tool_use blocks,
+                # followed by user message with tool_result blocks
+                assistant_content = []
+                if response.content:
+                    assistant_content.append({"type": "text", "text": response.content})
+                for tc in response.tool_calls:
+                    assistant_content.append(
+                        {
+                            "type": "tool_use",
+                            "id": tc.id,
+                            "name": tc.name,
+                            "input": tc.arguments,
+                        }
+                    )
 
-            # Add tool results
-            tool_result_content = format_tool_result_for_anthropic(tool_results)
-            messages.append({"role": "user", "content": tool_result_content})
+                messages.append({"role": "assistant", "content": assistant_content})
+
+                # Add tool results
+                tool_result_content = format_tool_result_for_anthropic(tool_results)
+                messages.append({"role": "user", "content": tool_result_content})
 
             # Get next LLM response
             try:
