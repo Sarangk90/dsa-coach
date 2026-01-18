@@ -217,17 +217,17 @@ class TerminalUI:
             print("\n" * 50)
 
     def print_header(self) -> None:
-        """Print the DSA Coach header."""
+        """Print the DSA Coach header (copy-friendly)."""
         if self.console:
-            header = Text()
-            header.append("🎯 ", style="bold")
-            header.append("DSA Coach", style="bold cyan")
-            header.append(" - Your AI Mentor", style="dim")
-            self.console.print(Panel(header, box=box.DOUBLE))
+            from rich.rule import Rule
+
+            self.console.print()
+            self.console.print(
+                Rule("[bold cyan]🎯 DSA Coach[/bold cyan] [dim]- Your AI Mentor[/dim]")
+            )
+            self.console.print()
         else:
-            print("=" * 50)
-            print("🎯 DSA Coach - Your AI Mentor")
-            print("=" * 50)
+            print("\n─── 🎯 DSA Coach - Your AI Mentor ───\n")
 
     def render_dashboard(self, state: dict) -> None:
         """Render the dashboard panel."""
@@ -259,9 +259,16 @@ class TerminalUI:
         # Current Quest
         if current_quest:
             quest_text = Text()
-            quest_text.append(f"{current_quest['title']}\n", style="bold")
-            quest_text.append(f"   Pattern: {current_quest['pattern']} • ", style="dim")
-            quest_text.append(f"{current_quest['difficulty']}", style="dim cyan")
+            quest_text.append(
+                f"{current_quest.get('title', 'Unknown')}\n", style="bold"
+            )
+            pattern_display = current_quest.get("pattern_name") or current_quest.get(
+                "pattern_id", "Unknown"
+            )
+            quest_text.append(f"   Pattern: {pattern_display} • ", style="dim")
+            quest_text.append(
+                f"{current_quest.get('difficulty', 'medium')}", style="dim cyan"
+            )
             table.add_row("🎯 Current", quest_text)
         else:
             table.add_row("🎯 Current", Text("No active quest", style="dim italic"))
@@ -298,40 +305,23 @@ class TerminalUI:
         )
 
     def render_message(self, role: str, content: str) -> None:
-        """Render a chat message."""
+        """Render a chat message (Claude Code style - copy-friendly)."""
         if self.console:
             if role == "user":
-                self.console.print(
-                    Panel(
-                        content,
-                        title="[bold blue]You[/bold blue]",
-                        border_style="blue",
-                        box=box.ROUNDED,
-                    )
-                )
+                # User message: yellow gutter bar + text
+                self.console.print(f"[bold yellow]▌[/bold yellow] {content}")
             else:
-                # Try to render as markdown
+                # Coach message: bullet prefix + markdown content
+                self.console.print()
                 try:
                     md = Markdown(content)
-                    self.console.print(
-                        Panel(
-                            md,
-                            title="[bold green]🤖 Coach[/bold green]",
-                            border_style="green",
-                            box=box.ROUNDED,
-                        )
-                    )
+                    self.console.print("[white]●[/white] ", end="")
+                    self.console.print(md)
                 except Exception:
-                    self.console.print(
-                        Panel(
-                            content,
-                            title="[bold green]🤖 Coach[/bold green]",
-                            border_style="green",
-                            box=box.ROUNDED,
-                        )
-                    )
+                    self.console.print(f"[white]●[/white] {content}")
+                self.console.print()
         else:
-            prefix = "You: " if role == "user" else "Coach: "
+            prefix = "▌ " if role == "user" else "● "
             print(f"\n{prefix}{content}\n")
 
     def render_tool_activity(self, tool_name: str) -> None:
@@ -344,31 +334,18 @@ class TerminalUI:
             print(f"  [Running: {tool_name}...]")
 
     def render_error(self, message: str) -> None:
-        """Render an error message."""
+        """Render an error message (copy-friendly, no border)."""
         if self.console:
-            self.console.print(
-                Panel(
-                    f"[bold red]❌ {message}[/bold red]",
-                    border_style="red",
-                    box=box.ROUNDED,
-                )
-            )
+            self.console.print(f"[bold red]✗[/bold red] {message}")
         else:
-            print(f"\n❌ Error: {message}\n")
+            print(f"✗ {message}")
 
     def render_tool_error(self, tool_name: str, error: str) -> None:
-        """Render a tool error prominently (more visible than regular errors)."""
+        """Render a tool error (copy-friendly, no border)."""
         if self.console:
-            self.console.print(
-                Panel(
-                    f"[bold red]⚠️ {tool_name} failed:[/bold red]\n{error}",
-                    title="[bold red]Tool Error[/bold red]",
-                    border_style="red",
-                    box=box.HEAVY,  # More prominent border
-                )
-            )
+            self.console.print(f"[bold red]✗ {tool_name} failed:[/bold red] {error}")
         else:
-            print(f"\n⚠️ TOOL ERROR [{tool_name}]: {error}\n")
+            print(f"✗ {tool_name} failed: {error}")
 
     def render_success(self, message: str) -> None:
         """Render a success message."""
@@ -384,7 +361,7 @@ class TerminalUI:
         else:
             print(message)
 
-    async def get_input(self, prompt: str = "You › ") -> str | None:
+    async def get_input(self, prompt: str = "> ") -> str | None:
         """Get input from the user (Async).
 
         Uses prompt_toolkit for multiline support if available.
@@ -429,35 +406,27 @@ class TerminalUI:
         return "\n".join(lines).strip()
 
     def render_welcome(self, greeting: str) -> None:
-        """Render the welcome message."""
+        """Render the welcome message (copy-friendly, no border)."""
+        if self.console:
+            self.console.print()
+            self.console.print(f"[white]●[/white] {greeting}")
+            self.console.print()
+        else:
+            print(f"\n● {greeting}\n")
+
+    def render_goodbye(self) -> None:
+        """Render goodbye message (copy-friendly, no border)."""
         if self.console:
             self.console.print()
             self.console.print(
-                Panel(
-                    greeting,
-                    title="[bold green]🤖 Coach[/bold green]",
-                    border_style="green",
-                    box=box.DOUBLE,
-                )
+                "[bold cyan]●[/bold cyan] Keep grinding! See you next time. 💪"
             )
+            self.console.print()
         else:
-            print(f"\n{greeting}\n")
-
-    def render_goodbye(self) -> None:
-        """Render goodbye message."""
-        if self.console:
-            self.console.print(
-                Panel(
-                    "[bold]Keep grinding! See you next time. 💪[/bold]",
-                    border_style="cyan",
-                    box=box.DOUBLE,
-                )
-            )
-        else:
-            print("\nKeep grinding! See you next time. 💪\n")
+            print("\n● Keep grinding! See you next time. 💪\n")
 
     def render_help(self) -> None:
-        """Render help information."""
+        """Render help information (copy-friendly, no border)."""
         help_text = """
 **Commands:**
 - `/resume` - Resume a previous conversation
@@ -473,22 +442,20 @@ class TerminalUI:
 - "What should I work on?"
 """
         if self.console:
-            self.console.print(
-                Panel(
-                    Markdown(help_text),
-                    title="[bold cyan]Help[/bold cyan]",
-                    border_style="cyan",
-                )
-            )
+            self.console.print()
+            self.console.print("[bold cyan]●[/bold cyan] Help")
+            self.console.print()
+            self.console.print(Markdown(help_text))
+            self.console.print()
         else:
             print(help_text)
 
     def render_thinking(self) -> None:
-        """Show thinking indicator."""
+        """Show thinking indicator (Claude Code style)."""
         if self.console:
-            self.console.print("[dim]🤔 Thinking...[/dim]")
+            self.console.print("[dim italic]∴ Thinking...[/dim italic]")
         else:
-            print("Thinking...")
+            print("∴ Thinking...")
 
     def render_reasoning(self, content: str) -> None:
         """Show AI reasoning text as it thinks (Claude Code style)."""
@@ -589,36 +556,30 @@ class TerminalUI:
             return None
 
     def render_conversation_history(self, messages: list[dict]) -> None:
-        """Render FULL conversation history after resume."""
+        """Render FULL conversation history after resume (copy-friendly)."""
         if not messages:
             return
 
         if self.console:
-            content = Text()
+            from rich.rule import Rule
+
+            self.console.print()
+            self.console.print(Rule("[dim]Resumed Conversation[/dim]", style="dim"))
+            self.console.print()
             for msg in messages:
                 role = msg["role"]
                 text = msg["content"]
 
                 if role == "user":
-                    content.append("You: ", style="bold blue")
-                    content.append(f"{text}\n\n", style="white")
+                    self.console.print(f"[bold yellow]▌[/bold yellow] {text}")
                 else:
-                    content.append("Coach: ", style="bold green")
-                    content.append(f"{text}\n\n", style="white")
-
-            self.console.print(
-                Panel(
-                    content,
-                    title="[bold]Resumed Conversation[/bold]",
-                    border_style="dim",
-                    box=box.HORIZONTALS,
-                )
-            )
+                    self.console.print(f"[white]●[/white] {text}")
+                self.console.print()
+            self.console.print(Rule(style="dim"))
+            self.console.print()
         else:
-            print("\n" + "─" * 50)
-            print("Resumed Conversation")
-            print("─" * 50 + "\n")
+            print("\n─── Resumed Conversation ───\n")
             for msg in messages:
-                role = "You" if msg["role"] == "user" else "Coach"
-                print(f"{role}: {msg['content']}\n")
-            print("─" * 50 + "\n")
+                prefix = "▌" if msg["role"] == "user" else "●"
+                print(f"{prefix} {msg['content']}\n")
+            print("───\n")
