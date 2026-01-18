@@ -282,12 +282,15 @@ async def get_dashboard(
             }
         )
 
+    # Get total quests completed (derived from quest_completions - source of truth)
+    total_quests_completed = await db.get_total_quests_completed(user_id)
+
     return ToolResult(
         success=True,
         data={
             "profile": {
                 "name": profile.name,
-                "quests_completed": profile.quests_completed,
+                "quests_completed": total_quests_completed,
                 "member_since": profile.created_at.isoformat(),
                 "last_active": profile.last_active.isoformat(),
             },
@@ -401,10 +404,15 @@ async def start_quest(
     # Update session with current quest
     session = await db.get_latest_session(user_id)
     if session:
+        log.logger.debug(
+            f"SESSION_UPDATE | previous_quest={session.current_quest} "
+            f"new_quest={quest_id} session_id={session.id}"
+        )
         session.current_quest = quest_id
         session.current_pattern = quest.get("pattern")
         await db.update_session(session)
     else:
+        log.logger.debug(f"SESSION_CREATE | new_quest={quest_id}")
         session = await db.create_session(
             user_id=user_id,
             session_type="practice",
@@ -496,28 +504,64 @@ async def complete_quest(
 
     # Get current quest from session
     session = await db.get_latest_session(user_id)
+
+    # Log session state for debugging
+    if session:
+        log.logger.debug(
+            f"SESSION_STATE | current_quest={session.current_quest} session_id={session.id}"
+        )
+    else:
+        log.logger.debug("SESSION_STATE | no_session_found")
+
     if not session or not session.current_quest:
+        error_msg = "No quest currently assigned. Use start_quest first."
+        log.error(error_msg)
         return ToolResult(
             success=False,
-            error="No quest currently assigned. Use start_quest first.",
+            error=error_msg,
         )
 
     quest = _find_quest(session.current_quest)
     if not quest:
+        error_msg = f"Quest '{session.current_quest}' not found in curriculum"
+        log.error(error_msg)
         return ToolResult(
             success=False,
-            error=f"Quest '{session.current_quest}' not found",
+            error=error_msg,
         )
 
     quest_id = session.current_quest
     pattern_id = quest.get("pattern", "unknown")
 
-    # Get profile and update
-    profile = await db.get_or_create_profile(user_id)
-    profile.quests_completed += 1
-    await db.update_profile(profile)
+    # Check if this quest was already completed (re-completion check)
+    existing_completion = await db.get_quest_completion(user_id, quest_id)
+    is_new_completion = existing_completion is None
 
-    # Record quest completion
+    if not is_new_completion:
+        # Quest already completed - reject with clear message
+        log.logger.info(
+            f"RE_COMPLETION_REJECTED | quest={quest_id} "
+            f"original_completion={existing_completion.completed_at.isoformat()}"
+        )
+        # Clear current quest since they're "done" with it
+        session.current_quest = None
+        await db.update_session(session)
+
+        return ToolResult(
+            success=True,  # Not an error, just already done
+            data={
+                "quest_id": quest_id,
+                "already_completed": True,
+                "original_completion": existing_completion.completed_at.isoformat(),
+                "message": "This quest was already completed. Progress unchanged.",
+            },
+            message=f"Quest '{quest.get('title', quest_id)}' was already completed on "
+            f"{existing_completion.completed_at.strftime('%Y-%m-%d')}. "
+            "No changes made to progress.",
+        )
+
+    # NEW COMPLETION - Insert the quest completion record (SOURCE OF TRUTH)
+    # Counters (quests_completed, confidence) are now DERIVED from this table
     completion = QuestCompletion(
         id=f"{user_id}_{quest_id}",
         user_id=user_id,
@@ -532,7 +576,12 @@ async def complete_quest(
     )
     await db.upsert_quest_completion(completion)
 
-    # Update pattern progress
+    # Get derived stats from quest_completions (single source of truth)
+    derived_stats = await db.get_derived_pattern_stats(user_id, pattern_id)
+    derived_confidence = derived_stats["confidence"]
+    derived_quests_completed = derived_stats["quests_completed"]
+
+    # Update pattern_progress for non-derived fields (last_practiced, mastered, quests_total)
     pattern_progress = await db.get_pattern_progress(user_id, pattern_id)
     if not pattern_progress:
         quests_total = _count_total_quests_for_pattern(pattern_id)
@@ -546,19 +595,18 @@ async def complete_quest(
     if pattern_progress.quests_total == 0:
         pattern_progress.quests_total = _count_total_quests_for_pattern(pattern_id)
 
-    pattern_progress.quests_completed += 1
+    # Update timestamp (not a counter, still needed)
     pattern_progress.last_practiced = datetime.now()
-
-    # Update confidence based on success and hints
-    if success:
-        confidence_gain = 15 if hints_used == 0 else 10
-        pattern_progress.confidence = min(
-            100, pattern_progress.confidence + confidence_gain
-        )
+    # Sync derived values to cached columns for backward compatibility
+    pattern_progress.quests_completed = derived_quests_completed
+    pattern_progress.confidence = derived_confidence
 
     await db.upsert_pattern_progress(pattern_progress)
 
     # Clear current quest
+    log.logger.debug(
+        f"SESSION_CLEAR | quest_completed={quest_id} session_id={session.id}"
+    )
     session.current_quest = None
     await db.update_session(session)
 
@@ -578,7 +626,7 @@ async def complete_quest(
     # HOOK 2: Check Milestone (CONDITIONAL)
     # ============================================
     milestone_awarded = None
-    if pattern_progress.confidence >= 80 and not pattern_progress.mastered:
+    if derived_confidence >= 80 and not pattern_progress.mastered:
         pattern_progress.mastered = True
         await db.upsert_pattern_progress(pattern_progress)
 
@@ -599,17 +647,17 @@ async def complete_quest(
         )
     else:
         log.hook_executed(
-            "check_milestone", f"skipped (confidence={pattern_progress.confidence})"
+            "check_milestone", f"skipped (confidence={derived_confidence})"
         )
 
     # ============================================
     # HOOK 3: Check Note Creation (CONDITIONAL)
     # ============================================
     note_suggestion = None
-    if pattern_progress.confidence >= 70:
+    if derived_confidence >= 70:
         should_create, reason = should_create_note(
             pattern_id,
-            pattern_progress.confidence,
+            derived_confidence,
             session_messages=0,
             confidence_gain=0,
         )
@@ -625,21 +673,24 @@ async def complete_quest(
     else:
         log.hook_executed("check_note_creation", "skipped (confidence < 70)")
 
-    log.success(f"quest={quest_id} confidence={pattern_progress.confidence}%")
+    # Get total quests completed (derived from quest_completions table)
+    total_quests_completed = await db.get_total_quests_completed(user_id)
+
+    log.success(f"quest={quest_id} confidence={derived_confidence}%")
     return ToolResult(
         success=True,
         data={
             "quest_id": quest_id,
             "title": quest.get("title", quest_id),
             "pattern_id": pattern_id,
-            "pattern_confidence": pattern_progress.confidence,
-            "quests_completed": profile.quests_completed,
+            "pattern_confidence": derived_confidence,
+            "quests_completed": total_quests_completed,
             # Hook results
             "activity_logged": True,
             "milestone_awarded": milestone_awarded,
             "note_suggestion": note_suggestion,
         },
-        message=f"Quest complete! Pattern confidence: {pattern_progress.confidence}%",
+        message=f"Quest complete! Pattern confidence: {derived_confidence}%",
     )
 
 
@@ -853,6 +904,9 @@ async def get_pattern_details(
     # Get teaching history
     teaching_history = await db.get_teaching_history(user_id, pattern_id)
 
+    # Get derived stats (source of truth)
+    derived_stats = await db.get_derived_pattern_stats(user_id, pattern_id)
+
     result = {
         "pattern_id": pattern_id,
         "title": pattern_meta.get("pattern_name", pattern_id.replace("_", " ").title()),
@@ -863,11 +917,11 @@ async def get_pattern_details(
         "practice_problems": practice_problems,
         "all_quests_count": len(all_quests),
         "progress": {
-            "confidence": progress.confidence if progress else 0,
-            "quests_completed": progress.quests_completed if progress else 0,
+            "confidence": derived_stats["confidence"],
+            "quests_completed": derived_stats["quests_completed"],
             "concepts_understood": len([c for c in concepts if c["understood"]]),
             "concepts_total": len(concepts),
-            "mastered": progress.mastered if progress else False,
+            "mastered": derived_stats["mastered"],
             "last_practiced": progress.last_practiced.isoformat()
             if progress and progress.last_practiced
             else None,
