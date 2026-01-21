@@ -168,7 +168,10 @@ async def run_agent_loop(db_path: Path | None = None) -> None:
                     ui.render_success(f"Resumed session from {time_ago}")
                     continue
 
-                # Process with agent (user message stays visible from prompt)
+                # Echo user message with distinctive styling (background highlight)
+                ui.render_message("user", user_input)
+
+                # Process with agent
                 ui.render_thinking()
                 response = await agent.run(
                     user_input,

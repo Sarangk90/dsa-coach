@@ -308,8 +308,8 @@ class TerminalUI:
         """Render a chat message (Claude Code style - copy-friendly)."""
         if self.console:
             if role == "user":
-                # User message: yellow gutter bar + text
-                self.console.print(f"[bold yellow]▌[/bold yellow] {content}")
+                # User message: bold yellow text (no special chars, copies clean)
+                self.console.print(f"[bold yellow]{content}[/bold yellow]")
             else:
                 # Coach message: bullet prefix + markdown content
                 self.console.print()
@@ -321,7 +321,7 @@ class TerminalUI:
                     self.console.print(f"[white]●[/white] {content}")
                 self.console.print()
         else:
-            prefix = "▌ " if role == "user" else "● "
+            prefix = "" if role == "user" else "● "
             print(f"\n{prefix}{content}\n")
 
     def render_tool_activity(self, tool_name: str) -> None:
@@ -573,7 +573,13 @@ class TerminalUI:
                 if role == "user":
                     self.console.print(f"[bold yellow]▌[/bold yellow] {text}")
                 else:
-                    self.console.print(f"[white]●[/white] {text}")
+                    # Use Markdown rendering for assistant messages (same as render_message)
+                    try:
+                        md = Markdown(text)
+                        self.console.print("[white]●[/white] ", end="")
+                        self.console.print(md)
+                    except Exception:
+                        self.console.print(f"[white]●[/white] {text}")
                 self.console.print()
             self.console.print(Rule(style="dim"))
             self.console.print()
