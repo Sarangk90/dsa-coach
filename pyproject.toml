@@ -41,6 +41,14 @@ dev-dependencies = [
     "pre-commit>=4.5.1",
 ]
 
+[tool.pytest.ini_options]
+# Skip integration tests and harness tests by default (they make real API calls)
+addopts = "-m 'not integration' --ignore=tests/harness"
+markers = [
+    "integration: marks tests as integration tests (require API keys, skipped by default)",
+]
+asyncio_mode = "auto"
+
 [tool.ruff]
 # Set line length to 88 (black's default, matches your COACH_WIDTH)
 line-length = 88

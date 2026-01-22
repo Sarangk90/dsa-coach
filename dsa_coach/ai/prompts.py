@@ -966,7 +966,10 @@ def _format_mistakes(mistakes: list[dict]) -> str:
 
     lines = []
     for m in mistakes[:5]:
-        mtype = m.get("mistake_type", "unknown").replace("_", " ").title()
+        # DB returns "type" not "mistake_type" from get_recurring_mistake_types
+        mtype = (
+            m.get("type", m.get("mistake_type", "unknown")).replace("_", " ").title()
+        )
         count = m.get("count", 1)
         patterns = m.get("patterns", [])
         pattern_str = ", ".join(p.replace("_", " ").title() for p in patterns[:2])

@@ -5,12 +5,19 @@ These tests serve as both:
 1. Documentation for how to use the harness
 2. Verification that the harness works correctly
 
-Run with: pytest tests/harness/test_harness_examples.py -v
+Run with: pytest tests/harness/test_harness_examples.py -v --integration
+
+NOTE: These are integration tests that make REAL LLM API calls.
+They require a valid ANTHROPIC_API_KEY or OPENAI_API_KEY.
+They are skipped by default; use --integration flag to run them.
 """
 
 import pytest
 
 from tests.harness import CoachTestHarness
+
+# Mark all tests in this module as integration tests (skipped by default)
+pytestmark = pytest.mark.integration
 
 
 class TestHarnessSetup:

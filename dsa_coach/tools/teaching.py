@@ -390,7 +390,8 @@ async def record_mistake(
     recurring = await db.get_recurring_mistake_types(user_id)
     this_type_count = 1
     for m in recurring:
-        if m["mistake_type"] == mistake_type:
+        # DB returns "type" not "mistake_type"
+        if m.get("type") == mistake_type:
             this_type_count = m["count"]
             break
 

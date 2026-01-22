@@ -1066,7 +1066,8 @@ async def record_learning(
         recurring = await db.get_recurring_mistake_types(user_id)
         recurrence_count = 1
         for m in recurring:
-            if m["mistake_type"] == mistake_type:
+            # DB returns "type" not "mistake_type"
+            if m.get("type") == mistake_type:
                 recurrence_count = m["count"]
                 break
 

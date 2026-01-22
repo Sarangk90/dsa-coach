@@ -467,7 +467,11 @@ class CoachTestHarness:
             new_count = after_milestones - before_milestones
             new_milestones = after.milestones[:new_count]
             diff["milestones_added"] = [
-                {"type": m["milestone_type"], "description": m["description"]}
+                # DB returns "type" not "milestone_type" from get_recent_milestones
+                {
+                    "type": m.get("type", m.get("milestone_type")),
+                    "description": m["description"],
+                }
                 for m in new_milestones
             ]
 
@@ -509,7 +513,8 @@ class CoachTestHarness:
     async def assert_milestone_achieved(self, milestone_type: str) -> None:
         """Assert that a milestone of the given type was achieved."""
         milestones = await self.inspect_milestones()
-        types = [m["milestone_type"] for m in milestones]
+        # DB returns "type" not "milestone_type" from get_recent_milestones
+        types = [m.get("type", m.get("milestone_type")) for m in milestones]
         if milestone_type not in types:
             raise AssertionError(
                 f"Milestone type '{milestone_type}' not found. Achieved types: {types}"
