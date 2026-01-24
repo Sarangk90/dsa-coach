@@ -8,12 +8,19 @@ tracks your progress, and guides you to mastery.
 
 Usage:
     python coach.py             - Start interactive AI coach (default)
+    python coach.py dashboard   - Open progress dashboard in browser
     python coach.py --legacy    - Use legacy command mode
 
 Agent Mode (default):
     Launches an interactive AI coaching session where you can chat
     naturally with your coach. The coach uses tools to manage your
     progress, assign quests, provide hints, and more.
+
+Dashboard:
+    python coach.py dashboard           - Start dashboard (foreground)
+    python coach.py dashboard --daemon  - Start dashboard in background
+    python coach.py dashboard --stop    - Stop background dashboard
+    Dashboard runs at http://localhost:8501
 
 Legacy Commands (use --legacy flag):
     python coach.py --legacy start       - Initialize your profile
@@ -147,6 +154,75 @@ def cmd_note(argv: list[str] | None = None):
     _cmd_note(subcommand, *remaining)
 
 
+def cmd_dashboard(daemon: bool = False, stop: bool = False):
+    """Launch the Streamlit progress dashboard.
+
+    Args:
+        daemon: Run in background mode
+        stop: Stop the background dashboard server
+    """
+    import os
+    import signal
+    import subprocess
+    from pathlib import Path
+
+    pid_file = Path.home() / ".dsa-coach" / "dashboard.pid"
+    log_file = Path.home() / ".dsa-coach" / "dashboard.log"
+
+    # Ensure directory exists
+    pid_file.parent.mkdir(parents=True, exist_ok=True)
+
+    if stop:
+        if pid_file.exists():
+            pid = int(pid_file.read_text().strip())
+            try:
+                os.kill(pid, signal.SIGTERM)
+                pid_file.unlink()
+                print(f"Dashboard server stopped (PID {pid})")
+            except ProcessLookupError:
+                pid_file.unlink()
+                print("Dashboard server was not running")
+        else:
+            print("No dashboard server running")
+        return
+
+    # Check if already running
+    if pid_file.exists():
+        pid = int(pid_file.read_text().strip())
+        try:
+            os.kill(pid, 0)  # Check if process exists
+            print(f"Dashboard already running (PID {pid})")
+            print("Open: http://localhost:8501")
+            print("Stop with: python coach.py dashboard --stop")
+            return
+        except ProcessLookupError:
+            pid_file.unlink()  # Clean up stale PID file
+
+    dashboard_path = Path(__file__).parent / "dsa_coach" / "web" / "dashboard.py"
+
+    if daemon:
+        # Run in background
+        with log_file.open("w") as log:
+            proc = subprocess.Popen(
+                ["streamlit", "run", str(dashboard_path), "--server.port", "8501"],
+                stdout=log,
+                stderr=log,
+                start_new_session=True,
+            )
+        pid_file.write_text(str(proc.pid))
+        print(f"Dashboard started in background (PID {proc.pid})")
+        print("Open: http://localhost:8501")
+        print(f"Logs: {log_file}")
+        print("Stop with: python coach.py dashboard --stop")
+    else:
+        # Run in foreground
+        print("Starting dashboard at http://localhost:8501")
+        print("Press Ctrl+C to stop")
+        subprocess.run(
+            ["streamlit", "run", str(dashboard_path), "--server.port", "8501"]
+        )
+
+
 # =============================================================================
 # MAIN
 # =============================================================================
@@ -176,6 +252,10 @@ def run_legacy_command(argv: list[str]):
         "sessions": cmd_sessions,
         "reset": lambda: cmd_reset(argv[1:]),
         "note": lambda: cmd_note(argv[1:]),
+        "dashboard": lambda: cmd_dashboard(
+            daemon="--daemon" in argv or "-d" in argv,
+            stop="--stop" in argv,
+        ),
     }
 
     if command in commands:
@@ -231,6 +311,7 @@ def main():
         "sessions",
         "reset",
         "note",
+        "dashboard",
     }
 
     if len(sys.argv) > 1 and sys.argv[1].lower() in legacy_commands:
