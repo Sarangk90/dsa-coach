@@ -65,8 +65,11 @@ class PatternProgress(BaseModel):
     id: str = Field(description="Unique ID (user_id + pattern_id)")
     user_id: str = Field(default="default")
     pattern_id: str = Field(description="Pattern identifier (e.g., sliding_window)")
-    confidence: int = Field(
-        default=0, ge=0, le=100, description="Confidence score 0-100"
+    progress: int = Field(
+        default=0,
+        ge=0,
+        le=100,
+        description="Progress score 0-100 (scaled by pattern size)",
     )
     quests_completed: int = Field(
         default=0, description="Quests completed for this pattern"

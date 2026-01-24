@@ -279,12 +279,12 @@ class TerminalUI:
             for i, p in enumerate(weak_patterns[:3]):
                 if i > 0:
                     patterns_text.append("  •  ")
-                conf = p.get("confidence", 0)
-                color = "red" if conf < 30 else "yellow" if conf < 60 else "green"
+                prog = p.get("progress", 0)
+                color = "red" if prog < 30 else "yellow" if prog < 60 else "green"
                 patterns_text.append(
                     f"{get_pattern_name(p['pattern_id'])}", style=f"bold {color}"
                 )
-                patterns_text.append(f" ({conf}%)", style="dim")
+                patterns_text.append(f" ({prog}%)", style="dim")
             table.add_row("💪 Focus", patterns_text)
 
         # Alerts

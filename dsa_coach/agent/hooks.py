@@ -52,8 +52,8 @@ class QuestCompletionHook(Hook):
 
     Actions:
     1. Log session activity (always)
-    2. Check for pattern mastery milestone (if confidence >= 80)
-    3. Suggest note creation (if confidence >= 70)
+    2. Check for pattern mastery milestone (if progress >= 80)
+    3. Suggest note creation (if progress >= 70)
     """
 
     def __init__(self):
@@ -75,7 +75,7 @@ class QuestCompletionHook(Hook):
 
         data = tool_result.data
         pattern_id = data.get("pattern_id")
-        pattern_confidence = data.get("pattern_confidence", 0)
+        pattern_progress = data.get("pattern_progress", 0)
 
         actions = []
 
@@ -100,7 +100,7 @@ class QuestCompletionHook(Hook):
             action_taken="; ".join(actions) if actions else "Quest completed",
             data={
                 "pattern_id": pattern_id,
-                "confidence": pattern_confidence,
+                "progress": pattern_progress,
                 "actions": actions,
             },
         )
@@ -189,29 +189,29 @@ class SessionEndHook(Hook):
             db: Database connection
             user_id: User ID
             tool_result: Optional tool result (may be None for session end)
-            session_data: Session metadata including confidence changes
+            session_data: Session metadata including progress changes
         """
         session_data = session_data or {}
         actions = []
 
         pattern_id = session_data.get("current_pattern")
-        start_confidence = session_data.get("start_confidence", 0)
-        current_confidence = session_data.get("current_confidence", 0)
+        start_progress = session_data.get("start_progress", 0)
+        current_progress = session_data.get("current_progress", 0)
         message_count = session_data.get("message_count", 0)
 
-        confidence_gain = current_confidence - start_confidence
+        progress_gain = current_progress - start_progress
 
         # Check note creation criteria
-        if pattern_id and (confidence_gain >= 20 or message_count >= 15):
+        if pattern_id and (progress_gain >= 20 or message_count >= 15):
             should_create, reason = should_create_note(
-                pattern_id, current_confidence, message_count, confidence_gain
+                pattern_id, current_progress, message_count, progress_gain
             )
             if should_create:
                 actions.append(f"Note creation suggested: {reason}")
 
         # Session summary
-        if confidence_gain > 0:
-            actions.append(f"Confidence increased by {confidence_gain}%")
+        if progress_gain > 0:
+            actions.append(f"Progress increased by {progress_gain}%")
 
         if message_count > 0:
             actions.append(f"Session had {message_count} messages")
@@ -221,7 +221,7 @@ class SessionEndHook(Hook):
             action_taken="; ".join(actions) if actions else "Session ended",
             data={
                 "pattern_id": pattern_id,
-                "confidence_gain": confidence_gain,
+                "progress_gain": progress_gain,
                 "message_count": message_count,
                 "actions": actions,
             },

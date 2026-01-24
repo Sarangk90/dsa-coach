@@ -104,10 +104,12 @@ class SyncDatabase:
     # ==================== Derived Stats (Single Source of Truth) ====================
 
     def get_derived_pattern_stats(
-        self, user_id: str, pattern_id: str
+        self, user_id: str, pattern_id: str, quests_total: int | None = None
     ) -> dict[str, int | bool]:
         """Compute pattern stats from quest_completions table (source of truth)."""
-        return self._run(self._db.get_derived_pattern_stats(user_id, pattern_id))
+        return self._run(
+            self._db.get_derived_pattern_stats(user_id, pattern_id, quests_total)
+        )
 
     def get_total_quests_completed(self, user_id: str = "default") -> int:
         """Count total completed quests from records (source of truth)."""
@@ -279,7 +281,7 @@ class SyncDatabase:
         pattern_prof = {}
         for p in patterns:
             pattern_prof[p.pattern_id] = {
-                "confidence": p.confidence,
+                "progress": p.progress,
                 "attempts": p.quests_completed,
                 "successes": p.quests_completed,
                 "avg_time_mins": None,

@@ -123,19 +123,19 @@ async def test_update_profile(test_db):
 @pytest.mark.asyncio
 async def test_pattern_progress(test_db):
     """Test pattern progress operations."""
-    progress = PatternProgress(
+    pattern_progress = PatternProgress(
         id="default_sliding_window",
         user_id="default",
         pattern_id="sliding_window",
-        confidence=50,
+        progress=50,
         quests_completed=2,
     )
 
-    await test_db.upsert_pattern_progress(progress)
+    await test_db.upsert_pattern_progress(pattern_progress)
 
     retrieved = await test_db.get_pattern_progress("default", "sliding_window")
     assert retrieved is not None
-    assert retrieved.confidence == 50
+    assert retrieved.progress == 50
     assert retrieved.quests_completed == 2
 
 
@@ -179,13 +179,13 @@ async def test_get_completed_quests(test_db):
 async def test_get_all_pattern_progress(test_db):
     """Test getting progress for all patterns."""
     for pattern in ["sliding_window", "two_pointers", "hash_map"]:
-        progress = PatternProgress(
+        pattern_progress = PatternProgress(
             id=f"default_{pattern}",
             user_id="default",
             pattern_id=pattern,
-            confidence=30,
+            progress=30,
         )
-        await test_db.upsert_pattern_progress(progress)
+        await test_db.upsert_pattern_progress(pattern_progress)
 
     all_progress = await test_db.get_all_pattern_progress("default")
     assert len(all_progress) == 3

@@ -88,7 +88,7 @@ async def list_patterns(
     Returns a list of patterns with:
     - pattern_id: Unique identifier
     - title: Display name
-    - confidence: User's current confidence (0-100)
+    - progress: User's current progress (0-100)
     - quests_completed: Number of completed quests
     - quests_total: Total practice problems
     - mastered: Whether pattern is mastered
@@ -117,7 +117,7 @@ async def list_patterns(
                     "pattern_name", pattern_id.replace("_", " ").title()
                 ),
                 "description": f"{pattern_data.get('tier', 'foundation').title()} - {pattern_data.get('estimated_time_hours', 0)}h",
-                "confidence": progress.confidence if progress else 0,
+                "progress": progress.progress if progress else 0,
                 "quests_completed": progress.quests_completed if progress else 0,
                 "quests_total": len(all_quests),
                 "mastered": progress.mastered if progress else False,
@@ -214,7 +214,7 @@ async def get_pattern_details(
         "practice_problems": practice_problems,
         "all_quests_count": len(all_quests),
         "progress": {
-            "confidence": progress.confidence if progress else 0,
+            "progress": progress.progress if progress else 0,
             "quests_completed": progress.quests_completed if progress else 0,
             "concepts_understood": len([c for c in concepts if c["understood"]]),
             "concepts_total": len(concepts),
@@ -230,7 +230,7 @@ async def get_pattern_details(
 
 @tool(
     name="get_weak_patterns",
-    description="Get patterns that need the most work, sorted by confidence (lowest first). Use this to recommend what the user should focus on.",
+    description="Get patterns that need the most work, sorted by progress (lowest first). Use this to recommend what the user should focus on.",
     category="patterns",
 )
 async def get_weak_patterns(
@@ -240,7 +240,7 @@ async def get_weak_patterns(
     mode: str = "fast_track",
 ) -> ToolResult:
     """
-    Get patterns with lowest confidence that need work.
+    Get patterns with lowest progress that need work.
 
     :param limit: Maximum number of patterns to return
     :return: List of weak patterns with details
@@ -258,22 +258,22 @@ async def get_weak_patterns(
         if not pattern_id:
             continue
 
-        progress = progress_map.get(pattern_id)
-        confidence = progress.confidence if progress else 0
+        pattern_progress = progress_map.get(pattern_id)
+        current_progress = pattern_progress.progress if pattern_progress else 0
 
         # Calculate why it's weak
         reasons = []
-        if confidence == 0:
+        if current_progress == 0:
             reasons.append("Not started")
-        elif confidence < 30:
-            reasons.append("Low confidence")
-        elif confidence < 60:
+        elif current_progress < 30:
+            reasons.append("Low progress")
+        elif current_progress < 60:
             reasons.append("Needs more practice")
 
-        if progress and not progress.mastered:
-            if progress.quests_completed < progress.quests_total:
+        if pattern_progress and not pattern_progress.mastered:
+            if pattern_progress.quests_completed < pattern_progress.quests_total:
                 reasons.append(
-                    f"Only {progress.quests_completed}/{progress.quests_total} problems solved"
+                    f"Only {pattern_progress.quests_completed}/{pattern_progress.quests_total} problems solved"
                 )
 
         result.append(
@@ -282,14 +282,14 @@ async def get_weak_patterns(
                 "title": pattern_data.get(
                     "pattern_name", pattern_id.replace("_", " ").title()
                 ),
-                "confidence": confidence,
+                "progress": current_progress,
                 "reasons": reasons or ["Could use more practice"],
                 "has_syllabus": bool(pattern_data.get("concepts")),
             }
         )
 
-    # Sort by confidence (ascending) and take top N
-    result.sort(key=lambda p: p["confidence"])
+    # Sort by progress (ascending) and take top N
+    result.sort(key=lambda p: p["progress"])
     result = result[:limit]
 
     return ToolResult(

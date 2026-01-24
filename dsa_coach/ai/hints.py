@@ -20,8 +20,8 @@ def get_adaptive_hint(
         Formatted hint text with optional DIVE framework
     """
     pattern = quest.get("pattern", "unknown")
-    confidence = (
-        progress.get("pattern_proficiency", {}).get(pattern, {}).get("confidence", 0)
+    current_progress = (
+        progress.get("pattern_proficiency", {}).get(pattern, {}).get("progress", 0)
     )
 
     # Map hint_level string to number
@@ -34,7 +34,7 @@ def get_adaptive_hint(
         pattern=pattern.replace("_", " ").title(),
         difficulty=quest.get("difficulty", "medium"),
         description=f"Link: {quest.get('link', 'N/A')}",
-        confidence=confidence,
+        progress=current_progress,
         hint_level=level_num,
     )
 

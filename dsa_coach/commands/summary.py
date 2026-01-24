@@ -40,19 +40,19 @@ def cmd_summary():
     # Pattern proficiency
     _ui.print_styled("\n📈 Pattern Proficiency:", "yellow")
     prof_list = [
-        (p.pattern_id, p.confidence, p.quests_completed)
+        (p.pattern_id, p.progress, p.quests_completed)
         for p in patterns
         if p.quests_completed > 0
     ]
     prof_list.sort(key=lambda x: x[1], reverse=True)
 
     if prof_list:
-        for pattern_id, confidence, quests_done in prof_list:
-            bar_len = int(confidence / 10)
+        for pattern_id, progress, quests_done in prof_list:
+            bar_len = int(progress / 10)
             bar = "█" * bar_len + "░" * (10 - bar_len)
             pattern_display = get_pattern_name(pattern_id)
             _ui.print_styled(
-                f"   {pattern_display:25} [{bar}] {confidence:.0f}%  ({quests_done} quests)",
+                f"   {pattern_display:25} [{bar}] {progress:.0f}%  ({quests_done} quests)",
                 "",
             )
     else:

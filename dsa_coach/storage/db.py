@@ -104,11 +104,12 @@ class Database:
             );
 
             -- Pattern progress table
+            -- Note: 'progress' column (formerly 'confidence') - index created after migration
             CREATE TABLE IF NOT EXISTS pattern_progress (
                 id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL DEFAULT 'default',
                 pattern_id TEXT NOT NULL,
-                confidence INTEGER NOT NULL DEFAULT 0,
+                progress INTEGER NOT NULL DEFAULT 0,
                 quests_completed INTEGER NOT NULL DEFAULT 0,
                 quests_total INTEGER NOT NULL DEFAULT 0,
                 concepts_understood TEXT NOT NULL DEFAULT '[]',
@@ -119,7 +120,6 @@ class Database:
                 UNIQUE(user_id, pattern_id)
             );
             CREATE INDEX IF NOT EXISTS idx_pattern_progress_user ON pattern_progress(user_id);
-            CREATE INDEX IF NOT EXISTS idx_pattern_progress_confidence ON pattern_progress(confidence);
 
             -- Quest completions table
             CREATE TABLE IF NOT EXISTS quest_completions (
@@ -238,6 +238,34 @@ class Database:
             await self.conn.execute(
                 "ALTER TABLE messages ADD COLUMN thinking_signature TEXT"
             )
+        await self.conn.commit()
+
+        # Run confidence -> progress migration
+        await self._migrate_confidence_to_progress()
+
+    async def _migrate_confidence_to_progress(self) -> None:
+        """Rename 'confidence' column to 'progress' in pattern_progress table.
+
+        SQLite doesn't support ALTER TABLE RENAME COLUMN in older versions,
+        so we check if the old column exists and add the new one if needed.
+        """
+        async with self.conn.execute("PRAGMA table_info(pattern_progress)") as cursor:
+            columns = [row["name"] async for row in cursor]
+
+        # If 'confidence' exists but 'progress' doesn't, we need to migrate
+        if "confidence" in columns and "progress" not in columns:
+            # Add the new column
+            await self.conn.execute(
+                "ALTER TABLE pattern_progress ADD COLUMN progress INTEGER NOT NULL DEFAULT 0"
+            )
+            # Copy data from old column to new
+            await self.conn.execute("UPDATE pattern_progress SET progress = confidence")
+            await self.conn.commit()
+
+        # Create the progress index (after migration ensures column exists)
+        await self.conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pattern_progress_progress ON pattern_progress(progress)"
+        )
         await self.conn.commit()
 
     # ==================== Session Operations ====================
@@ -551,7 +579,7 @@ class Database:
         """Get progress for all patterns for a user."""
         progress_list = []
         async with self.conn.execute(
-            "SELECT * FROM pattern_progress WHERE user_id = ? ORDER BY confidence",
+            "SELECT * FROM pattern_progress WHERE user_id = ? ORDER BY progress",
             (user_id,),
         ) as cursor:
             async for row in cursor:
@@ -563,10 +591,10 @@ class Database:
         progress.id = f"{progress.user_id}_{progress.pattern_id}"
         await self.conn.execute(
             """
-            INSERT INTO pattern_progress (id, user_id, pattern_id, confidence, quests_completed, quests_total, concepts_understood, concepts_total, last_practiced, next_review, mastered)
+            INSERT INTO pattern_progress (id, user_id, pattern_id, progress, quests_completed, quests_total, concepts_understood, concepts_total, last_practiced, next_review, mastered)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(user_id, pattern_id) DO UPDATE SET
-                confidence = excluded.confidence,
+                progress = excluded.progress,
                 quests_completed = excluded.quests_completed,
                 quests_total = excluded.quests_total,
                 concepts_understood = excluded.concepts_understood,
@@ -579,7 +607,7 @@ class Database:
                 progress.id,
                 progress.user_id,
                 progress.pattern_id,
-                progress.confidence,
+                progress.progress,
                 progress.quests_completed,
                 progress.quests_total,
                 json.dumps(progress.concepts_understood),
@@ -595,11 +623,19 @@ class Database:
 
     def _row_to_pattern_progress(self, row: aiosqlite.Row) -> PatternProgress:
         """Convert database row to PatternProgress model."""
+        # Handle both old "confidence" column and new "progress" column for migration
+        row_keys = row.keys()
+        if "progress" in row_keys:
+            progress_value = row["progress"]
+        elif "confidence" in row_keys:
+            progress_value = row["confidence"]
+        else:
+            progress_value = 0
         return PatternProgress(
             id=row["id"],
             user_id=row["user_id"],
             pattern_id=row["pattern_id"],
-            confidence=row["confidence"],
+            progress=progress_value,
             quests_completed=row["quests_completed"],
             quests_total=row["quests_total"],
             concepts_understood=json.loads(row["concepts_understood"]),
@@ -616,12 +652,22 @@ class Database:
     # ==================== Derived Stats (Single Source of Truth) ====================
 
     async def get_derived_pattern_stats(
-        self, user_id: str, pattern_id: str
+        self, user_id: str, pattern_id: str, quests_total: int | None = None
     ) -> dict[str, int | bool]:
         """Compute pattern stats from quest_completions table (source of truth).
 
         This replaces cached counters with live queries to prevent data drift.
-        Returns: {"quests_completed": int, "confidence": int, "mastered": bool}
+
+        Progress formula: (earned_points / max_points) * 100
+        where max_points = quests_total * 15 (points for completing all with no hints)
+
+        Args:
+            user_id: User identifier
+            pattern_id: Pattern identifier
+            quests_total: Total quests in pattern (for scaled progress).
+                          If not provided, falls back to pattern_progress.quests_total.
+
+        Returns: {"quests_completed": int, "progress": int, "mastered": bool}
         """
         async with self.conn.execute(
             """
@@ -631,7 +677,7 @@ class Database:
                     CASE WHEN success = 1 THEN
                         CASE WHEN hints_used = 0 THEN 15 ELSE 10 END
                     ELSE 0 END
-                ), 0) as raw_confidence
+                ), 0) as earned_points
             FROM quest_completions
             WHERE user_id = ? AND pattern_id = ?
             """,
@@ -639,13 +685,31 @@ class Database:
         ) as cursor:
             row = await cursor.fetchone()
             quests_completed = row[0] if row else 0
-            raw_confidence = row[1] if row else 0
-            confidence = min(100, raw_confidence)
-            return {
-                "quests_completed": quests_completed,
-                "confidence": confidence,
-                "mastered": confidence >= 80,
-            }
+            earned_points = row[1] if row else 0
+
+        # Fallback: get quests_total from pattern_progress if not provided
+        if quests_total is None or quests_total == 0:
+            async with self.conn.execute(
+                "SELECT quests_total FROM pattern_progress WHERE user_id = ? AND pattern_id = ?",
+                (user_id, pattern_id),
+            ) as cursor:
+                pp_row = await cursor.fetchone()
+                if pp_row and pp_row[0]:
+                    quests_total = pp_row[0]
+
+        # Calculate scaled progress
+        if quests_total and quests_total > 0:
+            max_points = quests_total * 15
+            progress = min(100, round((earned_points / max_points) * 100))
+        else:
+            # Legacy fallback: cap at 100 if quests_total unknown
+            progress = min(100, earned_points)
+
+        return {
+            "quests_completed": quests_completed,
+            "progress": progress,
+            "mastered": progress >= 80,
+        }
 
     async def get_total_quests_completed(self, user_id: str = "default") -> int:
         """Count total completed quests from records (source of truth)."""
@@ -1273,7 +1337,7 @@ class Database:
         pattern_prof = {}
         for p in patterns:
             pattern_prof[p.pattern_id] = {
-                "confidence": p.confidence,
+                "progress": p.progress,
                 "attempts": p.quests_completed,
                 "successes": p.quests_completed,
                 "avg_time_mins": None,

@@ -76,12 +76,12 @@ USER_PROFILE = {
 
 # Pattern Progress - Various stages of mastery
 PATTERN_PROGRESS = [
-    # Mastered pattern - high confidence, all quests done
+    # Mastered pattern - high progress, all quests done
     {
         "id": "default_arrays_hashing",
         "user_id": "default",
         "pattern_id": "arrays_hashing",
-        "confidence": 85,
+        "progress": 85,
         "quests_completed": 6,
         "quests_total": 6,
         "concepts_understood": [
@@ -93,12 +93,12 @@ PATTERN_PROGRESS = [
         "next_review": days_ago(-4),  # Due in 4 days
         "mastered": True,
     },
-    # Strong pattern - good confidence, most quests done
+    # Strong pattern - good progress, most quests done
     {
         "id": "default_two_pointers",
         "user_id": "default",
         "pattern_id": "two_pointers",
-        "confidence": 65,
+        "progress": 65,
         "quests_completed": 4,
         "quests_total": 5,
         "concepts_understood": ["two_pointer_technique", "opposite_ends"],
@@ -106,12 +106,12 @@ PATTERN_PROGRESS = [
         "next_review": days_ago(-1),  # Due tomorrow
         "mastered": False,
     },
-    # Learning pattern - medium confidence
+    # Learning pattern - medium progress
     {
         "id": "default_sliding_window",
         "user_id": "default",
         "pattern_id": "sliding_window",
-        "confidence": 45,
+        "progress": 45,
         "quests_completed": 2,
         "quests_total": 4,
         "concepts_understood": ["window_basics"],
@@ -119,12 +119,12 @@ PATTERN_PROGRESS = [
         "next_review": None,
         "mastered": False,
     },
-    # Weak pattern - low confidence, just started
+    # Weak pattern - low progress, just started
     {
         "id": "default_binary_search",
         "user_id": "default",
         "pattern_id": "binary_search",
-        "confidence": 20,
+        "progress": 20,
         "quests_completed": 1,
         "quests_total": 5,
         "concepts_understood": [],
@@ -137,7 +137,7 @@ PATTERN_PROGRESS = [
         "id": "default_recursion",
         "user_id": "default",
         "pattern_id": "recursion",
-        "confidence": 0,
+        "progress": 0,
         "quests_completed": 0,
         "quests_total": 4,
         "concepts_understood": [],
@@ -573,7 +573,7 @@ def hydrate_pattern_progress(db: SyncDatabase, user_id: str = "test") -> None:
             id=f"{user_id}_{pp['pattern_id']}",
             user_id=user_id,
             pattern_id=pp["pattern_id"],
-            confidence=pp["confidence"],
+            progress=pp["progress"],
             quests_completed=pp["quests_completed"],
             quests_total=pp["quests_total"],
             concepts_understood=pp["concepts_understood"],
@@ -582,7 +582,7 @@ def hydrate_pattern_progress(db: SyncDatabase, user_id: str = "test") -> None:
             mastered=pp["mastered"],
         )
         db.upsert_pattern_progress(progress)
-        status = "MASTERED" if pp["mastered"] else f"{pp['confidence']}%"
+        status = "MASTERED" if pp["mastered"] else f"{pp['progress']}%"
         print(f"   {pp['pattern_id']}: {status}")
 
 
@@ -744,7 +744,7 @@ def verify_data(db: SyncDatabase, user_id: str = "test") -> None:
     patterns = db.get_all_pattern_progress(user_id)
     print(f"\n📊 Pattern Progress: {len(patterns)} patterns")
     for p in patterns:
-        status = "MASTERED" if p.mastered else f"{p.confidence}%"
+        status = "MASTERED" if p.mastered else f"{p.progress}%"
         print(
             f"   {p.pattern_id}: {status} ({p.quests_completed}/{p.quests_total} quests)"
         )

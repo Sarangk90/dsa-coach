@@ -183,7 +183,7 @@ class TestObsidianTools:
         """Test proposing a pattern note."""
         result = await propose_pattern_note(
             pattern="sliding_window",
-            confidence=60.0,
+            progress=60.0,
             session_insights="Learned about variable-size windows",
         )
 
@@ -192,7 +192,7 @@ class TestObsidianTools:
         assert result.data["pattern"] == "sliding_window"
         assert result.data["filename"] == "sliding-window.md"
         assert "sections" in result.data
-        assert result.data["needs_diagram"]  # High confidence
+        assert result.data["needs_diagram"]  # High progress
 
     async def test_propose_existing_note_fails(self, mock_vault_env):
         """Test that proposing fails if note already exists."""
@@ -201,7 +201,7 @@ class TestObsidianTools:
 
         result = await propose_pattern_note(
             pattern="sliding_window",
-            confidence=50.0,
+            progress=50.0,
             session_insights="Test",
         )
 
@@ -267,13 +267,13 @@ class TestObsidianTools:
         assert "New insight added" in content
         assert "## Update" in content
 
-    async def test_check_note_creation_criteria_high_confidence(self):
-        """Test note creation criteria with high confidence gain."""
+    async def test_check_note_creation_criteria_high_progress(self):
+        """Test note creation criteria with high progress gain."""
         result = await check_note_creation_criteria(
             pattern="sliding_window",
-            confidence=70.0,
+            progress=70.0,
             session_messages=8,
-            confidence_gain=20.0,
+            progress_gain=20.0,
         )
 
         assert result.success
@@ -285,9 +285,9 @@ class TestObsidianTools:
         """Test that short sessions don't trigger note creation."""
         result = await check_note_creation_criteria(
             pattern="test",
-            confidence=30.0,
+            progress=30.0,
             session_messages=2,
-            confidence_gain=5.0,
+            progress_gain=5.0,
         )
 
         assert result.success
@@ -332,16 +332,16 @@ class TestIntegration:
         # 1. Check criteria
         criteria_result = await check_note_creation_criteria(
             pattern="sliding_window",
-            confidence=65.0,
+            progress=65.0,
             session_messages=10,
-            confidence_gain=25.0,
+            progress_gain=25.0,
         )
         assert criteria_result.data["should_create"]
 
         # 2. Propose note
         proposal_result = await propose_pattern_note(
             pattern="sliding_window",
-            confidence=65.0,
+            progress=65.0,
             session_insights="Learned variable-size windows",
         )
         assert proposal_result.success

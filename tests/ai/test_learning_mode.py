@@ -28,7 +28,7 @@ def test_choose_mode_forced_modes_do_not_prompt() -> None:
     assert (
         choose_learning_start_mode(
             request="diagnose_first",
-            confidence=80.0,
+            progress=80.0,
             interactive=True,
             input_func=inp,
             llm_decider=llm,
@@ -40,7 +40,7 @@ def test_choose_mode_forced_modes_do_not_prompt() -> None:
     assert (
         choose_learning_start_mode(
             request="teach_first",
-            confidence=10.0,
+            progress=10.0,
             interactive=True,
             input_func=inp,
             llm_decider=llm,
@@ -62,7 +62,7 @@ def test_choose_mode_auto_uses_heuristic_and_never_prompts() -> None:
     assert (
         choose_learning_start_mode(
             request="auto",
-            confidence=0.0,
+            progress=0.0,
             interactive=True,
             input_func=inp,
             llm_decider=None,
@@ -72,7 +72,7 @@ def test_choose_mode_auto_uses_heuristic_and_never_prompts() -> None:
     assert (
         choose_learning_start_mode(
             request="auto",
-            confidence=85.0,
+            progress=85.0,
             interactive=True,
             input_func=inp,
             llm_decider=None,
@@ -94,7 +94,7 @@ def test_choose_mode_llm_uses_llm_decider_and_falls_back_when_missing() -> None:
     assert (
         choose_learning_start_mode(
             request="llm",
-            confidence=10.0,
+            progress=10.0,
             interactive=False,
             input_func=_fake_input([]),
             llm_decider=llm,
@@ -107,7 +107,7 @@ def test_choose_mode_llm_uses_llm_decider_and_falls_back_when_missing() -> None:
     assert (
         choose_learning_start_mode(
             request="llm",
-            confidence=10.0,
+            progress=10.0,
             interactive=False,
             input_func=_fake_input([]),
             llm_decider=None,
@@ -123,7 +123,7 @@ def test_choose_mode_ask_interactive_accepts_inputs_and_default() -> None:
     assert (
         choose_learning_start_mode(
             request="ask",
-            confidence=75.0,
+            progress=75.0,
             interactive=True,
             input_func=_fake_input([""]),
             llm_decider=None,
@@ -134,7 +134,7 @@ def test_choose_mode_ask_interactive_accepts_inputs_and_default() -> None:
     assert (
         choose_learning_start_mode(
             request="ask",
-            confidence=20.0,
+            progress=20.0,
             interactive=True,
             input_func=_fake_input(["t"]),
             llm_decider=None,
@@ -145,7 +145,7 @@ def test_choose_mode_ask_interactive_accepts_inputs_and_default() -> None:
     assert (
         choose_learning_start_mode(
             request="ask",
-            confidence=80.0,
+            progress=80.0,
             interactive=True,
             input_func=_fake_input(["d"]),
             llm_decider=None,
@@ -166,7 +166,7 @@ def test_choose_mode_ask_non_interactive_falls_back_to_heuristic() -> None:
     assert (
         choose_learning_start_mode(
             request="ask",
-            confidence=10.0,
+            progress=10.0,
             interactive=False,
             input_func=inp,
             llm_decider=None,
@@ -182,7 +182,7 @@ def test_choose_mode_ask_can_quit() -> None:
     assert (
         choose_learning_start_mode(
             request="ask",
-            confidence=10.0,
+            progress=10.0,
             interactive=True,
             input_func=_fake_input(["q"]),
             llm_decider=None,

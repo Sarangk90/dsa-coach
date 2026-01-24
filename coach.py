@@ -138,7 +138,7 @@ def cmd_sessions():
 
 
 def cmd_reset(argv: list[str] | None = None):
-    """Reset pattern progress (confidence/attempts/successes)."""
+    """Reset pattern progress (progress/attempts/successes)."""
     from dsa_coach.commands.reset import cmd_reset as _cmd_reset
 
     _cmd_reset(argv or [])

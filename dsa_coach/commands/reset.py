@@ -11,15 +11,15 @@ def _normalize_pattern(pattern: str) -> str:
 
 def _reset_pattern_progress(db: SyncDatabase, pattern_id: str) -> None:
     """Reset a single pattern's progress."""
-    progress = db.get_pattern_progress("default", pattern_id)
-    if progress:
-        progress.confidence = 0
-        progress.quests_completed = 0
-        progress.concepts_understood = []
-        progress.mastered = False
-        progress.last_practiced = None
-        progress.next_review = None
-        db.upsert_pattern_progress(progress)
+    pattern_progress = db.get_pattern_progress("default", pattern_id)
+    if pattern_progress:
+        pattern_progress.progress = 0
+        pattern_progress.quests_completed = 0
+        pattern_progress.concepts_understood = []
+        pattern_progress.mastered = False
+        pattern_progress.last_practiced = None
+        pattern_progress.next_review = None
+        db.upsert_pattern_progress(pattern_progress)
 
 
 def _confirm_or_abort(action: str, yes: bool) -> bool:
@@ -36,7 +36,7 @@ def _confirm_or_abort(action: str, yes: bool) -> bool:
 
 
 def cmd_reset(argv: list[str] | None = None) -> None:
-    """Reset pattern progress (confidence/attempts/successes) safely.
+    """Reset pattern progress (progress score/attempts/successes) safely.
 
     Usage:
       python coach.py reset pattern <pattern> [--yes]

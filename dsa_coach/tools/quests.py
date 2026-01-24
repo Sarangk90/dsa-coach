@@ -336,7 +336,7 @@ async def mark_quest_complete(
     :param success: Whether the quest was solved successfully
     :param time_minutes: Time taken in minutes (optional)
     :param hints_used: Number of hints used
-    :return: Updated progress and confidence
+    :return: Updated progress
     """
     # Get current quest from session
     session = await db.get_latest_session(user_id)
@@ -394,12 +394,10 @@ async def mark_quest_complete(
     pattern_progress.quests_completed += 1
     pattern_progress.last_practiced = datetime.now()
 
-    # Update confidence based on success and hints
+    # Update progress based on success and hints
     if success:
-        confidence_gain = 15 if hints_used == 0 else 10
-        pattern_progress.confidence = min(
-            100, pattern_progress.confidence + confidence_gain
-        )
+        progress_gain = 15 if hints_used == 0 else 10
+        pattern_progress.progress = min(100, pattern_progress.progress + progress_gain)
 
     await db.upsert_pattern_progress(pattern_progress)
 
@@ -413,16 +411,16 @@ async def mark_quest_complete(
             "quest_id": quest["id"],
             "title": quest.get("title", quest["id"]),
             "pattern": pattern_id,
-            "pattern_confidence": pattern_progress.confidence,
+            "pattern_progress": pattern_progress.progress,
             "quests_completed": profile.quests_completed,
         },
-        message=f"Quest complete! Pattern confidence: {pattern_progress.confidence}%",
+        message=f"Quest complete! Pattern progress: {pattern_progress.progress}%",
     )
 
 
 @tool(
     name="get_hint",
-    description="Get a hint for the current quest. Hints are adaptive based on confidence level (low=detailed, medium=conceptual, high=minimal).",
+    description="Get a hint for the current quest. Hints are adaptive based on progress level (low=detailed, medium=conceptual, high=minimal).",
     category="quests",
 )
 async def get_hint(
@@ -433,7 +431,7 @@ async def get_hint(
     """
     Get a hint for the current quest.
 
-    :param level: Hint level - 'low', 'medium', 'high', or 'auto' (based on confidence)
+    :param level: Hint level - 'low', 'medium', 'high', or 'auto' (based on progress)
     :return: Hint text and metadata
     """
     # Get current quest
@@ -461,12 +459,12 @@ async def get_hint(
     # Determine hint level
     if level == "auto":
         pattern_id = quest.get("pattern", "unknown")
-        progress = await db.get_pattern_progress(user_id, pattern_id)
-        confidence = progress.confidence if progress else 0
+        pattern_progress = await db.get_pattern_progress(user_id, pattern_id)
+        current_progress = pattern_progress.progress if pattern_progress else 0
 
-        if confidence >= 70:
+        if current_progress >= 70:
             level = "high"
-        elif confidence >= 40:
+        elif current_progress >= 40:
             level = "medium"
         else:
             level = "low"

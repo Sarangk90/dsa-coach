@@ -264,9 +264,9 @@ async def get_dashboard(
                 "difficulty": quest.get("difficulty", "medium"),
             }
 
-    # Get weak patterns (sorted by confidence, lowest first)
+    # Get weak patterns (sorted by progress, lowest first)
     all_progress = await db.get_all_pattern_progress(user_id)
-    weak_patterns = sorted(all_progress, key=lambda p: p.confidence)[:5]
+    weak_patterns = sorted(all_progress, key=lambda p: p.progress)[:5]
 
     # Get due reviews
     due_reviews = await db.get_due_reviews(user_id)
@@ -299,7 +299,7 @@ async def get_dashboard(
                 {
                     "pattern_id": p.pattern_id,
                     "pattern_name": get_pattern_name(p.pattern_id),
-                    "confidence": p.confidence,
+                    "progress": p.progress,
                     "quests_completed": p.quests_completed,
                     "quests_total": p.quests_total,
                 }
@@ -491,8 +491,8 @@ async def complete_quest(
 
     Hooks (deterministic, always execute):
     1. log_session_activity - Always logs problems solved
-    2. check_milestone - Awards milestone if confidence >= 80
-    3. check_note_creation - Suggests note if confidence >= 70
+    2. check_milestone - Awards milestone if progress >= 80
+    3. check_note_creation - Suggests note if progress >= 70
 
     :param success: Whether the quest was solved successfully
     :param time_minutes: Time taken in minutes (optional)
@@ -561,7 +561,7 @@ async def complete_quest(
         )
 
     # NEW COMPLETION - Insert the quest completion record (SOURCE OF TRUTH)
-    # Counters (quests_completed, confidence) are now DERIVED from this table
+    # Counters (quests_completed, progress) are now DERIVED from this table
     completion = QuestCompletion(
         id=f"{user_id}_{quest_id}",
         user_id=user_id,
@@ -576,15 +576,23 @@ async def complete_quest(
     )
     await db.upsert_quest_completion(completion)
 
+    # Get or calculate quests_total for proper progress scaling
+    pattern_progress = await db.get_pattern_progress(user_id, pattern_id)
+    if pattern_progress and pattern_progress.quests_total > 0:
+        quests_total = pattern_progress.quests_total
+    else:
+        quests_total = _count_total_quests_for_pattern(pattern_id)
+
     # Get derived stats from quest_completions (single source of truth)
-    derived_stats = await db.get_derived_pattern_stats(user_id, pattern_id)
-    derived_confidence = derived_stats["confidence"]
+    # Pass quests_total for proper progress scaling
+    derived_stats = await db.get_derived_pattern_stats(
+        user_id, pattern_id, quests_total=quests_total
+    )
+    derived_progress = derived_stats["progress"]
     derived_quests_completed = derived_stats["quests_completed"]
 
     # Update pattern_progress for non-derived fields (last_practiced, mastered, quests_total)
-    pattern_progress = await db.get_pattern_progress(user_id, pattern_id)
     if not pattern_progress:
-        quests_total = _count_total_quests_for_pattern(pattern_id)
         pattern_progress = PatternProgress(
             id=f"{user_id}_{pattern_id}",
             user_id=user_id,
@@ -593,13 +601,13 @@ async def complete_quest(
         )
 
     if pattern_progress.quests_total == 0:
-        pattern_progress.quests_total = _count_total_quests_for_pattern(pattern_id)
+        pattern_progress.quests_total = quests_total
 
     # Update timestamp (not a counter, still needed)
     pattern_progress.last_practiced = datetime.now()
     # Sync derived values to cached columns for backward compatibility
     pattern_progress.quests_completed = derived_quests_completed
-    pattern_progress.confidence = derived_confidence
+    pattern_progress.progress = derived_progress
 
     await db.upsert_pattern_progress(pattern_progress)
 
@@ -626,7 +634,7 @@ async def complete_quest(
     # HOOK 2: Check Milestone (CONDITIONAL)
     # ============================================
     milestone_awarded = None
-    if derived_confidence >= 80 and not pattern_progress.mastered:
+    if derived_progress >= 80 and not pattern_progress.mastered:
         pattern_progress.mastered = True
         await db.upsert_pattern_progress(pattern_progress)
 
@@ -646,20 +654,18 @@ async def complete_quest(
             "check_milestone", f"AWARDED pattern_mastered for {pattern_id}"
         )
     else:
-        log.hook_executed(
-            "check_milestone", f"skipped (confidence={derived_confidence})"
-        )
+        log.hook_executed("check_milestone", f"skipped (progress={derived_progress})")
 
     # ============================================
     # HOOK 3: Check Note Creation (CONDITIONAL)
     # ============================================
     note_suggestion = None
-    if derived_confidence >= 70:
+    if derived_progress >= 70:
         should_create, reason = should_create_note(
             pattern_id,
-            derived_confidence,
+            derived_progress,
             session_messages=0,
-            confidence_gain=0,
+            progress_gain=0,
         )
         if should_create:
             note_suggestion = {
@@ -671,32 +677,32 @@ async def complete_quest(
         else:
             log.hook_executed("check_note_creation", f"skipped: {reason}")
     else:
-        log.hook_executed("check_note_creation", "skipped (confidence < 70)")
+        log.hook_executed("check_note_creation", "skipped (progress < 70)")
 
     # Get total quests completed (derived from quest_completions table)
     total_quests_completed = await db.get_total_quests_completed(user_id)
 
-    log.success(f"quest={quest_id} confidence={derived_confidence}%")
+    log.success(f"quest={quest_id} progress={derived_progress}%")
     return ToolResult(
         success=True,
         data={
             "quest_id": quest_id,
             "title": quest.get("title", quest_id),
             "pattern_id": pattern_id,
-            "pattern_confidence": derived_confidence,
+            "pattern_progress": derived_progress,
             "quests_completed": total_quests_completed,
             # Hook results
             "activity_logged": True,
             "milestone_awarded": milestone_awarded,
             "note_suggestion": note_suggestion,
         },
-        message=f"Quest complete! Pattern confidence: {derived_confidence}%",
+        message=f"Quest complete! Pattern progress: {derived_progress}%",
     )
 
 
 @tool(
     name="get_hint",
-    description="Get adaptive hint for current quest based on confidence level.",
+    description="Get adaptive hint for current quest based on progress level.",
     category="consolidated",
 )
 async def get_hint(
@@ -707,7 +713,7 @@ async def get_hint(
     """
     Get a hint for the current quest.
 
-    :param level: Hint level - 'low', 'medium', 'high', or 'auto' (based on confidence)
+    :param level: Hint level - 'low', 'medium', 'high', or 'auto' (based on progress)
     :return: Hint text and metadata
     """
     # Get current quest
@@ -735,12 +741,12 @@ async def get_hint(
     # Determine hint level
     if level == "auto":
         pattern_id = quest.get("pattern", "unknown")
-        progress = await db.get_pattern_progress(user_id, pattern_id)
-        confidence = progress.confidence if progress else 0
+        pattern_progress = await db.get_pattern_progress(user_id, pattern_id)
+        current_progress = pattern_progress.progress if pattern_progress else 0
 
-        if confidence >= 70:
+        if current_progress >= 70:
             level = "high"
-        elif confidence >= 40:
+        elif current_progress >= 40:
             level = "medium"
         else:
             level = "low"
@@ -770,7 +776,7 @@ async def get_hint(
 
 @tool(
     name="list_patterns",
-    description="List all patterns with progress. Use sort_by='confidence' to find weak patterns.",
+    description="List all patterns with progress. Use sort_by='progress' to find weak patterns.",
     category="consolidated",
 )
 async def list_patterns(
@@ -783,7 +789,7 @@ async def list_patterns(
     List all available patterns with their learning status.
 
     :param mode: Curriculum mode - 'fast_track' or 'complete'
-    :param sort_by: Sort order - 'sequence', 'confidence', or 'last_practiced'
+    :param sort_by: Sort order - 'sequence', 'progress', or 'last_practiced'
     :return: List of patterns with progress
     """
     quests = _load_quests()
@@ -805,7 +811,7 @@ async def list_patterns(
                     "pattern_name", pattern_id.replace("_", " ").title()
                 ),
                 "description": f"{pattern_data.get('tier', 'foundation').title()} - {pattern_data.get('estimated_time_hours', 0)}h",
-                "confidence": progress.confidence if progress else 0,
+                "progress": progress.progress if progress else 0,
                 "quests_completed": progress.quests_completed if progress else 0,
                 "quests_total": len(all_quests),
                 "mastered": progress.mastered if progress else False,
@@ -818,8 +824,8 @@ async def list_patterns(
         )
 
     # Sort based on requested order
-    if sort_by == "confidence":
-        result.sort(key=lambda p: p["confidence"])
+    if sort_by == "progress":
+        result.sort(key=lambda p: p["progress"])
     elif sort_by == "last_practiced":
         result.sort(key=lambda p: p["last_practiced"] or "1970-01-01", reverse=True)
     else:  # sequence
@@ -917,7 +923,7 @@ async def get_pattern_details(
         "practice_problems": practice_problems,
         "all_quests_count": len(all_quests),
         "progress": {
-            "confidence": derived_stats["confidence"],
+            "progress": derived_stats["progress"],
             "quests_completed": derived_stats["quests_completed"],
             "concepts_understood": len([c for c in concepts if c["understood"]]),
             "concepts_total": len(concepts),
@@ -1724,11 +1730,11 @@ async def create_note(
 
         # Auto-check criteria
         if auto_check_criteria:
-            progress = await db.get_pattern_progress(user_id, pattern)
-            confidence = progress.confidence if progress else 0
+            pattern_progress = await db.get_pattern_progress(user_id, pattern)
+            current_progress = pattern_progress.progress if pattern_progress else 0
 
             should_create, reason = should_create_note(
-                pattern, confidence, session_messages=0, confidence_gain=0
+                pattern, current_progress, session_messages=0, progress_gain=0
             )
             if not should_create:
                 return ToolResult(

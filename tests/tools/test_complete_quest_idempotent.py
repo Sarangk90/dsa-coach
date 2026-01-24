@@ -1,15 +1,17 @@
 """Tests for complete_quest idempotency.
 
 These tests ensure that completing the same quest multiple times
-does not inflate progress counters or confidence scores.
+does not inflate progress counters or progress scores.
 """
 
+from datetime import datetime
 from pathlib import Path
 
 import pytest
 import pytest_asyncio
 
 from dsa_coach.storage.db import Database
+from dsa_coach.storage.models import QuestCompletion
 from dsa_coach.tools.consolidated import complete_quest, start_quest
 
 
@@ -53,7 +55,7 @@ async def test_complete_quest_only_counts_once(test_db: Database):
 
     first_quests_completed = profile_after_first.quests_completed
     first_pattern_quests = pattern_after_first.quests_completed
-    first_confidence = pattern_after_first.confidence
+    first_progress = pattern_after_first.progress
 
     # Start the same quest again
     await start_quest(
@@ -90,9 +92,9 @@ async def test_complete_quest_only_counts_once(test_db: Database):
         f"to {pattern_after_second.quests_completed} on re-completion!"
     )
 
-    assert pattern_after_second.confidence == first_confidence, (
-        f"Pattern confidence increased from {first_confidence} "
-        f"to {pattern_after_second.confidence} on re-completion!"
+    assert pattern_after_second.progress == first_progress, (
+        f"Pattern progress increased from {first_progress} "
+        f"to {pattern_after_second.progress} on re-completion!"
     )
 
 
@@ -156,7 +158,7 @@ async def test_derived_stats_match_actual_records(test_db: Database):
     quests = [
         "arrays_hashing_two_sum",
         "arrays_hashing_group_anagrams",
-        "arrays_hashing_top_k_frequent",
+        "arrays_hashing_top_k_frequent_elements",
     ]
 
     for quest_id in quests:
@@ -170,7 +172,7 @@ async def test_derived_stats_match_actual_records(test_db: Database):
             db=test_db,
             success=True,
             time_minutes=30,
-            hints_used=0,  # +15 confidence each
+            hints_used=0,  # +15 progress each
             user_id=user_id,
         )
 
@@ -178,8 +180,12 @@ async def test_derived_stats_match_actual_records(test_db: Database):
     completions = await test_db.get_completed_quests(user_id, pattern_id)
     actual_count = len(completions)
 
-    # Get derived stats
-    derived = await test_db.get_derived_pattern_stats(user_id, pattern_id)
+    # Get derived stats (with quests_total for scaled progress)
+    # arrays_hashing has 6 quests
+    quests_total = 6
+    derived = await test_db.get_derived_pattern_stats(
+        user_id, pattern_id, quests_total=quests_total
+    )
 
     # Derived quests_completed should match actual records
     assert derived["quests_completed"] == actual_count, (
@@ -187,11 +193,12 @@ async def test_derived_stats_match_actual_records(test_db: Database):
         f"actual records ({actual_count})"
     )
 
-    # Confidence should be 3 * 15 = 45 (capped at 100)
-    expected_confidence = min(100, actual_count * 15)
-    assert derived["confidence"] == expected_confidence, (
-        f"Derived confidence ({derived['confidence']}) != "
-        f"expected ({expected_confidence})"
+    # Confidence uses scaled formula: (earned_points / max_points) * 100
+    # 3 quests * 15 points = 45 earned, max = 6 * 15 = 90
+    # (45 / 90) * 100 = 50
+    expected_progress = round((actual_count * 15 / (quests_total * 15)) * 100)
+    assert derived["progress"] == expected_progress, (
+        f"Derived progress ({derived['progress']}) != expected ({expected_progress})"
     )
 
 
@@ -235,7 +242,7 @@ async def test_total_quests_completed_matches_records(test_db: Database):
 
 
 @pytest.mark.asyncio
-async def test_confidence_with_hints_calculates_correctly(test_db: Database):
+async def test_progress_with_hints_calculates_correctly(test_db: Database):
     """Confidence calculation should account for hints used."""
     user_id = "test_user"
     pattern_id = "arrays_hashing"
@@ -270,10 +277,88 @@ async def test_confidence_with_hints_calculates_correctly(test_db: Database):
         user_id=user_id,
     )
 
-    # Get derived stats
-    derived = await test_db.get_derived_pattern_stats(user_id, pattern_id)
+    # Get derived stats (pass quests_total for scaled progress calculation)
+    # arrays_hashing has 6 quests, max_points = 6 * 15 = 90
+    quests_total = 6
+    derived = await test_db.get_derived_pattern_stats(
+        user_id, pattern_id, quests_total=quests_total
+    )
 
-    # Should be 15 + 10 = 25
-    assert derived["confidence"] == 25, (
-        f"Expected confidence 25, got {derived['confidence']}"
+    # Earned points: 15 (no hints) + 10 (with hints) = 25
+    # Confidence formula: round((25 / 90) * 100) = 28
+    expected_progress = 28
+    assert derived["progress"] == expected_progress, (
+        f"Expected progress {expected_progress}, got {derived['progress']}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_progress_scales_with_pattern_size(test_db: Database):
+    """Confidence should scale proportionally to pattern size.
+
+    Small patterns (1 problem) can reach 100%.
+    Large patterns require proportional completions.
+    """
+    user_id = "test_user"
+    pattern_id = "test_pattern"
+
+    # Simulate a small pattern with 1 problem
+    # Completing it with no hints should give 100%
+    completion = QuestCompletion(
+        id=f"{user_id}_test_quest_1",
+        user_id=user_id,
+        quest_id="test_quest_1",
+        pattern_id=pattern_id,
+        completed_at=datetime.now(),
+        time_minutes=30,
+        hints_used=0,
+        success=True,
+    )
+    await test_db.upsert_quest_completion(completion)
+
+    # Small pattern (1 quest): 15 earned / 15 max = 100%
+    derived_small = await test_db.get_derived_pattern_stats(
+        user_id, pattern_id, quests_total=1
+    )
+    assert derived_small["progress"] == 100, (
+        f"Small pattern (1 quest) should reach 100%, got {derived_small['progress']}"
+    )
+    assert derived_small["mastered"] is True
+
+    # Same earned points, but larger pattern (10 quests): 15 / 150 = 10%
+    derived_large = await test_db.get_derived_pattern_stats(
+        user_id, pattern_id, quests_total=10
+    )
+    assert derived_large["progress"] == 10, (
+        f"Large pattern (10 quests) should be 10%, got {derived_large['progress']}"
+    )
+    assert derived_large["mastered"] is False
+
+
+@pytest.mark.asyncio
+async def test_progress_caps_at_100_percent(test_db: Database):
+    """Confidence should never exceed 100% even with extra completions."""
+    user_id = "test_user"
+    pattern_id = "overflow_pattern"
+
+    # Complete 3 quests in a pattern with only 2 quests
+    for i in range(3):
+        completion = QuestCompletion(
+            id=f"{user_id}_overflow_quest_{i}",
+            user_id=user_id,
+            quest_id=f"overflow_quest_{i}",
+            pattern_id=pattern_id,
+            completed_at=datetime.now(),
+            time_minutes=30,
+            hints_used=0,
+            success=True,
+        )
+        await test_db.upsert_quest_completion(completion)
+
+    # 45 earned points / 30 max points = 150% -> capped at 100%
+    derived = await test_db.get_derived_pattern_stats(
+        user_id, pattern_id, quests_total=2
+    )
+    assert derived["progress"] == 100, (
+        f"Confidence should cap at 100%, got {derived['progress']}"
     )

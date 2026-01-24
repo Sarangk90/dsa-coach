@@ -61,18 +61,18 @@ async def migrate_from_json(
             await db.update_profile(profile)
             summary["profile_migrated"] = True
 
-    # Migrate pattern confidence
+    # Migrate pattern progress (from old "pattern_confidence" key in JSON)
     pattern_confidence = data.get("pattern_confidence", {})
-    for pattern_id, confidence in pattern_confidence.items():
-        progress = PatternProgress(
+    for pattern_id, old_confidence in pattern_confidence.items():
+        pattern_prog = PatternProgress(
             id=f"{user_id}_{pattern_id}",
             user_id=user_id,
             pattern_id=pattern_id,
-            confidence=confidence,
+            progress=old_confidence,
         )
         existing_pattern = await db.get_pattern_progress(user_id, pattern_id)
-        if not existing_pattern or existing_pattern.confidence < confidence:
-            await db.upsert_pattern_progress(progress)
+        if not existing_pattern or existing_pattern.progress < old_confidence:
+            await db.upsert_pattern_progress(pattern_prog)
             summary["patterns_migrated"] = int(summary["patterns_migrated"]) + 1
 
     # Migrate completed quests

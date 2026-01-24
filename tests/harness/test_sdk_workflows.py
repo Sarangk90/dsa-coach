@@ -45,8 +45,8 @@ class TestConsolidatedTools:
             )
 
     @pytest.mark.asyncio
-    async def test_list_patterns_with_confidence(self, tmp_path):
-        """list_patterns should show patterns with confidence levels."""
+    async def test_list_patterns_with_progress(self, tmp_path):
+        """list_patterns should show patterns with progress levels."""
         db_path = tmp_path / "test.db"
         async with CoachTestHarness(db_path=db_path, auto_hydrate=True) as harness:
             response = await harness.send("What patterns are available?")
@@ -83,7 +83,7 @@ class TestConsolidatedTools:
 
     @pytest.mark.asyncio
     async def test_get_hint_provides_adaptive_hint(self, tmp_path):
-        """get_hint should provide hints based on confidence level."""
+        """get_hint should provide hints based on progress level."""
         db_path = tmp_path / "test.db"
         async with CoachTestHarness(db_path=db_path, auto_hydrate=True) as harness:
             # First start a quest
@@ -149,11 +149,11 @@ class TestQuestCompletionHooks:
             ), f"Response should acknowledge completion: {response.content[:200]}"
 
     @pytest.mark.asyncio
-    async def test_milestone_suggestion_on_high_confidence(self, tmp_path):
-        """Hook 2: Milestone should be suggested when confidence reaches 80%."""
+    async def test_milestone_suggestion_on_high_progress(self, tmp_path):
+        """Hook 2: Milestone should be suggested when progress reaches 80%."""
         db_path = tmp_path / "test.db"
         async with CoachTestHarness(db_path=db_path, auto_hydrate=True) as harness:
-            # The arrays_hashing pattern has 75% confidence in test data
+            # The arrays_hashing pattern has 75% progress in test data
             # Completing another quest should bring it to ~85%+
 
             # Ask about the pattern that's almost mastered

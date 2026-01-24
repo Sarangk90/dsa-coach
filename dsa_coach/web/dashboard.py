@@ -212,8 +212,8 @@ def render_slice_progress(data: dict):
 
 
 def render_pattern_table(data: dict):
-    """Render the pattern confidence table."""
-    st.subheader("Pattern Confidence")
+    """Render the pattern progress table."""
+    st.subheader("Pattern Progress")
 
     # Prepare data for display
     patterns = data["patterns"]
@@ -221,9 +221,7 @@ def render_pattern_table(data: dict):
     # Create the table
     table_data = []
     for p in patterns:
-        confidence_bar = "█" * (p["confidence"] // 10) + "░" * (
-            10 - p["confidence"] // 10
-        )
+        progress_bar = "█" * (p["progress"] // 10) + "░" * (10 - p["progress"] // 10)
         status_icon = (
             "✅"
             if p["status"] == "MASTERED"
@@ -237,7 +235,7 @@ def render_pattern_table(data: dict):
         table_data.append(
             {
                 "Pattern": p["pattern_name"],
-                "Confidence": f"{confidence_bar} {p['confidence']}%",
+                "Progress": f"{progress_bar} {p['progress']}%",
                 "Problems": f"{p['completed']}/{p['total']}",
                 "Status": f"{status_icon} {p['status']}",
             }
@@ -249,7 +247,7 @@ def render_pattern_table(data: dict):
         hide_index=True,
         column_config={
             "Pattern": st.column_config.TextColumn("Pattern", width="medium"),
-            "Confidence": st.column_config.TextColumn("Confidence", width="large"),
+            "Progress": st.column_config.TextColumn("Progress", width="large"),
             "Problems": st.column_config.TextColumn("Problems", width="small"),
             "Status": st.column_config.TextColumn("Status", width="medium"),
         },

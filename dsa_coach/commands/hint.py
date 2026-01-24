@@ -33,17 +33,17 @@ def cmd_hint():
             ui.print_styled("Quest not found.", "red")
             return
 
-        # Get confidence level for this pattern
+        # Get progress level for this pattern
         pattern = quest.get("pattern", "")
         pattern_progress = db.get_pattern_progress("default", pattern)
-        confidence = pattern_progress.confidence if pattern_progress else 0
+        current_progress = pattern_progress.progress if pattern_progress else 0
 
         # Determine hint level
         hints = quest.get("hints", {})
-        if confidence < 30:
+        if current_progress < 30:
             hint_level = "low"
             hint_label = "Detailed Walkthrough"
-        elif confidence < 70:
+        elif current_progress < 70:
             hint_level = "medium"
             hint_label = "Conceptual Nudge"
         else:
@@ -60,15 +60,17 @@ def cmd_hint():
         from dsa_coach.ai import get_adaptive_hint
 
         # Build a minimal progress dict for backward compatibility
-        progress_compat = {"pattern_proficiency": {pattern: {"confidence": confidence}}}
+        progress_compat = {
+            "pattern_proficiency": {pattern: {"progress": current_progress}}
+        }
         hint_text = get_adaptive_hint(quest, progress_compat, hint_level)
     except ImportError:
         pass  # Use static hints from quests.json
 
     ui.print_panel(f"💡 Hint ({hint_label})", hint_text, "yellow")
 
-    if confidence >= 70:
+    if current_progress >= 70:
         ui.print_styled(
-            "Your confidence is high on this pattern. Try to solve without more hints!",
+            "Your progress is high on this pattern. Try to solve without more hints!",
             "dim",
         )

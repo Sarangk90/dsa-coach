@@ -146,7 +146,7 @@ def get_slice_progress(db: SyncDatabase, user_id: str = "default") -> list[dict]
 
 
 def get_pattern_progress_data(db: SyncDatabase, user_id: str = "default") -> list[dict]:
-    """Get pattern progress with confidence and problem counts."""
+    """Get pattern progress with progress score and problem counts."""
     patterns = db.get_all_pattern_progress(user_id)
     all_problems = load_all_problems()
     completed_ids = {c.quest_id for c in db.get_completed_quests(user_id)}
@@ -167,9 +167,9 @@ def get_pattern_progress_data(db: SyncDatabase, user_id: str = "default") -> lis
     pattern_ids = {p["pattern_id"] for p in all_problems}
 
     for pid in sorted(pattern_ids):
-        progress = pattern_dict.get(pid)
-        confidence = progress.confidence if progress else 0
-        mastered = progress.mastered if progress else False
+        pattern_prog = pattern_dict.get(pid)
+        current_progress = pattern_prog.progress if pattern_prog else 0
+        mastered = pattern_prog.mastered if pattern_prog else False
 
         # Determine status
         completed = pattern_completed.get(pid, 0)
@@ -177,7 +177,7 @@ def get_pattern_progress_data(db: SyncDatabase, user_id: str = "default") -> lis
 
         if mastered:
             status = "MASTERED"
-        elif confidence >= 80:
+        elif current_progress >= 80:
             status = "Strong"
         elif completed > 0:
             status = "In Progress"
@@ -186,7 +186,7 @@ def get_pattern_progress_data(db: SyncDatabase, user_id: str = "default") -> lis
 
         # Flag critical gaps (0% on important patterns)
         is_critical_gap = (
-            confidence == 0
+            current_progress == 0
             and total > 0
             and pid in ["dynamic_programming", "graphs", "trees", "backtracking"]
         )
@@ -195,7 +195,7 @@ def get_pattern_progress_data(db: SyncDatabase, user_id: str = "default") -> lis
             {
                 "pattern_id": pid,
                 "pattern_name": pid.replace("_", " ").title(),
-                "confidence": confidence,
+                "progress": current_progress,
                 "completed": completed,
                 "total": total,
                 "mastered": mastered,
@@ -204,8 +204,8 @@ def get_pattern_progress_data(db: SyncDatabase, user_id: str = "default") -> lis
             }
         )
 
-    # Sort by confidence ascending (weakest first)
-    result.sort(key=lambda x: (x["confidence"], x["pattern_id"]))
+    # Sort by progress ascending (weakest first)
+    result.sort(key=lambda x: (x["progress"], x["pattern_id"]))
 
     return result
 

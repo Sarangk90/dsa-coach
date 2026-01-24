@@ -114,14 +114,14 @@ async def cleanup_and_audit():
         mastered = "✅ MASTERED" if p["mastered"] else ""
         match = "✓" if p["quests_completed"] == actual_quests else "⚠️"
         print(
-            f"  {match} {p['pattern_id']}: {p['quests_completed']}/{p['quests_total']} ({p['confidence']}%) {mastered}"
+            f"  {match} {p['pattern_id']}: {p['quests_completed']}/{p['quests_total']} ({p['progress']}%) {mastered}"
         )
 
     # Fix mismatches
     if issues:
         print(f"\n⚠️  Fixing {len(issues)} pattern progress mismatches...")
         for pattern_id, old_count, actual_count in issues:
-            # Recalculate confidence
+            # Recalculate progress
             async with db.conn.execute(
                 "SELECT quests_total FROM pattern_progress WHERE user_id = ? AND pattern_id = ?",
                 (user_id, pattern_id),
@@ -130,19 +130,19 @@ async def cleanup_and_audit():
                 quests_total = row["quests_total"] if row else 0
 
             if quests_total > 0:
-                confidence = min(100, int((actual_count / quests_total) * 100))
+                progress = min(100, int((actual_count / quests_total) * 100))
                 mastered = 1 if actual_count >= quests_total else 0
             else:
-                confidence = 80 if pattern_id == "big_o_analysis" else 0
+                progress = 80 if pattern_id == "big_o_analysis" else 0
                 mastered = 0
 
             await db.conn.execute(
                 """
                 UPDATE pattern_progress
-                SET quests_completed = ?, confidence = ?, mastered = ?
+                SET quests_completed = ?, progress = ?, mastered = ?
                 WHERE user_id = ? AND pattern_id = ?
             """,
-                (actual_count, confidence, mastered, user_id, pattern_id),
+                (actual_count, progress, mastered, user_id, pattern_id),
             )
             print(f"  Fixed {pattern_id}: {old_count} → {actual_count}")
 

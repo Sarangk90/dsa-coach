@@ -168,7 +168,7 @@ class SDKCoachAgent:
                     self.workflow.start_quest(
                         quest_id=data.get("quest_id", ""),
                         pattern_id=data.get("pattern_id", ""),
-                        confidence=0,  # Will be updated from DB
+                        progress=0,  # Will be updated from DB
                     )
 
             elif tool_name == "complete_quest":
@@ -185,7 +185,7 @@ class SDKCoachAgent:
                 if data.get("pattern_id"):
                     self.workflow.start_learning(
                         pattern_id=data.get("pattern_id", ""),
-                        confidence=0,
+                        progress=0,
                     )
 
             # Persist workflow state to session
@@ -434,7 +434,7 @@ class SDKCoachAgent:
             self.workflow.start_quest(
                 quest_id=data.get("quest_id", ""),
                 pattern_id=data.get("pattern_id", ""),
-                confidence=0,
+                progress=0,
             )
 
         elif tool_name == "complete_quest":
@@ -443,7 +443,7 @@ class SDKCoachAgent:
         elif tool_name == "diagnose_understanding":
             self.workflow.start_learning(
                 pattern_id=data.get("pattern_id", ""),
-                confidence=0,
+                progress=0,
             )
 
         elif tool_name == "get_progress_summary":
@@ -493,7 +493,7 @@ class SDKCoachAgent:
                 weak = weak_patterns[0]
                 greeting_parts.append(
                     f"Based on your progress, I'd suggest focusing on {weak['pattern_name']} "
-                    f"(currently at {weak['confidence']}% confidence)."
+                    f"(currently at {weak['progress']}% progress)."
                 )
             else:
                 greeting_parts.append("What pattern would you like to focus on today?")

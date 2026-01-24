@@ -18,7 +18,7 @@ def test_status_output(capsys):
                 id="default_arrays_hashing",
                 user_id="default",
                 pattern_id="arrays_hashing",
-                confidence=80,
+                progress=80,
             )
         ]
         mock_db.get_completed_quests.return_value = []

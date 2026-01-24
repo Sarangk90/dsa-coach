@@ -77,7 +77,7 @@ class PatternManager:
         Get detailed status of a pattern (V2 version).
 
         Returns:
-            - confidence: User confidence (0-100)
+            - progress: User progress (0-100)
             - essential_total: Total practice problems
             - essential_done_count: Completed problems
             - essential_done_ids: List of completed problem IDs
@@ -101,13 +101,13 @@ class PatternManager:
                 next_quest = quest
                 break
 
-        # Get confidence from pattern progress
+        # Get progress from pattern progress
         pattern_prog = self._pattern_progress.get(pattern)
-        confidence = pattern_prog.confidence if pattern_prog else 0
+        current_progress = pattern_prog.progress if pattern_prog else 0
         is_mastered = pattern_prog.mastered if pattern_prog else False
 
         return {
-            "confidence": confidence,
+            "progress": current_progress,
             "essential_total": len(pattern_quests),
             "essential_done_count": len(done_problems),
             "essential_done_ids": done_problems,

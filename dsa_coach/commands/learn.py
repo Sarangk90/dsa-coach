@@ -10,11 +10,11 @@ def _normalize_pattern(pattern: str) -> str:
     return pattern.replace("-", "_").replace(" ", "_").lower()
 
 
-def _format_confidence_badge(conf: float) -> tuple[str, str]:
-    """Return (emoji, color) for confidence level."""
-    if conf >= 70:
+def _format_progress_badge(prog: float) -> tuple[str, str]:
+    """Return (emoji, color) for progress level."""
+    if prog >= 70:
         return "✅", "green"
-    if conf >= 40:
+    if prog >= 40:
         return "🔶", "yellow"
     return "❌", "red"
 
@@ -77,9 +77,9 @@ def cmd_learn(pattern: str | None = None):
         completed_quests = db.get_completed_quests()
         session = db.get_latest_session()
 
-        # Build pattern confidence map
-        pattern_conf_map = {p.pattern_id: p.confidence for p in patterns}
-        pattern_ids = set(pattern_conf_map.keys())
+        # Build pattern progress map
+        pattern_progress_map = {p.pattern_id: p.progress for p in patterns}
+        pattern_ids = set(pattern_progress_map.keys())
         completed_quest_ids = {c.quest_id for c in completed_quests}
 
         # Build compatibility dict for AI functions
@@ -136,8 +136,8 @@ def cmd_learn(pattern: str | None = None):
         )
 
         for pat_id, pat_data in sorted_patterns:
-            conf = pattern_conf_map.get(pat_id, 0)
-            badge, color = _format_confidence_badge(conf)
+            prog = pattern_progress_map.get(pat_id, 0)
+            badge, color = _format_progress_badge(prog)
 
             # Use pattern_name for V2 (or fall back to title for compatibility)
             pattern_display = pat_data.get(
@@ -147,7 +147,7 @@ def cmd_learn(pattern: str | None = None):
             current_marker = " 👈 YOUR QUEST" if is_current else ""
 
             ui.print_styled(
-                f"  {option_num}. {badge} {pattern_display} ({conf:.0f}%){current_marker}",
+                f"  {option_num}. {badge} {pattern_display} ({prog:.0f}%){current_marker}",
                 color if not is_current else "bold yellow",
             )
             pattern_options.append(pat_id)

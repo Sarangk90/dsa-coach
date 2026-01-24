@@ -113,11 +113,11 @@ def cmd_done(success: bool = True, time_mins: int | None = None):
         if pattern_progress:
             pattern_progress.quests_completed += 1
             pattern_progress.last_practiced = datetime.now()
-            # Confidence boost based on hints
+            # Progress boost based on hints
             if hints_used == 0:
-                pattern_progress.confidence = min(100, pattern_progress.confidence + 15)
+                pattern_progress.progress = min(100, pattern_progress.progress + 15)
             else:
-                pattern_progress.confidence = min(100, pattern_progress.confidence + 10)
+                pattern_progress.progress = min(100, pattern_progress.progress + 10)
             db.upsert_pattern_progress(pattern_progress)
         elif pattern_id:
             # Create new pattern progress
@@ -125,7 +125,7 @@ def cmd_done(success: bool = True, time_mins: int | None = None):
                 id=f"default_{pattern_id}",
                 user_id="default",
                 pattern_id=pattern_id,
-                confidence=15 if hints_used == 0 else 10,
+                progress=15 if hints_used == 0 else 10,
                 quests_completed=1,
                 last_practiced=datetime.now(),
             )
@@ -220,17 +220,17 @@ def cmd_done(success: bool = True, time_mins: int | None = None):
                 for criterion in unmet_criteria:
                     ui.print_styled(f"   • {criterion}", "dim")
 
-        # Get current confidence for display
-        confidence = pattern_progress.confidence if pattern_progress else 0
+        # Get current progress for display
+        current_progress = pattern_progress.progress if pattern_progress else 0
 
         # Display results
         if ui.rich_available and ui.console:
             ui.console.print("\n[bold green]🎉 VICTORY![/bold green]")
 
-            # Show confidence gain
-            if pattern_id and confidence > 0:
+            # Show progress gain
+            if pattern_id and current_progress > 0:
                 ui.console.print(
-                    f"[cyan]{pattern_name} confidence: {confidence:.0f}%[/cyan]"
+                    f"[cyan]{pattern_name} progress: {current_progress:.0f}%[/cyan]"
                 )
 
             if hints_used == 0:
@@ -238,9 +238,9 @@ def cmd_done(success: bool = True, time_mins: int | None = None):
         else:
             print("\n🎉 VICTORY!")
 
-            # Show confidence gain
-            if pattern_id and confidence > 0:
-                print(f"{pattern_name} confidence: {confidence:.0f}%")
+            # Show progress gain
+            if pattern_id and current_progress > 0:
+                print(f"{pattern_name} progress: {current_progress:.0f}%")
 
             if hints_used == 0:
                 print("✓ No hints used!")

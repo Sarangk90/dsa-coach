@@ -31,11 +31,11 @@ def cmd_status():
     completed = len(completed_quests)
 
     # Find weakest and strongest patterns
-    pattern_conf = [(p.pattern_id, p.confidence) for p in patterns]
-    pattern_conf.sort(key=lambda x: x[1])
+    pattern_prog = [(p.pattern_id, p.progress) for p in patterns]
+    pattern_prog.sort(key=lambda x: x[1])
 
-    weakest = [p for p, c in pattern_conf if c < 50][:3]
-    strongest = [p for p, c in pattern_conf if c >= 70][:3]
+    weakest = [p for p, prog in pattern_prog if prog < 50][:3]
+    strongest = [p for p, prog in pattern_prog if prog >= 70][:3]
 
     # Get current quest from session
     current_quest = session.current_quest if session else None

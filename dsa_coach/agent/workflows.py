@@ -86,7 +86,7 @@ class WorkflowState:
     mode: SessionMode = SessionMode.GREETING
     current_pattern: str | None = None
     current_quest: str | None = None
-    start_confidence: int = 0
+    start_progress: int = 0
     message_count: int = 0
     started_at: datetime = field(default_factory=datetime.now)
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -97,7 +97,7 @@ class WorkflowState:
             "mode": self.mode.value,
             "current_pattern": self.current_pattern,
             "current_quest": self.current_quest,
-            "start_confidence": self.start_confidence,
+            "start_progress": self.start_progress,
             "message_count": self.message_count,
             "started_at": self.started_at.isoformat(),
             "metadata": self.metadata,
@@ -120,7 +120,7 @@ class WorkflowState:
             mode=mode,
             current_pattern=data.get("current_pattern"),
             current_quest=data.get("current_quest"),
-            start_confidence=data.get("start_confidence", 0),
+            start_progress=data.get("start_progress", data.get("start_confidence", 0)),
             message_count=data.get("message_count", 0),
             started_at=started_at,
             metadata=data.get("metadata", {}),
@@ -146,23 +146,23 @@ class WorkflowManager:
         """Transition to a new session mode."""
         self.state.mode = new_mode
 
-    def start_quest(self, quest_id: str, pattern_id: str, confidence: int = 0) -> None:
+    def start_quest(self, quest_id: str, pattern_id: str, progress: int = 0) -> None:
         """Start working on a quest."""
         self.state.mode = SessionMode.PRACTICING
         self.state.current_quest = quest_id
         self.state.current_pattern = pattern_id
-        self.state.start_confidence = confidence
+        self.state.start_progress = progress
 
     def complete_quest(self) -> None:
         """Complete current quest."""
         self.state.current_quest = None
         self.state.mode = SessionMode.GREETING
 
-    def start_learning(self, pattern_id: str, confidence: int = 0) -> None:
+    def start_learning(self, pattern_id: str, progress: int = 0) -> None:
         """Start learning a pattern."""
         self.state.mode = SessionMode.LEARNING
         self.state.current_pattern = pattern_id
-        self.state.start_confidence = confidence
+        self.state.start_progress = progress
 
     def start_review(self) -> None:
         """Start spaced repetition review."""
@@ -177,14 +177,14 @@ class WorkflowManager:
         self.state.message_count += 1
         return self.state.message_count
 
-    def get_confidence_gain(self, current_confidence: int) -> int:
-        """Calculate confidence gain since session start."""
-        return current_confidence - self.state.start_confidence
+    def get_progress_gain(self, current_progress: int) -> int:
+        """Calculate progress gain since session start."""
+        return current_progress - self.state.start_progress
 
     def should_suggest_note_creation(
         self,
-        current_confidence: int,
-        min_confidence_gain: int = 20,
+        current_progress: int,
+        min_progress_gain: int = 20,
         min_messages: int = 15,
     ) -> tuple[bool, str]:
         """Check if note creation should be suggested.
@@ -192,10 +192,10 @@ class WorkflowManager:
         Returns:
             Tuple of (should_create, reason)
         """
-        confidence_gain = self.get_confidence_gain(current_confidence)
+        progress_gain = self.get_progress_gain(current_progress)
 
-        if confidence_gain >= min_confidence_gain:
-            return True, f"Confidence gained {confidence_gain}% this session"
+        if progress_gain >= min_progress_gain:
+            return True, f"Progress gained {progress_gain}% this session"
 
         if self.state.message_count >= min_messages:
             return (

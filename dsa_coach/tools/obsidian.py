@@ -34,14 +34,14 @@ from dsa_coach.tools.registry import ToolResult, tool
 )
 async def propose_pattern_note(
     pattern: str,
-    confidence: float,
+    progress: float,
     session_insights: str,
 ) -> ToolResult:
     """Analyze pattern and propose atomic note structure.
 
     Args:
         pattern: Pattern ID (e.g., "sliding_window")
-        confidence: Current confidence level (0-100)
+        progress: Current progress level (0-100)
         session_insights: Summary of key insights from learning session
 
     Returns:
@@ -75,7 +75,7 @@ async def propose_pattern_note(
             ],
             "estimated_lines": "150-300",
             "tags": ["dsa/patterns", "interview/algorithms"],
-            "needs_diagram": confidence > 50,  # Complex patterns need diagrams
+            "needs_diagram": progress > 50,  # Complex patterns need diagrams
             "session_insights": session_insights,
         }
 
@@ -324,24 +324,24 @@ async def update_note_with_insights(
 )
 async def check_note_creation_criteria(
     pattern: str,
-    confidence: float,
+    progress: float,
     session_messages: int,
-    confidence_gain: float,
+    progress_gain: float,
 ) -> ToolResult:
     """Determine if a pattern note should be created.
 
     Args:
         pattern: Pattern name
-        confidence: Current confidence (0-100)
+        progress: Current progress (0-100)
         session_messages: Message count in session
-        confidence_gain: Confidence increase
+        progress_gain: Progress increase
 
     Returns:
         ToolResult with recommendation
     """
     try:
         should_create, reason = should_create_note(
-            pattern, confidence, session_messages, confidence_gain
+            pattern, progress, session_messages, progress_gain
         )
 
         return ToolResult(
@@ -350,7 +350,7 @@ async def check_note_creation_criteria(
                 "should_create": should_create,
                 "reason": reason,
                 "pattern": pattern,
-                "confidence": confidence,
+                "progress": progress,
             },
             message=reason,
         )

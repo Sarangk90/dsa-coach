@@ -37,7 +37,7 @@ def test_hint_static(capsys):
             id="default_sliding_window",
             user_id="default",
             pattern_id="sliding_window",
-            confidence=10,
+            progress=10,
         )
 
         hint.cmd_hint()
@@ -61,7 +61,7 @@ def test_hint_ai(capsys):
             id="default_sliding_window",
             user_id="default",
             pattern_id="sliding_window",
-            confidence=10,
+            progress=10,
         )
 
         hint.cmd_hint()

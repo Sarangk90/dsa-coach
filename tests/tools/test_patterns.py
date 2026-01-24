@@ -31,13 +31,13 @@ async def test_db():
 
 
 @pytest.mark.asyncio
-async def test_list_patterns_includes_confidence(test_db):
-    """Test that patterns include confidence scores."""
+async def test_list_patterns_includes_progress(test_db):
+    """Test that patterns include progress scores."""
     result = await list_patterns(test_db)
 
     assert result.success
     for pattern in result.data:
-        assert "confidence" in pattern
+        assert "progress" in pattern
         assert "quests_completed" in pattern
 
 
@@ -52,16 +52,16 @@ async def test_get_pattern_details_not_found(test_db):
 
 @pytest.mark.asyncio
 async def test_get_weak_patterns(test_db):
-    """Test getting patterns with lowest confidence."""
+    """Test getting patterns with lowest progress."""
     result = await get_weak_patterns(test_db, limit=3)
 
     assert result.success
     assert result.data is not None
     assert len(result.data) <= 3
 
-    # All patterns should have low confidence (0) initially
+    # All patterns should have low progress (0) initially
     for pattern in result.data:
-        assert pattern["confidence"] == 0
+        assert pattern["progress"] == 0
 
 
 @pytest.mark.asyncio

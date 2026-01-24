@@ -27,10 +27,10 @@ def get_mentor_system_prompt(progress: dict) -> str:
     weak_patterns = []
 
     for pattern, data in pattern_proficiency.items():
-        conf = data.get("confidence", 0)
-        if conf >= 70:
+        prog = data.get("progress", 0)
+        if prog >= 70:
             strong_patterns.append(pattern.replace("_", " ").title())
-        elif conf < 40 and data.get("attempts", 0) > 0:
+        elif prog < 40 and data.get("attempts", 0) > 0:
             weak_patterns.append(pattern.replace("_", " ").title())
 
     # Get recent mistakes
@@ -47,10 +47,10 @@ STUDENT PROFILE:
 
 TEACHING PHILOSOPHY:
 1. NEVER give complete solutions. Guide discovery through questions and hints.
-2. Adapt your communication style based on pattern confidence:
-   - Low confidence (<40%): Be more detailed and encouraging
-   - Medium confidence (40-70%): Use Socratic questioning
-   - High confidence (>70%): Be concise, challenge with edge cases
+2. Adapt your communication style based on pattern progress:
+   - Low progress (<40%): Be more detailed and encouraging
+   - Medium progress (40-70%): Use Socratic questioning
+   - High progress (>70%): Be concise, challenge with edge cases
 3. Always connect problems to underlying patterns
 4. Reference their past mistakes when relevant to prevent repetition
 5. Focus on building transferable problem-solving skills, not memorization
@@ -81,7 +81,7 @@ INSTEAD USE:
 HINT_PROMPT_TEMPLATE = """Problem: {title} | Pattern: {pattern} | Difficulty: {difficulty}
 {description}
 
-Student confidence: {confidence}% | Hint level: {hint_level}/3
+Student progress: {progress}% | Hint level: {hint_level}/3
 
 PROGRESSIVE HINTS (give ONLY the hint for the requested level):
 
@@ -243,6 +243,56 @@ When pillars conflict, follow this order:
 6. Everything else as supporting
 </priority_hierarchy>
 
+<google_l6_prep>
+## GOOGLE L6 INTERVIEW PREPARATION SYSTEM
+
+This student is preparing for Google L6 interviews using a **slice-based progression system**.
+
+### The Three Slices
+Problems are tagged with `slice-1`, `slice-2`, or `slice-3`:
+
+| Slice | Problems | Goal | Interview Readiness |
+|-------|----------|------|---------------------|
+| **Slice 1** | 22 | Foundation - DP, advanced graphs, trees | 70% ready |
+| **Slice 2** | 19 | Depth - Backtracking, heaps, linked lists | 85% ready |
+| **Slice 3** | 13 | Mastery - Hard DP, intervals, trie | 93% ready |
+
+### Progression Rules
+1. **Complete Slice 1 before Slice 2** - It builds the DP foundation
+2. **Focus on gaps, not strengths** - If they've mastered Sliding Window, don't assign more
+3. **Critical path: Recursion → DP** - DP requires recursion mastery
+4. **LRU Cache is MANDATORY** - Must be cold-perfect before any interview
+
+### Coaching Guidance
+When suggesting next problems:
+- Check their slice progress first
+- Prioritize problems from the current incomplete slice
+- Reference the pedagogical ordering within each pattern
+
+When they complete a slice:
+- Celebrate: "You've completed Slice X! You're now Y% interview-ready for Google L6!"
+- Preview the next slice's focus areas
+
+### Reference Documents
+For detailed problem lists, pedagogical ordering, and timelines:
+- `GOOGLE_L6_SLICES.md` - Complete problem lists per slice, timeline estimates
+- `GOOGLE_L6_JOURNEY.md` - Learning path, dependency graph, study schedule
+
+### Top 5 "Must Know Cold" Problems (Slice 1)
+1. **LRU Cache** - THE most asked design problem
+2. **Maximum Subarray (Kadane's)** - DP foundation
+3. **Course Schedule** - Graph cycles, topo sort
+4. **Binary Tree Max Path Sum** - Tree DP, Google favorite
+5. **Coin Change** - DP unbounded knapsack
+
+### Interview Timeline Adjustments
+Based on `GOOGLE_L6_JOURNEY.md`:
+- >8 weeks out: Deep learning through all 3 slices
+- 4-8 weeks: Focus on Slice 1 + 2
+- 2-4 weeks: Slice 1 only, simulate mode
+- <2 weeks: Review completed problems, NO new patterns
+</google_l6_prep>
+
 <teaching_pillars>
 
 <pillar name="1_ladder_method" priority="primary">
@@ -320,7 +370,7 @@ Don't move on. Re-teach using a different approach.
 <pillar name="4_cognitive_load">
 ## COGNITIVE LOAD MANAGEMENT
 
-**Worked examples** (for beginners <30% confidence):
+**Worked examples** (for beginners <30% progress):
 Show a fully solved similar problem FIRST. Walk through each step.
 Then: "Now you try this similar one."
 
@@ -577,7 +627,7 @@ Address emotional needs BEFORE advancing content. This takes priority over teach
 "That click you just felt? That's your brain building permanent neural pathways. That intuition is yours forever now."
 
 **Before interview day:**
-Switch from learning to confidence mode:
+Switch from learning to review mode:
 - "You know enough. Let's prove it."
 - Review wins: "You've solved 47 mediums. You're ready."
 - NO NEW PATTERNS in final week
@@ -679,7 +729,7 @@ Track these signals before declaring interview-ready:
 - Catches own bugs during testing
 - Discusses complexity without prompting
 - Handles "stuck" moments without panic
-- 70%+ confidence in all target patterns
+- 70%+ progress in all target patterns
 - Can state invariants for core patterns
 - Gracefully incorporates interviewer hints
 
@@ -753,10 +803,10 @@ You have 15 consolidated workflow tools:
 - `get_dashboard` - Comprehensive state at session start (profile, current quest, weak patterns, due reviews)
 - `start_quest` - Assign quest (by ID, by pattern, or auto-recommend), opens browser, creates file
 - `complete_quest` - Mark done with AUTOMATIC hooks (logs activity, checks milestones, suggests notes)
-- `get_hint` - Adaptive hints based on confidence level
+- `get_hint` - Adaptive hints based on progress level
 
 **Pattern (2):**
-- `list_patterns` - All patterns with progress, sort by confidence to find weak areas
+- `list_patterns` - All patterns with progress, sort by progress to find weak areas
 - `get_pattern_details` - Syllabus, quests, understanding state, teaching history
 
 **Learning (3):**
@@ -871,8 +921,8 @@ record_learning(type="concept_understood", pattern_id="sliding_window",
 ### Automatic Hooks
 Note: `complete_quest` automatically handles:
 - Session activity logging
-- Milestone checking (if confidence >= 80%)
-- Note creation suggestions (if confidence >= 70%)
+- Milestone checking (if progress >= 80%)
+- Note creation suggestions (if progress >= 70%)
 
 You don't need to call separate tools for these - they're built in!
 
@@ -915,18 +965,18 @@ def _format_mastery_snapshot(patterns: list) -> str:
         return "No patterns started yet."
 
     lines = []
-    for p in sorted(patterns, key=lambda x: x.confidence, reverse=True):
+    for p in sorted(patterns, key=lambda x: x.progress, reverse=True):
         level = (
             "MASTERED"
-            if p.confidence >= 80
+            if p.progress >= 80
             else "PROFICIENT"
-            if p.confidence >= 60
+            if p.progress >= 60
             else "DEVELOPING"
-            if p.confidence >= 30
+            if p.progress >= 30
             else "BEGINNER"
         )
         pattern_name = p.pattern_id.replace("_", " ").title()
-        lines.append(f"- {pattern_name}: {p.confidence}% ({level})")
+        lines.append(f"- {pattern_name}: {p.progress}% ({level})")
 
     return "\n".join(lines) if lines else "No patterns started yet."
 
@@ -1026,6 +1076,74 @@ def _format_activity(activity: dict) -> str:
     return f"Problems: {problems} | Time: {time_str} | Patterns: {pattern_str}"
 
 
+async def _compute_slice_progress(db: Database, user_id: str) -> dict:
+    """Compute Google L6 slice progress from completed quests."""
+    import json
+    from pathlib import Path
+
+    completed_quests = await db.get_completed_quests(user_id)
+    completed_ids = {q.quest_id for q in completed_quests}
+
+    # Load quests.json to get slice tags
+    quests_path = Path(__file__).parent.parent.parent / "quests.json"
+    try:
+        with quests_path.open() as f:
+            quests = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {
+            "slice-1": {"total": 0, "done": 0},
+            "slice-2": {"total": 0, "done": 0},
+            "slice-3": {"total": 0, "done": 0},
+        }
+
+    slice_counts: dict[str, dict[str, int]] = {
+        "slice-1": {"total": 0, "done": 0},
+        "slice-2": {"total": 0, "done": 0},
+        "slice-3": {"total": 0, "done": 0},
+    }
+
+    for pattern in quests.get("curriculum", {}).get("fast_track", []):
+        for concept in pattern.get("concepts", []):
+            for problem in concept.get("practice_problems", []):
+                tags = problem.get("tags", [])
+                for slice_tag in ["slice-1", "slice-2", "slice-3"]:
+                    if slice_tag in tags:
+                        slice_counts[slice_tag]["total"] += 1
+                        if problem["problem_id"] in completed_ids:
+                            slice_counts[slice_tag]["done"] += 1
+
+    return slice_counts
+
+
+def _format_slice_progress(slice_counts: dict) -> str:
+    """Format slice progress for display with visual progress bars."""
+    lines = []
+    readiness_map = {"slice-1": "70%", "slice-2": "85%", "slice-3": "93%"}
+
+    for slice_tag in ["slice-1", "slice-2", "slice-3"]:
+        counts = slice_counts.get(slice_tag, {"done": 0, "total": 0})
+        done, total = counts["done"], counts["total"]
+        pct = (done / total * 100) if total > 0 else 0
+        filled = int(pct / 10)
+        bar = "█" * filled + "░" * (10 - filled)
+        readiness = readiness_map.get(slice_tag, "")
+        status = "✓ COMPLETE" if pct >= 100 else f"→ {readiness} ready when done"
+        lines.append(
+            f"- {slice_tag.upper()}: {bar} {done}/{total} ({pct:.0f}%) {status}"
+        )
+
+    return "\n".join(lines) if lines else "No slice data available."
+
+
+def _get_current_slice(slice_counts: dict) -> str:
+    """Determine which slice the student should focus on."""
+    for slice_tag in ["slice-1", "slice-2", "slice-3"]:
+        counts = slice_counts.get(slice_tag, {"done": 0, "total": 0})
+        if counts["done"] < counts["total"]:
+            return slice_tag.upper()
+    return "ALL COMPLETE"
+
+
 async def build_student_context(db: Database, user_id: str = "default") -> str:
     """
     Build comprehensive student context for system prompt injection.
@@ -1052,12 +1170,19 @@ async def build_student_context(db: Database, user_id: str = "default") -> str:
     current_session = await db.get_latest_session(user_id)
     weekly_activity = await db.get_weekly_activity(user_id)
 
+    # Compute Google L6 slice progress
+    slice_counts = await _compute_slice_progress(db, user_id)
+    current_slice = _get_current_slice(slice_counts)
+
     # Build the context string
     return f"""
 ## YOUR STUDENT: {profile.name}
 
 ### Mastery Levels
 {_format_mastery_snapshot(patterns)}
+
+### Google L6 Slice Progress (Current Focus: {current_slice})
+{_format_slice_progress(slice_counts)}
 
 ### Current Session
 {_format_current_session(current_session)}

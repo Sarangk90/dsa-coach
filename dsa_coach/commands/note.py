@@ -108,10 +108,10 @@ def _cmd_note_propose(pattern: str | None, ui: UI):
     # Normalize pattern name
     pattern = pattern.replace("-", "_").lower()
 
-    # Get confidence from database
+    # Get progress from database
     with SyncDatabase() as db:
         pattern_progress = db.get_pattern_progress("default", pattern)
-        confidence = pattern_progress.confidence if pattern_progress else 0
+        current_progress = pattern_progress.progress if pattern_progress else 0
 
     ui.print_styled(f"\n🔍 Analyzing '{pattern}' for note creation...\n", "cyan")
 
@@ -119,7 +119,7 @@ def _cmd_note_propose(pattern: str | None, ui: UI):
     result = asyncio.run(
         propose_tool(
             pattern=pattern,
-            confidence=confidence,
+            progress=current_progress,
             session_insights="Manual note creation via CLI",
         )
     )
@@ -177,10 +177,10 @@ def _cmd_note_create(pattern: str | None, ui: UI):
         )
         return
 
-    confidence = pattern_progress.confidence
+    current_progress = pattern_progress.progress
 
     ui.print_styled(f"\n📝 Creating note for '{get_pattern_name(pattern)}'", "cyan")
-    ui.print_styled(f"   Current confidence: {confidence:.0f}%\n", "dim")
+    ui.print_styled(f"   Current progress: {current_progress:.0f}%\n", "dim")
 
     # Interactive input
     ui.print_styled("Answer the following to create your note:\n", "yellow")

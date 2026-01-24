@@ -157,7 +157,7 @@ async def get_dashboard_state(
 
     # Get pattern progress (top 5 weakest)
     all_progress = await db.get_all_pattern_progress(user_id)
-    weak_patterns = sorted(all_progress, key=lambda p: p.confidence)[:5]
+    weak_patterns = sorted(all_progress, key=lambda p: p.progress)[:5]
 
     # Get due reviews
     due_reviews = await db.get_due_reviews(user_id)
@@ -186,7 +186,7 @@ async def get_dashboard_state(
                 {
                     "pattern_id": p.pattern_id,
                     "pattern_name": get_pattern_name(p.pattern_id),
-                    "confidence": p.confidence,
+                    "progress": p.progress,
                 }
                 for p in weak_patterns
             ],

@@ -188,7 +188,7 @@ TOOL_DEPRECATION_MAP: dict[str, str] = {
     "get_quests_for_pattern": "get_pattern_details",
     "get_current_quest": "get_dashboard",
     # patterns.py tools
-    "get_weak_patterns": "list_patterns(sort_by='confidence')",
+    "get_weak_patterns": "list_patterns(sort_by='progress')",
     "get_next_essential_quest": "start_quest(pattern_id=...)",
     # progress.py tools
     "get_user_profile": "get_dashboard",

@@ -425,12 +425,12 @@ class CoachTestHarness:
             ap = after_patterns.get(pid)
 
             if bp is None and ap is not None:
-                pattern_changes[pid] = {"added": True, "confidence": ap.confidence}
+                pattern_changes[pid] = {"added": True, "progress": ap.progress}
             elif bp is not None and ap is None:
                 pattern_changes[pid] = {"removed": True}
             elif bp and ap:
                 changes = {}
-                for field in ["confidence", "quests_completed", "mastered"]:
+                for field in ["progress", "quests_completed", "mastered"]:
                     bv = getattr(bp, field)
                     av = getattr(ap, field)
                     if bv != av:
@@ -481,17 +481,17 @@ class CoachTestHarness:
     # ASSERTION HELPERS
     # =========================================================================
 
-    async def assert_pattern_confidence(
+    async def assert_pattern_progress(
         self, pattern_id: str, expected: int, tolerance: int = 5
     ) -> None:
-        """Assert that a pattern has the expected confidence level."""
+        """Assert that a pattern has the expected progress level."""
         pattern = await self.inspect_pattern(pattern_id)
         if not pattern:
             raise AssertionError(f"Pattern '{pattern_id}' not found")
 
-        if abs(pattern.confidence - expected) > tolerance:
+        if abs(pattern.progress - expected) > tolerance:
             raise AssertionError(
-                f"Pattern '{pattern_id}' confidence is {pattern.confidence}, "
+                f"Pattern '{pattern_id}' progress is {pattern.progress}, "
                 f"expected {expected} (±{tolerance})"
             )
 
@@ -583,12 +583,12 @@ class CoachTestHarness:
             ("binary_search", 0, 0, 5, False),  # Binary Search - not started
         ]
 
-        for pid, conf, completed, total, mastered in patterns_data:
+        for pid, prog, completed, total, mastered in patterns_data:
             pp = PatternProgress(
                 id=f"{self._user_id}_{pid}",
                 user_id=self._user_id,
                 pattern_id=pid,
-                confidence=conf,
+                progress=prog,
                 quests_completed=completed,
                 quests_total=total,
                 mastered=mastered,

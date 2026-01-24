@@ -12,23 +12,23 @@ from typing import Any
 def analyze_learning_session(
     pattern: str,
     messages: list[dict[str, str]],
-    confidence_before: float,
-    confidence_after: float,
+    progress_before: float,
+    progress_after: float,
 ) -> dict[str, Any]:
     """Analyze a learning session to extract note-worthy insights.
 
     Args:
         pattern: Pattern name
         messages: Conversation messages
-        confidence_before: Confidence before session
-        confidence_after: Confidence after session
+        progress_before: Progress before session
+        progress_after: Progress after session
 
     Returns:
         Analysis dict with insights, articulation_improvements, key_concepts
     """
     analysis: dict[str, Any] = {
         "pattern": pattern,
-        "confidence_gain": confidence_after - confidence_before,
+        "progress_gain": progress_after - progress_before,
         "message_count": len(messages),
         "insights": [],
         "articulation_improvements": [],
@@ -82,17 +82,17 @@ def analyze_learning_session(
 
 def should_create_note(
     pattern: str,
-    confidence: float,
+    progress: float,
     session_messages: int,
-    confidence_gain: float,
+    progress_gain: float,
 ) -> tuple[bool, str]:
     """Determine if a pattern note should be created after a learning session.
 
     Args:
         pattern: Pattern name
-        confidence: Current confidence level
+        progress: Current progress level
         session_messages: Number of messages in session
-        confidence_gain: Confidence increase from session
+        progress_gain: Progress increase from session
 
     Returns:
         (should_create: bool, reason: str)
@@ -101,14 +101,14 @@ def should_create_note(
     if session_messages < 4:
         return (False, "Session too short (< 4 messages)")
 
-    # Create note if confidence is now above threshold (pattern understood)
-    if confidence >= 40 and confidence_gain > 10:
+    # Create note if progress is now above threshold (pattern understood)
+    if progress >= 40 and progress_gain > 10:
         return (
             True,
-            f"Pattern learned (confidence: {confidence:.0f}%, gain: +{confidence_gain:.0f}%)",
+            f"Pattern learned (progress: {progress:.0f}%, gain: +{progress_gain:.0f}%)",
         )
 
-    # Create note if session was substantial even if confidence is still low
+    # Create note if session was substantial even if progress is still low
     if session_messages >= 10:
         return (True, f"Substantial session ({session_messages} messages)")
 

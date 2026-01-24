@@ -101,7 +101,7 @@ class TestStateInspection:
             # Check specific pattern
             arrays_hashing = await harness.inspect_pattern("arrays_hashing")
             assert arrays_hashing is not None
-            assert arrays_hashing.confidence == 75
+            assert arrays_hashing.progress == 75
             assert arrays_hashing.mastered is True
 
     @pytest.mark.asyncio
@@ -199,19 +199,19 @@ class TestAssertionHelpers:
     """Test assertion helper methods."""
 
     @pytest.mark.asyncio
-    async def test_assert_pattern_confidence(self, tmp_path):
-        """Can assert pattern confidence levels."""
+    async def test_assert_pattern_progress(self, tmp_path):
+        """Can assert pattern progress levels."""
         db_path = tmp_path / "test.db"
         async with CoachTestHarness(db_path=db_path, auto_hydrate=True) as harness:
-            # Should pass - arrays_hashing has 75% confidence
-            await harness.assert_pattern_confidence("arrays_hashing", 75)
+            # Should pass - arrays_hashing has 75% progress
+            await harness.assert_pattern_progress("arrays_hashing", 75)
 
             # Should pass with tolerance
-            await harness.assert_pattern_confidence("arrays_hashing", 77, tolerance=5)
+            await harness.assert_pattern_progress("arrays_hashing", 77, tolerance=5)
 
-            # Should fail - wrong confidence
+            # Should fail - wrong progress
             with pytest.raises(AssertionError):
-                await harness.assert_pattern_confidence("arrays_hashing", 50)
+                await harness.assert_pattern_progress("arrays_hashing", 50)
 
     @pytest.mark.asyncio
     async def test_assert_quest_completed(self, tmp_path):
