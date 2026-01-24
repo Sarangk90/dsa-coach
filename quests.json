@@ -1,16 +1,33 @@
 {
   "metadata": {
-    "version": "2.0",
-    "last_updated": "2025-01-01",
+    "version": "2.1",
+    "last_updated": "2025-01-24",
     "curriculum_modes": {
       "fast_track": {
-        "name": "Atlassian Sprint (3-Month)",
-        "description": "80 hours intensive for January 2025 Atlassian DSA round",
+        "name": "Google L6 Sprint (3-Month)",
+        "description": "Comprehensive preparation for Google L6 DSA round with slice-based progression",
         "target_timeline_weeks": "10-12",
-        "total_hours": 80,
-        "total_patterns": 9,
-        "total_problems": 80,
-        "focus": "Highest ROI patterns only"
+        "total_hours": 120,
+        "total_patterns": 16,
+        "total_problems": 85,
+        "focus": "Google L6 interview patterns with pedagogical ordering",
+        "slices": {
+          "slice_1": {
+            "name": "Foundation (70% interview-ready)",
+            "problems": 22,
+            "focus": "Core DP, graphs, trees patterns"
+          },
+          "slice_2": {
+            "name": "Expansion (85% interview-ready)",
+            "problems": 19,
+            "focus": "Backtracking, heaps, linked lists"
+          },
+          "slice_3": {
+            "name": "Mastery (93% interview-ready)",
+            "problems": 13,
+            "focus": "Advanced patterns, edge cases"
+          }
+        }
       },
       "complete": {
         "name": "FAANG Complete Mastery",
@@ -42,7 +59,7 @@
       ],
       "timeline": {
         "immediate": "Google January 2026 DSA round",
-        "medium_term": "FAANG applications in  months"
+        "medium_term": "FAANG applications in months"
       }
     }
   },
@@ -296,7 +313,7 @@
           "sliding_window"
         ],
         "importance": "Critical",
-        "estimated_time_hours": 8,
+        "estimated_time_hours": 10,
         "skip_allowed": false,
         "system_design_connections": [
           "Merging data streams in distributed systems",
@@ -308,7 +325,7 @@
             "concept_id": "two_pointers_opposite_direction",
             "concept_name": "Opposite Direction (Converging)",
             "explanation_goal": "Move pointers from both ends toward center",
-            "estimated_time_hours": 4,
+            "estimated_time_hours": 5,
             "practice_problems": [
               {
                 "problem_id": "two_pointers_3sum",
@@ -325,7 +342,9 @@
                 "tags": [
                   "two-pointers",
                   "sorting",
-                  "blind-75"
+                  "blind-75",
+                  "google-l6",
+                  "slice-1"
                 ]
               },
               {
@@ -343,7 +362,31 @@
                 "tags": [
                   "two-pointers",
                   "greedy",
-                  "optimization"
+                  "optimization",
+                  "google-l6",
+                  "slice-1"
+                ]
+              },
+              {
+                "problem_id": "two_pointers_trapping_rain_water",
+                "problem_name": "Trapping Rain Water",
+                "difficulty": "Hard",
+                "url": "https://leetcode.com/problems/trapping-rain-water",
+                "estimated_time_minutes": 60,
+                "reason_for_selection": "Hardest two-pointer problem; multiple approaches (two pointers, monotonic stack, prefix arrays)",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Two Pointers O(n)",
+                  "Monotonic Stack O(n)",
+                  "Prefix/Suffix Max O(n)"
+                ],
+                "tags": [
+                  "two-pointers",
+                  "monotonic-stack",
+                  "hard",
+                  "google-l6",
+                  "slice-1"
                 ]
               }
             ]
@@ -397,7 +440,8 @@
         "mastery_criteria": {
           "understands_converging_pointers": true,
           "knows_floyd_algorithm": true,
-          "solved_3sum": true
+          "solved_3sum": true,
+          "solved_trapping_rain_water": true
         },
         "review_schedule_days": [
           3,
@@ -641,10 +685,11 @@
         ],
         "unlocks": [
           "trees",
-          "graphs"
+          "graphs",
+          "backtracking"
         ],
         "importance": "Critical",
-        "estimated_time_hours": 12,
+        "estimated_time_hours": 14,
         "skip_allowed": false,
         "warning": "\u26a0\ufe0f CRITICAL GATE: You cannot proceed to Trees or DP without mastering this",
         "system_design_connections": [
@@ -739,7 +784,9 @@
                   "recursion",
                   "memoization",
                   "dp",
-                  "string"
+                  "string",
+                  "google-l6",
+                  "slice-1"
                 ]
               },
               {
@@ -759,7 +806,37 @@
                   "recursion",
                   "memoization",
                   "2d-dp",
-                  "grid"
+                  "grid",
+                  "google-l6",
+                  "slice-1"
+                ]
+              }
+            ]
+          },
+          {
+            "concept_id": "recursion_greedy",
+            "concept_name": "Greedy with Recursion",
+            "explanation_goal": "Combine greedy choices with recursive validation",
+            "estimated_time_hours": 2,
+            "practice_problems": [
+              {
+                "problem_id": "recursion_jump_game",
+                "problem_name": "Jump Game",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/jump-game",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Greedy or DP approach; bridges patterns",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Greedy O(n)",
+                  "DP O(n^2)"
+                ],
+                "tags": [
+                  "greedy",
+                  "dp",
+                  "google-l6",
+                  "slice-3"
                 ]
               }
             ]
@@ -791,7 +868,7 @@
           "graphs"
         ],
         "importance": "Critical",
-        "estimated_time_hours": 20,
+        "estimated_time_hours": 22,
         "skip_allowed": false,
         "system_design_connections": [
           "File system hierarchies",
@@ -887,7 +964,9 @@
                 "tags": [
                   "tree",
                   "bst",
-                  "inorder"
+                  "inorder",
+                  "google-l6",
+                  "slice-1"
                 ]
               },
               {
@@ -914,7 +993,7 @@
             "concept_id": "trees_path_problems",
             "concept_name": "Path Problems",
             "explanation_goal": "Find paths with constraints using DFS",
-            "estimated_time_hours": 5,
+            "estimated_time_hours": 6,
             "practice_problems": [
               {
                 "problem_id": "trees_path_sum",
@@ -935,6 +1014,27 @@
                 ]
               },
               {
+                "problem_id": "trees_path_sum_ii",
+                "problem_name": "Path Sum II",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/path-sum-ii",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Extends Path Sum with backtracking to collect all valid paths",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "DFS with backtracking O(n)"
+                ],
+                "tags": [
+                  "tree",
+                  "dfs",
+                  "backtracking",
+                  "path",
+                  "google-l6",
+                  "slice-1"
+                ]
+              },
+              {
                 "problem_id": "trees_max_path_sum",
                 "problem_name": "Binary Tree Maximum Path Sum",
                 "difficulty": "Hard",
@@ -950,7 +1050,9 @@
                   "tree",
                   "dfs",
                   "path",
-                  "google"
+                  "google",
+                  "google-l6",
+                  "slice-1"
                 ]
               }
             ]
@@ -1028,7 +1130,7 @@
           "dynamic_programming"
         ],
         "importance": "Critical",
-        "estimated_time_hours": 25,
+        "estimated_time_hours": 30,
         "skip_allowed": false,
         "system_design_connections": [
           "Social network friend suggestions",
@@ -1091,7 +1193,7 @@
             "concept_id": "graphs_bfs_shortest_paths",
             "concept_name": "Graph BFS - Shortest Paths",
             "explanation_goal": "Use BFS for shortest paths in unweighted graphs",
-            "estimated_time_hours": 6,
+            "estimated_time_hours": 7,
             "practice_problems": [
               {
                 "problem_id": "graphs_rotting_oranges",
@@ -1130,6 +1232,27 @@
                   "distance",
                   "grid"
                 ]
+              },
+              {
+                "problem_id": "graphs_shortest_path_binary_matrix",
+                "problem_name": "Shortest Path in Binary Matrix",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/shortest-path-in-binary-matrix",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "BFS shortest path with 8-directional movement",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "BFS O(n^2)"
+                ],
+                "tags": [
+                  "graph",
+                  "bfs",
+                  "grid",
+                  "shortest-path",
+                  "google-l6",
+                  "slice-1"
+                ]
               }
             ]
           },
@@ -1137,7 +1260,7 @@
             "concept_id": "graphs_cycle_detection_topological_sort",
             "concept_name": "Cycle Detection & Topological Sort",
             "explanation_goal": "Detect cycles and order DAG nodes",
-            "estimated_time_hours": 7,
+            "estimated_time_hours": 8,
             "practice_problems": [
               {
                 "problem_id": "graphs_course_schedule",
@@ -1156,7 +1279,9 @@
                   "graph",
                   "cycle",
                   "topological-sort",
-                  "blind-75"
+                  "blind-75",
+                  "google-l6",
+                  "slice-1"
                 ]
               },
               {
@@ -1175,7 +1300,31 @@
                 "tags": [
                   "graph",
                   "topological-sort",
-                  "dfs"
+                  "dfs",
+                  "google-l6",
+                  "slice-1"
+                ]
+              },
+              {
+                "problem_id": "graphs_alien_dictionary",
+                "problem_name": "Alien Dictionary",
+                "difficulty": "Hard",
+                "url": "https://leetcode.com/problems/alien-dictionary",
+                "estimated_time_minutes": 60,
+                "reason_for_selection": "Build graph from word order + topological sort",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Graph construction + Topo Sort O(C)",
+                  "Kahn's algorithm O(C)"
+                ],
+                "tags": [
+                  "graph",
+                  "topological-sort",
+                  "string",
+                  "hard",
+                  "google-l6",
+                  "slice-3"
                 ]
               }
             ]
@@ -1184,7 +1333,7 @@
             "concept_id": "graphs_union_find",
             "concept_name": "Union Find",
             "explanation_goal": "Track connected components efficiently with path compression",
-            "estimated_time_hours": 6,
+            "estimated_time_hours": 7,
             "practice_problems": [
               {
                 "problem_id": "graphs_number_of_provinces",
@@ -1202,7 +1351,9 @@
                 "tags": [
                   "graph",
                   "union-find",
-                  "connected-components"
+                  "connected-components",
+                  "google-l6",
+                  "slice-1"
                 ]
               },
               {
@@ -1222,6 +1373,80 @@
                   "union-find",
                   "cycle"
                 ]
+              },
+              {
+                "problem_id": "graphs_accounts_merge",
+                "problem_name": "Accounts Merge",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/accounts-merge",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Real-world union-find application with string keys",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Union-Find O(n * \u03b1(n))",
+                  "DFS O(n)"
+                ],
+                "tags": [
+                  "graph",
+                  "union-find",
+                  "string",
+                  "google-l6",
+                  "slice-3"
+                ]
+              }
+            ]
+          },
+          {
+            "concept_id": "graphs_weighted_shortest_paths",
+            "concept_name": "Weighted Shortest Paths (Dijkstra)",
+            "explanation_goal": "Find shortest paths in weighted graphs using priority queue",
+            "estimated_time_hours": 6,
+            "practice_problems": [
+              {
+                "problem_id": "graphs_network_delay_time",
+                "problem_name": "Network Delay Time",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/network-delay-time",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Classic Dijkstra's algorithm; weighted graph shortest path",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Dijkstra O((V+E) log V)",
+                  "Bellman-Ford O(VE)"
+                ],
+                "tags": [
+                  "graph",
+                  "dijkstra",
+                  "heap",
+                  "shortest-path",
+                  "google-l6",
+                  "slice-1"
+                ]
+              },
+              {
+                "problem_id": "graphs_cheapest_flights_k_stops",
+                "problem_name": "Cheapest Flights Within K Stops",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/cheapest-flights-within-k-stops",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Constrained shortest path; modified Dijkstra/BFS",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Modified Dijkstra O(E * K)",
+                  "Bellman-Ford O(K * E)",
+                  "BFS O(K * E)"
+                ],
+                "tags": [
+                  "graph",
+                  "dijkstra",
+                  "bfs",
+                  "shortest-path",
+                  "google-l6",
+                  "slice-3"
+                ]
               }
             ]
           }
@@ -1231,7 +1456,8 @@
           "knows_dfs_and_bfs": true,
           "understands_cycle_detection": true,
           "knows_topological_sort": true,
-          "implemented_union_find": true
+          "implemented_union_find": true,
+          "knows_dijkstra": true
         },
         "review_schedule_days": [
           3,
@@ -1245,14 +1471,14 @@
       {
         "pattern_id": "dynamic_programming",
         "sequence_order": 9,
-        "pattern_name": "Dynamic Programming (Core Patterns Only)",
+        "pattern_name": "Dynamic Programming",
         "tier": "must_master",
         "prerequisites": [
           "recursion"
         ],
         "unlocks": [],
         "importance": "Critical",
-        "estimated_time_hours": 30,
+        "estimated_time_hours": 40,
         "skip_allowed": false,
         "warning": "\ud83d\udd25 HIGHEST DIFFICULTY: Invest heavily here (383+ problems on LeetCode)",
         "system_design_connections": [
@@ -1266,8 +1492,29 @@
             "concept_id": "dynamic_programming_1d_linear",
             "concept_name": "1D Linear DP",
             "explanation_goal": "State depends on previous 1-2 states",
-            "estimated_time_hours": 10,
+            "estimated_time_hours": 14,
             "practice_problems": [
+              {
+                "problem_id": "dynamic_programming_maximum_subarray",
+                "problem_name": "Maximum Subarray",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/maximum-subarray",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Simplest DP pattern; Kadane's algorithm; single pass O(n)",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Kadane's O(n)",
+                  "Divide and Conquer O(n log n)"
+                ],
+                "tags": [
+                  "dp",
+                  "kadane",
+                  "1d",
+                  "google-l6",
+                  "slice-1"
+                ]
+              },
               {
                 "problem_id": "dynamic_programming_house_robber",
                 "problem_name": "House Robber",
@@ -1284,7 +1531,69 @@
                 "tags": [
                   "dp",
                   "1d",
-                  "linear"
+                  "linear",
+                  "google-l6",
+                  "slice-1"
+                ]
+              },
+              {
+                "problem_id": "dynamic_programming_house_robber_ii",
+                "problem_name": "House Robber II",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/house-robber-ii",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Circular variant; split into two linear problems",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Two DP passes O(n)"
+                ],
+                "tags": [
+                  "dp",
+                  "1d",
+                  "circular",
+                  "google-l6",
+                  "slice-1"
+                ]
+              },
+              {
+                "problem_id": "dynamic_programming_best_time_stock_ii",
+                "problem_name": "Best Time to Buy and Sell Stock II",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "State machine DP; hold vs not-hold states; multiple transactions",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Greedy O(n)",
+                  "State Machine DP O(n)"
+                ],
+                "tags": [
+                  "dp",
+                  "greedy",
+                  "state-machine",
+                  "google-l6",
+                  "slice-1"
+                ]
+              },
+              {
+                "problem_id": "dynamic_programming_stock_cooldown",
+                "problem_name": "Best Time to Buy and Sell Stock with Cooldown",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "State machine with cooldown state; 3 states",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "State Machine DP O(n)"
+                ],
+                "tags": [
+                  "dp",
+                  "state-machine",
+                  "google-l6",
+                  "slice-3"
                 ]
               },
               {
@@ -1304,7 +1613,9 @@
                   "dp",
                   "1d",
                   "lis",
-                  "binary-search"
+                  "binary-search",
+                  "google-l6",
+                  "slice-1"
                 ]
               }
             ]
@@ -1313,7 +1624,7 @@
             "concept_id": "dynamic_programming_2d_grid",
             "concept_name": "2D Grid DP",
             "explanation_goal": "Navigate grids with cumulative values",
-            "estimated_time_hours": 8,
+            "estimated_time_hours": 10,
             "practice_problems": [
               {
                 "problem_id": "dynamic_programming_unique_paths",
@@ -1351,7 +1662,102 @@
                   "dp",
                   "2d",
                   "grid",
-                  "path"
+                  "path",
+                  "google-l6",
+                  "slice-1"
+                ]
+              },
+              {
+                "problem_id": "dynamic_programming_maximal_square",
+                "problem_name": "Maximal Square",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/maximal-square",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Different 2D recurrence; track square sizes",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "2D DP O(m*n)"
+                ],
+                "tags": [
+                  "dp",
+                  "2d",
+                  "grid",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "dynamic_programming_dungeon_game",
+                "problem_name": "Dungeon Game",
+                "difficulty": "Hard",
+                "url": "https://leetcode.com/problems/dungeon-game",
+                "estimated_time_minutes": 60,
+                "reason_for_selection": "Backward DP; compute from end to start",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Backward 2D DP O(m*n)"
+                ],
+                "tags": [
+                  "dp",
+                  "2d",
+                  "grid",
+                  "hard",
+                  "google-l6",
+                  "slice-3"
+                ]
+              }
+            ]
+          },
+          {
+            "concept_id": "dynamic_programming_string_dp",
+            "concept_name": "String DP (Two Sequence Comparison)",
+            "explanation_goal": "Compare two sequences using 2D DP; foundation for Edit Distance",
+            "estimated_time_hours": 8,
+            "practice_problems": [
+              {
+                "problem_id": "dynamic_programming_longest_common_subsequence",
+                "problem_name": "Longest Common Subsequence",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/longest-common-subsequence",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Classic 2D string DP; foundation for Edit Distance",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "2D DP O(m*n)",
+                  "Space-optimized O(min(m,n))"
+                ],
+                "tags": [
+                  "dp",
+                  "string",
+                  "2d",
+                  "lcs",
+                  "google-l6",
+                  "slice-1"
+                ]
+              },
+              {
+                "problem_id": "dynamic_programming_edit_distance",
+                "problem_name": "Edit Distance",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/edit-distance",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Classic string DP; used in spell checkers and diff tools",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "2D DP O(m*n)",
+                  "Space-optimized O(min(m,n))"
+                ],
+                "tags": [
+                  "dp",
+                  "string",
+                  "2d",
+                  "edit-distance",
+                  "google-l6",
+                  "slice-2"
                 ]
               }
             ]
@@ -1360,7 +1766,7 @@
             "concept_id": "dynamic_programming_knapsack",
             "concept_name": "Knapsack Patterns",
             "explanation_goal": "Optimize selection with capacity constraints",
-            "estimated_time_hours": 12,
+            "estimated_time_hours": 14,
             "practice_problems": [
               {
                 "problem_id": "dynamic_programming_coin_change",
@@ -1379,7 +1785,9 @@
                   "dp",
                   "knapsack",
                   "unbounded",
-                  "blind-75"
+                  "blind-75",
+                  "google-l6",
+                  "slice-1"
                 ]
               },
               {
@@ -1399,7 +1807,9 @@
                   "dp",
                   "knapsack",
                   "0-1",
-                  "subset-sum"
+                  "subset-sum",
+                  "google-l6",
+                  "slice-2"
                 ]
               },
               {
@@ -1419,7 +1829,57 @@
                   "dp",
                   "knapsack",
                   "subset-sum",
-                  "transform"
+                  "transform",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "dynamic_programming_coin_change_2",
+                "problem_name": "Coin Change 2",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/coin-change-ii",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Counting variant; number of ways to make amount",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "DP O(amount * coins)"
+                ],
+                "tags": [
+                  "dp",
+                  "knapsack",
+                  "counting",
+                  "google-l6",
+                  "slice-2"
+                ]
+              }
+            ]
+          },
+          {
+            "concept_id": "dynamic_programming_tree_dp",
+            "concept_name": "Tree DP",
+            "explanation_goal": "Apply DP patterns on tree structures",
+            "estimated_time_hours": 4,
+            "practice_problems": [
+              {
+                "problem_id": "dynamic_programming_house_robber_iii",
+                "problem_name": "House Robber III",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/house-robber-iii",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "DP on tree structures; return tuple for each subtree",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Tree DP with tuple O(n)"
+                ],
+                "tags": [
+                  "dp",
+                  "tree",
+                  "dfs",
+                  "google-l6",
+                  "slice-3"
                 ]
               }
             ]
@@ -1430,7 +1890,8 @@
           "knows_top_down_vs_bottom_up": true,
           "solved_house_robber": true,
           "solved_coin_change": true,
-          "comfortable_with_2d_dp": true
+          "comfortable_with_2d_dp": true,
+          "understands_string_dp": true
         },
         "review_schedule_days": [
           3,
@@ -1441,6 +1902,713 @@
           90,
           120
         ]
+      },
+      {
+        "pattern_id": "design",
+        "sequence_order": 10,
+        "pattern_name": "Design Data Structures",
+        "tier": "must_master",
+        "prerequisites": [
+          "arrays_hashing"
+        ],
+        "unlocks": [],
+        "importance": "High",
+        "estimated_time_hours": 10,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Cache systems (Redis, Memcached)",
+          "Database internal data structures",
+          "Rate limiters and queues"
+        ],
+        "concepts": [
+          {
+            "concept_id": "design_cache_structures",
+            "concept_name": "Cache Data Structures",
+            "explanation_goal": "Combine hash maps with ordered structures for O(1) operations",
+            "estimated_time_hours": 5,
+            "practice_problems": [
+              {
+                "problem_id": "design_lru_cache",
+                "problem_name": "LRU Cache",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/lru-cache",
+                "estimated_time_minutes": 60,
+                "reason_for_selection": "Hash map + doubly linked list; O(1) get/put; FAANG favorite",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "OrderedDict O(1)",
+                  "Hash Map + Doubly Linked List O(1)"
+                ],
+                "tags": [
+                  "design",
+                  "hash-map",
+                  "linked-list",
+                  "cache",
+                  "google-l6",
+                  "slice-1"
+                ]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "understands_time_complexity_requirements": true,
+          "can_combine_data_structures": true,
+          "solved_lru_cache": true
+        },
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30
+        ]
+      },
+      {
+        "pattern_id": "backtracking",
+        "sequence_order": 11,
+        "pattern_name": "Backtracking",
+        "tier": "must_master",
+        "prerequisites": [
+          "recursion"
+        ],
+        "unlocks": [],
+        "importance": "High",
+        "estimated_time_hours": 15,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Constraint satisfaction problems",
+          "Search algorithms",
+          "Game AI (chess, sudoku solvers)"
+        ],
+        "concepts": [
+          {
+            "concept_id": "backtracking_fundamentals",
+            "concept_name": "Backtracking Fundamentals",
+            "explanation_goal": "Build solutions incrementally and backtrack on invalid paths",
+            "estimated_time_hours": 15,
+            "practice_problems": [
+              {
+                "problem_id": "backtracking_generate_parentheses",
+                "problem_name": "Generate Parentheses",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/generate-parentheses",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Bridge from recursion - constrained generation",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Backtracking O(4^n / sqrt(n))"
+                ],
+                "tags": [
+                  "backtracking",
+                  "recursion",
+                  "string",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "backtracking_subsets",
+                "problem_name": "Subsets",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/subsets",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Foundation - include/exclude decisions",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Backtracking O(n * 2^n)",
+                  "Iterative O(n * 2^n)"
+                ],
+                "tags": [
+                  "backtracking",
+                  "bit-manipulation",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "backtracking_permutations",
+                "problem_name": "Permutations",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/permutations",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Builds on subsets - arrangement matters",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Backtracking O(n * n!)"
+                ],
+                "tags": [
+                  "backtracking",
+                  "recursion",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "backtracking_combination_sum",
+                "problem_name": "Combination Sum",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/combination-sum",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Subsets + unlimited reuse",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Backtracking O(n^(target/min))"
+                ],
+                "tags": [
+                  "backtracking",
+                  "recursion",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "backtracking_word_search",
+                "problem_name": "Word Search",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/word-search",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "2D grid backtracking",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Backtracking O(m * n * 4^L)"
+                ],
+                "tags": [
+                  "backtracking",
+                  "grid",
+                  "dfs",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "backtracking_n_queens",
+                "problem_name": "N-Queens",
+                "difficulty": "Hard",
+                "url": "https://leetcode.com/problems/n-queens",
+                "estimated_time_minutes": 60,
+                "reason_for_selection": "Full constraint satisfaction - LAST",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Backtracking O(n!)"
+                ],
+                "tags": [
+                  "backtracking",
+                  "constraint-satisfaction",
+                  "hard",
+                  "google-l6",
+                  "slice-2"
+                ]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "understands_backtracking_template": true,
+          "can_prune_search_space": true,
+          "solved_n_queens": true
+        },
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30,
+          60
+        ]
+      },
+      {
+        "pattern_id": "heaps",
+        "sequence_order": 12,
+        "pattern_name": "Heaps & Priority Queues",
+        "tier": "must_master",
+        "prerequisites": [
+          "arrays_hashing"
+        ],
+        "unlocks": [],
+        "importance": "High",
+        "estimated_time_hours": 12,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Task scheduling in operating systems",
+          "Event-driven architectures",
+          "Top-K systems (trending, recommendations)"
+        ],
+        "concepts": [
+          {
+            "concept_id": "heaps_operations",
+            "concept_name": "Heap Operations",
+            "explanation_goal": "Use heaps for efficient min/max tracking",
+            "estimated_time_hours": 12,
+            "practice_problems": [
+              {
+                "problem_id": "heaps_kth_largest",
+                "problem_name": "Kth Largest Element in an Array",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/kth-largest-element-in-an-array",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Basic heap usage; min-heap for k largest",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Min-heap O(n log k)",
+                  "Quickselect O(n) average"
+                ],
+                "tags": [
+                  "heap",
+                  "quickselect",
+                  "top-k",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "heaps_task_scheduler",
+                "problem_name": "Task Scheduler",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/task-scheduler",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Heap + greedy scheduling",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Max-heap + cooldown O(n log 26)",
+                  "Math O(n)"
+                ],
+                "tags": [
+                  "heap",
+                  "greedy",
+                  "scheduling",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "heaps_merge_k_sorted_lists",
+                "problem_name": "Merge K Sorted Lists",
+                "difficulty": "Hard",
+                "url": "https://leetcode.com/problems/merge-k-sorted-lists",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Multi-way merge with heap",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Min-heap O(n log k)",
+                  "Divide and Conquer O(n log k)"
+                ],
+                "tags": [
+                  "heap",
+                  "linked-list",
+                  "merge",
+                  "hard",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "heaps_find_median_data_stream",
+                "problem_name": "Find Median from Data Stream",
+                "difficulty": "Hard",
+                "url": "https://leetcode.com/problems/find-median-from-data-stream",
+                "estimated_time_minutes": 60,
+                "reason_for_selection": "Two-heap pattern - hardest",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Two heaps O(log n) per insert"
+                ],
+                "tags": [
+                  "heap",
+                  "two-heaps",
+                  "median",
+                  "hard",
+                  "google-l6",
+                  "slice-2"
+                ]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "understands_heap_operations": true,
+          "can_use_two_heaps": true,
+          "solved_merge_k_lists": true
+        },
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30,
+          60
+        ]
+      },
+      {
+        "pattern_id": "linked_lists",
+        "sequence_order": 13,
+        "pattern_name": "Linked Lists",
+        "tier": "must_master",
+        "prerequisites": [
+          "arrays_hashing"
+        ],
+        "unlocks": [],
+        "importance": "High",
+        "estimated_time_hours": 10,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "LRU Cache implementation",
+          "Memory allocators",
+          "Undo/redo functionality"
+        ],
+        "concepts": [
+          {
+            "concept_id": "linked_lists_basic_operations",
+            "concept_name": "Basic Operations",
+            "explanation_goal": "Master reversal, merge, and pointer manipulation",
+            "estimated_time_hours": 5,
+            "practice_problems": [
+              {
+                "problem_id": "linked_lists_reverse",
+                "problem_name": "Reverse Linked List",
+                "difficulty": "Easy",
+                "url": "https://leetcode.com/problems/reverse-linked-list",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Fundamental reversal technique",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Iterative O(n)",
+                  "Recursive O(n)"
+                ],
+                "tags": [
+                  "linked-list",
+                  "reversal",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "linked_lists_merge_two_sorted",
+                "problem_name": "Merge Two Sorted Lists",
+                "difficulty": "Easy",
+                "url": "https://leetcode.com/problems/merge-two-sorted-lists",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Basic merge pattern",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Iterative O(n+m)",
+                  "Recursive O(n+m)"
+                ],
+                "tags": [
+                  "linked-list",
+                  "merge",
+                  "google-l6",
+                  "slice-2"
+                ]
+              }
+            ]
+          },
+          {
+            "concept_id": "linked_lists_advanced_operations",
+            "concept_name": "Advanced Operations",
+            "explanation_goal": "Combine multiple techniques for complex manipulations",
+            "estimated_time_hours": 5,
+            "practice_problems": [
+              {
+                "problem_id": "linked_lists_reorder",
+                "problem_name": "Reorder List",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/reorder-list",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Combines multiple techniques: find middle, reverse, merge",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Find middle + reverse + merge O(n)"
+                ],
+                "tags": [
+                  "linked-list",
+                  "two-pointers",
+                  "reversal",
+                  "google-l6",
+                  "slice-3"
+                ]
+              },
+              {
+                "problem_id": "linked_lists_copy_random_pointer",
+                "problem_name": "Copy List with Random Pointer",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/copy-list-with-random-pointer",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Deep copy with hash map",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Hash map O(n) space",
+                  "Interleaving O(1) space"
+                ],
+                "tags": [
+                  "linked-list",
+                  "hash-map",
+                  "deep-copy",
+                  "google-l6",
+                  "slice-3"
+                ]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "can_reverse_list": true,
+          "can_find_middle": true,
+          "solved_reorder_list": true
+        },
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30
+        ]
+      },
+      {
+        "pattern_id": "monotonic_stack",
+        "sequence_order": 14,
+        "pattern_name": "Monotonic Stack",
+        "tier": "must_master",
+        "prerequisites": [
+          "arrays_hashing"
+        ],
+        "unlocks": [],
+        "importance": "High",
+        "estimated_time_hours": 8,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Stock price analysis",
+          "Temperature forecasting",
+          "Histogram processing"
+        ],
+        "concepts": [
+          {
+            "concept_id": "monotonic_stack_next_greater",
+            "concept_name": "Next Greater Element Pattern",
+            "explanation_goal": "Use monotonic stack to find next greater/smaller elements",
+            "estimated_time_hours": 8,
+            "practice_problems": [
+              {
+                "problem_id": "monotonic_stack_daily_temperatures",
+                "problem_name": "Daily Temperatures",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/daily-temperatures",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Classic 'next greater' pattern",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Monotonic stack O(n)"
+                ],
+                "tags": [
+                  "monotonic-stack",
+                  "next-greater",
+                  "google-l6",
+                  "slice-2"
+                ]
+              },
+              {
+                "problem_id": "monotonic_stack_largest_rectangle",
+                "problem_name": "Largest Rectangle in Histogram",
+                "difficulty": "Hard",
+                "url": "https://leetcode.com/problems/largest-rectangle-in-histogram",
+                "estimated_time_minutes": 60,
+                "reason_for_selection": "Complex monotonic application",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Monotonic stack O(n)"
+                ],
+                "tags": [
+                  "monotonic-stack",
+                  "histogram",
+                  "hard",
+                  "google-l6",
+                  "slice-2"
+                ]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "understands_monotonic_stack": true,
+          "solved_daily_temperatures": true,
+          "solved_largest_rectangle": true
+        },
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30
+        ]
+      },
+      {
+        "pattern_id": "intervals",
+        "sequence_order": 15,
+        "pattern_name": "Intervals",
+        "tier": "must_master",
+        "prerequisites": [
+          "arrays_hashing"
+        ],
+        "unlocks": [],
+        "importance": "High",
+        "estimated_time_hours": 8,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Calendar/scheduling systems",
+          "Resource allocation",
+          "Time-series databases"
+        ],
+        "concepts": [
+          {
+            "concept_id": "intervals_scheduling",
+            "concept_name": "Interval Scheduling",
+            "explanation_goal": "Sort and process intervals for scheduling problems",
+            "estimated_time_hours": 8,
+            "practice_problems": [
+              {
+                "problem_id": "intervals_merge",
+                "problem_name": "Merge Intervals",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/merge-intervals",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Foundation - sort + merge",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Sort + merge O(n log n)"
+                ],
+                "tags": [
+                  "intervals",
+                  "sorting",
+                  "google-l6",
+                  "slice-3"
+                ]
+              },
+              {
+                "problem_id": "intervals_non_overlapping",
+                "problem_name": "Non-overlapping Intervals",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/non-overlapping-intervals",
+                "estimated_time_minutes": 30,
+                "reason_for_selection": "Greedy selection",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Sort + greedy O(n log n)"
+                ],
+                "tags": [
+                  "intervals",
+                  "greedy",
+                  "google-l6",
+                  "slice-3"
+                ]
+              },
+              {
+                "problem_id": "intervals_meeting_rooms_ii",
+                "problem_name": "Meeting Rooms II",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/meeting-rooms-ii",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Heap/sweep line - most complex",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Min-heap O(n log n)",
+                  "Sweep line O(n log n)"
+                ],
+                "tags": [
+                  "intervals",
+                  "heap",
+                  "sweep-line",
+                  "google-l6",
+                  "slice-3"
+                ]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "can_merge_intervals": true,
+          "understands_sweep_line": true,
+          "solved_meeting_rooms": true
+        },
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30
+        ]
+      },
+      {
+        "pattern_id": "trie",
+        "sequence_order": 16,
+        "pattern_name": "Trie (Prefix Tree)",
+        "tier": "must_master",
+        "prerequisites": [
+          "arrays_hashing"
+        ],
+        "unlocks": [],
+        "importance": "High",
+        "estimated_time_hours": 5,
+        "skip_allowed": false,
+        "system_design_connections": [
+          "Autocomplete systems",
+          "Spell checkers",
+          "IP routing tables"
+        ],
+        "concepts": [
+          {
+            "concept_id": "trie_prefix_tree",
+            "concept_name": "Prefix Tree",
+            "explanation_goal": "Build and query prefix-based data structure",
+            "estimated_time_hours": 5,
+            "practice_problems": [
+              {
+                "problem_id": "trie_implement",
+                "problem_name": "Implement Trie (Prefix Tree)",
+                "difficulty": "Medium",
+                "url": "https://leetcode.com/problems/implement-trie-prefix-tree",
+                "estimated_time_minutes": 45,
+                "reason_for_selection": "Build the data structure from scratch",
+                "is_completed": false,
+                "attempts": 0,
+                "solution_approaches": [
+                  "Trie with hash map children O(m)",
+                  "Trie with array children O(m)"
+                ],
+                "tags": [
+                  "trie",
+                  "design",
+                  "string",
+                  "google-l6",
+                  "slice-3"
+                ]
+              }
+            ]
+          }
+        ],
+        "mastery_criteria": {
+          "can_implement_trie": true,
+          "understands_prefix_search": true
+        },
+        "review_schedule_days": [
+          3,
+          7,
+          14,
+          30
+        ]
       }
     ],
     "complete": [
@@ -1448,18 +2616,13 @@
         "note": "Complete curriculum includes all 22 patterns with full problem sets",
         "includes_from_fast_track": "All fast_track patterns plus:",
         "additional_patterns": [
-          "Linked Lists (dedicated)",
           "Stacks & Queues (separate)",
-          "Backtracking (full)",
-          "Heaps (full)",
-          "Greedy Algorithms",
-          "Tries",
-          "Intervals",
+          "Greedy Algorithms (expanded)",
           "Bit Manipulation",
           "String Manipulation",
-          "Advanced Patterns (Monotonic Stack/Queue, Prefix Sum variants)",
-          "Design Problems (LRU, LFU, specialized structures)",
-          "DP Advanced (State Machine, DP on Trees, Bitmask DP)"
+          "Advanced Patterns (Segment Trees, Fenwick Trees)",
+          "Design Problems (LFU, specialized structures)",
+          "DP Advanced (Bitmask DP, Digit DP)"
         ],
         "reference": "See dsa_curriculum_complete.json for full curriculum"
       }
@@ -1473,6 +2636,16 @@
         "If prerequisites not met, suggest completing those first",
         "If all prerequisites met, pattern is unlocked and can be started",
         "Cannot skip patterns marked skip_allowed: false"
+      ]
+    },
+    "slice_progression_logic": {
+      "description": "Agent guides through Google L6 slices in order",
+      "rules": [
+        "Slice 1 first: Focus on problems tagged slice-1 (70% interview ready)",
+        "Slice 2 next: Focus on problems tagged slice-2 (85% interview ready)",
+        "Slice 3 last: Focus on problems tagged slice-3 (93% interview ready)",
+        "Track slice completion separately from pattern completion",
+        "Can filter problems by slice: 'list problems slice-1'"
       ]
     },
     "problem_progression_logic": {
@@ -1511,6 +2684,18 @@
         {
           "metric": "overall_completion_percentage",
           "calculation": "(patterns_completed.length / total_patterns) * 100"
+        },
+        {
+          "metric": "slice_1_progress",
+          "calculation": "count(slice-1 problems completed) / 22 * 100"
+        },
+        {
+          "metric": "slice_2_progress",
+          "calculation": "count(slice-2 problems completed) / 18 * 100"
+        },
+        {
+          "metric": "slice_3_progress",
+          "calculation": "count(slice-3 problems completed) / 13 * 100"
         },
         {
           "metric": "hours_invested",
@@ -1585,6 +2770,10 @@
       "description": "Agent provides encouragement at key milestones",
       "triggers": [
         {
+          "trigger": "slice_completed",
+          "message": "\ud83c\udf89 Slice {slice_number} complete! You're now {percentage}% interview-ready for Google L6!"
+        },
+        {
           "trigger": "pattern_completed",
           "message": "\ud83c\udf89 Pattern complete! You've unlocked: {system_design_connections}. This directly maps to real-world systems you know!"
         },
@@ -1613,10 +2802,10 @@
     "pivot_to_complete_mode": {
       "description": "When to suggest switching from fast_track to complete mode",
       "conditions": [
-        "User completes fast_track (all 9 patterns)",
+        "User completes fast_track (all 16 patterns)",
         "User explicitly requests more depth"
       ],
-      "action": "Agent suggests: 'You've completed the Fast Track! Ready for complete mastery? I'll add 13 more patterns including Backtracking, Heaps, Tries, and Advanced Patterns.'"
+      "action": "Agent suggests: 'You've completed the Fast Track! Ready for complete mastery? I'll add advanced patterns including Segment Trees, Bit Manipulation, and Advanced DP.'"
     }
   },
   "dashboard_config": {
@@ -1627,6 +2816,11 @@
           "widget": "progress_ring",
           "data": "overall_completion_percentage",
           "label": "Overall Progress"
+        },
+        {
+          "widget": "slice_progress",
+          "data": ["slice_1_progress", "slice_2_progress", "slice_3_progress"],
+          "label": "Google L6 Slice Progress"
         },
         {
           "widget": "stat_card",
