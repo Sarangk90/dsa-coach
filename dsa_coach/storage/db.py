@@ -84,6 +84,8 @@ class Database:
                 session_id TEXT NOT NULL,
                 role TEXT NOT NULL,
                 content TEXT NOT NULL,
+                thinking TEXT,
+                thinking_signature TEXT,
                 tool_name TEXT,
                 tool_args TEXT,
                 created_at TEXT NOT NULL,
@@ -219,6 +221,23 @@ class Database:
                 version INTEGER PRIMARY KEY
             );
         """)
+        await self.conn.commit()
+
+        # Migration: Add thinking column if it doesn't exist (for existing DBs)
+        await self._migrate_add_thinking_column()
+
+    async def _migrate_add_thinking_column(self) -> None:
+        """Add thinking and thinking_signature columns to messages table if missing."""
+        # Check if columns exist
+        async with self.conn.execute("PRAGMA table_info(messages)") as cursor:
+            columns = [row["name"] async for row in cursor]
+
+        if "thinking" not in columns:
+            await self.conn.execute("ALTER TABLE messages ADD COLUMN thinking TEXT")
+        if "thinking_signature" not in columns:
+            await self.conn.execute(
+                "ALTER TABLE messages ADD COLUMN thinking_signature TEXT"
+            )
         await self.conn.commit()
 
     # ==================== Session Operations ====================
@@ -382,6 +401,8 @@ class Database:
         session_id: str,
         role: str,
         content: str,
+        thinking: str | None = None,
+        thinking_signature: str | None = None,
         tool_name: str | None = None,
         tool_args: dict | None = None,
     ) -> Message:
@@ -391,20 +412,24 @@ class Database:
             session_id=session_id,
             role=role,
             content=content,
+            thinking=thinking,
+            thinking_signature=thinking_signature,
             tool_name=tool_name,
             tool_args=tool_args,
             created_at=datetime.now(),
         )
         await self.conn.execute(
             """
-            INSERT INTO messages (id, session_id, role, content, tool_name, tool_args, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO messages (id, session_id, role, content, thinking, thinking_signature, tool_name, tool_args, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 message.id,
                 message.session_id,
                 message.role,
                 message.content,
+                message.thinking,
+                message.thinking_signature,
                 message.tool_name,
                 json.dumps(message.tool_args) if message.tool_args else None,
                 message.created_at.isoformat(),
@@ -425,12 +450,23 @@ class Database:
         messages = []
         async with self.conn.execute(query, (session_id,)) as cursor:
             async for row in cursor:
+                # Handle thinking columns (may not exist in older DBs)
+                thinking = None
+                thinking_signature = None
+                try:
+                    thinking = row["thinking"]
+                    thinking_signature = row["thinking_signature"]
+                except (IndexError, KeyError):
+                    pass
+
                 messages.append(
                     Message(
                         id=row["id"],
                         session_id=row["session_id"],
                         role=row["role"],
                         content=row["content"],
+                        thinking=thinking,
+                        thinking_signature=thinking_signature,
                         tool_name=row["tool_name"],
                         tool_args=json.loads(row["tool_args"])
                         if row["tool_args"]

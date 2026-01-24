@@ -34,6 +34,12 @@ class Message(BaseModel):
     session_id: str = Field(description="Parent session ID")
     role: str = Field(description="Role: user, assistant, tool_call, tool_result")
     content: str = Field(description="Message content")
+    thinking: str | None = Field(
+        default=None, description="Extended thinking content (assistant messages only)"
+    )
+    thinking_signature: str | None = Field(
+        default=None, description="Signature for thinking block (required for replay)"
+    )
     tool_name: str | None = Field(
         default=None, description="Tool name if tool call/result"
     )

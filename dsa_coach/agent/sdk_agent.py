@@ -224,7 +224,7 @@ class SDKCoachAgent:
         # Record user message
         await self.session.add_user_message(user_message)
 
-        # Build messages for LLM
+        # Build messages for LLM (handles thinking block formatting)
         messages = self.session.get_messages_for_llm()
 
         # Get LLM response using existing infrastructure
@@ -233,11 +233,13 @@ class SDKCoachAgent:
             get_ai_response_with_tools,
         )
 
+        # Thinking stays enabled - legacy messages use plain string format (handled in session)
         try:
             response = await get_ai_response_with_tools(
                 messages=messages,
                 system_prompt=self.get_system_prompt(),
                 tools=self.get_tools_for_llm(),
+                # enable_thinking=None uses default (THINKING_BUDGET)
             )
         except Exception as e:
             return SDKAgentResponse(
@@ -256,6 +258,10 @@ class SDKCoachAgent:
         all_tool_errors = []
         iterations = 0
 
+        # Surface extended thinking content (Anthropic only)
+        if response.thinking and on_reasoning:
+            on_reasoning(response.thinking)
+
         if response.has_tool_calls and response.content and on_reasoning:
             on_reasoning(response.content)
 
@@ -272,7 +278,16 @@ class SDKCoachAgent:
             all_tool_errors.extend(tool_errors)
 
             # Build messages with tool results
+            # Include thinking block WITH signature for proper replay
             assistant_content = []
+            if response.thinking and response.thinking_signature:
+                assistant_content.append(
+                    {
+                        "type": "thinking",
+                        "thinking": response.thinking,
+                        "signature": response.thinking_signature,
+                    }
+                )
             if response.content:
                 assistant_content.append({"type": "text", "text": response.content})
             for tc in response.tool_calls:
@@ -289,12 +304,13 @@ class SDKCoachAgent:
             tool_result_content = format_tool_result_for_anthropic(tool_results)
             messages.append({"role": "user", "content": tool_result_content})
 
-            # Get next LLM response
+            # Get next LLM response - KEEP thinking enabled (we have proper signatures now)
             try:
                 response = await get_ai_response_with_tools(
                     messages=messages,
                     system_prompt=self.get_system_prompt(),
                     tools=self.get_tools_for_llm(),
+                    # enable_thinking=None uses default (THINKING_BUDGET)
                 )
             except Exception as e:
                 return SDKAgentResponse(
@@ -308,12 +324,20 @@ class SDKCoachAgent:
             if self._token_usage:
                 self._token_usage.set_from_response(response)
 
+            # Surface extended thinking content (Anthropic only)
+            if response.thinking and on_reasoning:
+                on_reasoning(response.thinking)
+
             if response.has_tool_calls and response.content and on_reasoning:
                 on_reasoning(response.content)
 
-        # Record final assistant response
+        # Record final assistant response (with thinking + signature for replay)
         if response.content:
-            await self.session.add_assistant_message(response.content)
+            await self.session.add_assistant_message(
+                response.content,
+                thinking=response.thinking,
+                thinking_signature=response.thinking_signature,
+            )
 
         # Refresh student context after tool calls
         if tool_calls_made:

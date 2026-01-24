@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from ..ai.client import THINKING_BUDGET
 from ..storage.db import Database
 from ..storage.models import Message, Session
 
@@ -74,11 +75,16 @@ class SessionManager:
 
         self._messages = []
         for msg in db_messages:
-            if msg.role in ("user", "assistant"):
+            if msg.role == "user":
+                self._messages.append({"role": "user", "content": msg.content})
+            elif msg.role == "assistant":
+                # Store with thinking and signature if available
                 self._messages.append(
                     {
-                        "role": msg.role,
+                        "role": "assistant",
                         "content": msg.content,
+                        "thinking": msg.thinking,  # May be None for old messages
+                        "thinking_signature": msg.thinking_signature,  # Required for replay
                     }
                 )
             elif msg.role == "tool_result":
@@ -104,8 +110,19 @@ class SessionManager:
         self._messages.append({"role": "user", "content": content})
         return message
 
-    async def add_assistant_message(self, content: str) -> Message:
-        """Add an assistant message to the session."""
+    async def add_assistant_message(
+        self,
+        content: str,
+        thinking: str | None = None,
+        thinking_signature: str | None = None,
+    ) -> Message:
+        """Add an assistant message to the session.
+
+        Args:
+            content: The text content of the message
+            thinking: Optional extended thinking content from Claude
+            thinking_signature: Signature for thinking block (required for replay)
+        """
         if not self._current_session:
             raise RuntimeError("No active session. Call start_or_resume first.")
 
@@ -113,9 +130,18 @@ class SessionManager:
             session_id=self._current_session.id,
             role="assistant",
             content=content,
+            thinking=thinking,
+            thinking_signature=thinking_signature,
         )
 
-        self._messages.append({"role": "assistant", "content": content})
+        self._messages.append(
+            {
+                "role": "assistant",
+                "content": content,
+                "thinking": thinking,
+                "thinking_signature": thinking_signature,
+            }
+        )
         return message
 
     async def add_tool_call(
@@ -189,9 +215,53 @@ class SessionManager:
         """
         Get messages formatted for LLM context.
 
-        Keeps only user/assistant messages for clean context.
+        When extended thinking is enabled:
+        - User messages are always included as plain strings
+        - Assistant messages WITH thinking+signature use block format
+        - Assistant messages WITHOUT thinking+signature use plain string format
+
+        This keeps all context while allowing thinking to stay enabled.
+        Plain string assistant messages are valid even when thinking is enabled.
         """
-        return [m for m in self._messages if m.get("role") in ("user", "assistant")]
+        result = []
+        for m in self._messages:
+            role = m.get("role")
+            if role == "user":
+                result.append({"role": "user", "content": m.get("content", "")})
+            elif role == "assistant":
+                content = m.get("content", "")
+                thinking = m.get("thinking")
+                thinking_signature = m.get("thinking_signature")
+
+                if THINKING_BUDGET > 0 and thinking and thinking_signature:
+                    # Has stored thinking WITH signature - use block format
+                    blocks = [
+                        {
+                            "type": "thinking",
+                            "thinking": thinking,
+                            "signature": thinking_signature,
+                        },
+                        {"type": "text", "text": content},
+                    ]
+                    result.append({"role": "assistant", "content": blocks})
+                else:
+                    # Legacy or no thinking - use plain string (still valid with thinking enabled)
+                    result.append({"role": "assistant", "content": content})
+
+        return result
+
+    def has_messages_without_thinking(self) -> bool:
+        """Check if any assistant messages lack stored thinking content and signature.
+
+        Used to determine if extended thinking should be disabled for this call.
+        Returns True if there are assistant messages without complete thinking data.
+        """
+        for m in self._messages:
+            if m.get("role") == "assistant":
+                # Need BOTH thinking AND signature for proper replay
+                if not m.get("thinking") or not m.get("thinking_signature"):
+                    return True
+        return False
 
     async def resume_by_id(self, session_id: str) -> Session | None:
         """Resume a specific session by ID (for /resume command).

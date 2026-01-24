@@ -46,6 +46,11 @@ PREFERRED_PROVIDER = os.getenv("LLM_PROVIDER", "anthropic")  # or "openai"
 OPENAI_MODEL = "gpt-5.2"
 ANTHROPIC_MODEL = "claude-sonnet-4-5"  # Claude 3.5 Sonnet (latest)
 
+# Extended Thinking (Anthropic only)
+# Default: 10000 tokens - good for DSA problem-solving
+# Set to 0 to disable, or higher (up to 32000) for complex tasks
+THINKING_BUDGET = int(os.getenv("THINKING_BUDGET", "10000"))
+
 
 @dataclass
 class ToolCall:
@@ -78,6 +83,9 @@ class LLMResponse:
     output_tokens: int = 0
     cache_read_tokens: int = 0
     cache_creation_tokens: int = 0
+    # Extended thinking content (Anthropic only, empty for OpenAI)
+    thinking: str = ""
+    thinking_signature: str = ""  # Signature required for replaying thinking blocks
 
     @property
     def has_tool_calls(self) -> bool:
@@ -280,18 +288,21 @@ async def call_anthropic_with_tools(
     system: str,
     tools: list[dict],
     max_tokens: int = 4096,
+    enable_thinking: bool | None = None,
 ) -> LLMResponse:
     """
-    Call Anthropic API with tool calling support.
+    Call Anthropic API with tool calling support and extended thinking.
 
     Args:
         messages: List of message dicts (user/assistant only)
         system: System prompt
         tools: List of tool definitions in Anthropic format
         max_tokens: Maximum tokens in response
+        enable_thinking: Override for extended thinking. None uses THINKING_BUDGET,
+                         False disables thinking (for continuation calls).
 
     Returns:
-        LLMResponse with content and/or tool calls
+        LLMResponse with content, tool calls, and optional thinking
     """
     if not ANTHROPIC_AVAILABLE or not ANTHROPIC_API_KEY:
         raise RuntimeError(
@@ -300,16 +311,36 @@ async def call_anthropic_with_tools(
 
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
+    # Determine if thinking should be enabled for this call
+    # enable_thinking=None: use THINKING_BUDGET default
+    # enable_thinking=False: explicitly disable (for tool loop continuations)
+    # enable_thinking=True: explicitly enable
+    use_thinking = THINKING_BUDGET > 0 if enable_thinking is None else enable_thinking
+
+    # When extended thinking is enabled, max_tokens must be > thinking.budget_tokens
+    # Adjust max_tokens to accommodate thinking budget + response tokens
+    effective_max_tokens = max_tokens
+    if use_thinking and THINKING_BUDGET > 0:
+        # Ensure max_tokens > THINKING_BUDGET (add buffer for actual response)
+        effective_max_tokens = max(max_tokens, THINKING_BUDGET + 4096)
+
     # Build request kwargs
-    kwargs = {
+    kwargs: dict[str, Any] = {
         "model": ANTHROPIC_MODEL,
-        "max_tokens": max_tokens,
+        "max_tokens": effective_max_tokens,
         "system": system,
         "messages": messages,
     }
 
     if tools:
         kwargs["tools"] = tools
+
+    # Add extended thinking if enabled (Anthropic-specific)
+    if use_thinking and THINKING_BUDGET > 0:
+        kwargs["thinking"] = {
+            "type": "enabled",
+            "budget_tokens": THINKING_BUDGET,
+        }
 
     response = client.messages.create(**kwargs)
 
@@ -323,12 +354,18 @@ async def call_anthropic_with_tools(
         getattr(usage, "cache_creation_input_tokens", 0) or 0 if usage else 0
     )
 
-    # Parse response
+    # Parse response (including thinking blocks)
     content = ""
+    thinking_content = ""
+    thinking_signature = ""
     tool_calls = []
 
     for block in response.content:
-        if block.type == "text":
+        if block.type == "thinking":
+            # Extended thinking block (Anthropic-specific)
+            thinking_content += getattr(block, "thinking", "")
+            thinking_signature = getattr(block, "signature", "")  # Required for replay
+        elif block.type == "text":
             content += block.text
         elif block.type == "tool_use":
             tool_calls.append(
@@ -348,6 +385,8 @@ async def call_anthropic_with_tools(
         output_tokens=output_tokens,
         cache_read_tokens=cache_read,
         cache_creation_tokens=cache_creation,
+        thinking=thinking_content,
+        thinking_signature=thinking_signature,
     )
 
 
@@ -426,6 +465,7 @@ async def get_ai_response_with_tools(
     system_prompt: str,
     tools: list[dict],
     max_tokens: int = 4096,
+    enable_thinking: bool | None = None,
 ) -> LLMResponse:
     """
     Get AI response with tool calling support.
@@ -435,6 +475,8 @@ async def get_ai_response_with_tools(
         system_prompt: System prompt for context
         tools: List of tool definitions (will be converted to provider format)
         max_tokens: Maximum tokens in response
+        enable_thinking: Override for extended thinking (Anthropic only).
+                         None uses default, False disables for continuations.
 
     Returns:
         LLMResponse with content and/or tool calls
@@ -446,6 +488,7 @@ async def get_ai_response_with_tools(
             system=system_prompt,
             tools=tools,
             max_tokens=max_tokens,
+            enable_thinking=enable_thinking,
         )
     if PREFERRED_PROVIDER == "openai" and OPENAI_AVAILABLE and OPENAI_API_KEY:
         # OpenAI needs system message in messages list
@@ -469,6 +512,7 @@ async def get_ai_response_with_tools(
             system=system_prompt,
             tools=tools,
             max_tokens=max_tokens,
+            enable_thinking=enable_thinking,
         )
     if OPENAI_AVAILABLE and OPENAI_API_KEY:
         # Convert any Anthropic-format messages to OpenAI format
