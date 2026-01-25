@@ -5,8 +5,6 @@ Handles session persistence, message history, and resumption.
 
 from __future__ import annotations
 
-from datetime import datetime
-
 from ..ai.client import THINKING_BUDGET
 from ..storage.db import Database
 from ..storage.models import Message, Session
@@ -37,27 +35,19 @@ class SessionManager:
         pattern_id: str | None = None,
     ) -> Session:
         """
-        Start a new session or resume the most recent one.
+        Start a new session.
 
         Args:
             session_type: Type of session (general, learn, practice)
             pattern_id: Optional pattern to focus on
 
         Returns:
-            The session (new or resumed)
+            The new session
+
+        Note:
+            Use /resume command to manually resume a previous session.
         """
-        # Try to resume recent session
-        latest = await self.db.get_latest_session(self.user_id)
-
-        if latest:
-            # Check if session is recent (within last 30 minutes)
-            age = datetime.now() - latest.updated_at
-            if age.total_seconds() < 1800:  # 30 minutes
-                self._current_session = latest
-                await self._load_messages()
-                return latest
-
-        # Create new session
+        # Always create a fresh session - use /resume to continue old ones
         self._current_session = await self.db.create_session(
             user_id=self.user_id,
             session_type=session_type,
