@@ -4,10 +4,10 @@ An adaptive CLI for mastering Data Structures, Algorithms, and System Design for
 
 ## Features
 
-- **Confidence-Based Learning**: Track pattern mastery from 0-100% with adaptive difficulty
+- **Progress-Based Learning**: Track pattern mastery from 0-100% with adaptive difficulty
 - **AI-Powered Mentorship**: Get adaptive hints, code reviews, and interactive system design sessions
 - **Spaced Repetition**: Automatic scheduling of review sessions for long-term retention (1, 3, 7, 14 day intervals)
-- **Pattern-First Curriculum**: Master 17 core patterns that solve 90%+ of interview problems
+- **Pattern-First Curriculum**: Master 16 core patterns that solve 90%+ of interview problems
 - **Zero Friction**: Solution files are auto-created, LeetCode links auto-open
 
 ## Quick Start
@@ -65,24 +65,24 @@ Inside the agent session:
 - `/resume` lists previous sessions and lets you resume one
 - `quit` (or `Ctrl+D`) exits
 
-## Confidence-Based Learning System
+## Progress-Based Learning System
 
-### Pattern Confidence (0-100%)
+### Pattern Progress (0-100%)
 
-Your confidence per pattern drives the entire learning experience:
+Your progress per pattern drives the entire learning experience:
 
-| Confidence Level | What It Means | Hint Style |
-|-----------------|---------------|------------|
+| Progress Level | What It Means | Hint Style |
+|---------------|---------------|------------|
 | **0-40%** (Learning) | Building fundamentals | Detailed walkthrough with pseudocode |
 | **40-70%** (Developing) | Understanding core concepts | Conceptual nudges and guiding questions |
 | **70-100%** (Mastered) | Pattern internalized | Socratic questions, edge case challenges |
 
-### How Confidence Builds
+### How Progress Builds
 
-- Complete a problem **without hints**: +15% confidence
-- Complete a problem **with hints**: +10% confidence
-- **Pattern Mastery**: 70%+ confidence + all problems complete
-- Confidence caps at 100% per pattern
+- Complete a problem **without hints**: +15 points
+- Complete a problem **with hints**: +10 points
+- **Pattern Mastery**: 70%+ progress + all problems complete
+- Progress caps at 100% per pattern
 
 ### Spaced Repetition Schedule
 
@@ -96,22 +96,22 @@ Completed problems automatically schedule for review:
 
 The coach adapts to you:
 
-1. **Pattern Confidence Tracking**: Every problem updates your confidence score (0-100%) per pattern
+1. **Pattern Progress Tracking**: Every problem updates your progress score (0-100%) per pattern
 2. **Intelligent Quest Selection**:
    - **Priority 1**: Spaced repetition items due today
-   - **Priority 2**: Weakest patterns (lowest confidence)
+   - **Priority 2**: Weakest patterns (lowest progress)
    - **Priority 3**: Next unstarted problem in curriculum
 3. **Adaptive Hints**:
-   - **Low confidence (<40%)**: Detailed walkthrough with pseudocode
-   - **Medium confidence (40-70%)**: Conceptual nudges
-   - **High confidence (>70%)**: Socratic questions, edge cases
+   - **Low progress (<40%)**: Detailed walkthrough with pseudocode
+   - **Medium progress (40-70%)**: Conceptual nudges
+   - **High progress (>70%)**: Socratic questions, edge cases
 4. **AI Teaching Adaptation**:
-   - Adjusts teaching style based on your pattern confidence
+   - Adjusts teaching style based on your pattern progress
    - More encouragement when learning, more challenge when mastering
 
 ## Core Patterns
 
-The curriculum covers 17 essential patterns:
+The curriculum covers 16 essential patterns:
 
 | Category | Patterns |
 |----------|----------|
@@ -168,7 +168,7 @@ python scripts/hydrate_test_data.py --user my_custom_test
 
 Test data includes realistic scenarios: multiple patterns at different mastery levels, quest completions, spaced repetition items due for review, mistakes, milestones, and teaching history.
 
-## Setting Up AI Mentor
+## Setting Up AI
 
 The coach works without AI, but for the best experience:
 
@@ -178,36 +178,19 @@ The coach works without AI, but for the best experience:
    LLM_PROVIDER=anthropic
    ANTHROPIC_API_KEY=sk-ant-your-key-here
    ```
-3. The mentor will now provide:
+3. The agent will now provide:
    - Intelligent hints based on your history
    - Code reviews with actionable feedback
    - Interactive system design interviews
 
-## UI & Session Tuning (optional)
+## Configuration (optional)
 
-Defaults (no env vars needed):
-- Discord-like chat bubbles for learn sessions (when `rich` is installed)
-- Auto-save after each exchange
-- On resume, show the last 25 messages (tail) to avoid dumping huge logs
-
-Optional overrides:
-
-```
-# Switch back to classic style
-COACH_CHAT_STYLE=classic
-
-# Disable autosave-after-each-exchange
-COACH_AUTOSAVE=0
-
-# On resume, show everything (or only the last message)
-COACH_RESUME_SHOW=all
-# COACH_RESUME_SHOW=last
-
-# Change how many messages are shown when COACH_RESUME_SHOW=tail (default: 25)
-COACH_RESUME_TAIL=50
-
+```bash
 # Terminal reading width used by Rich rendering (default: 88)
 COACH_WIDTH=88
+
+# Extended thinking token budget (default: 10000)
+THINKING_BUDGET=10000
 ```
 
 ## The DIVE Protocol
@@ -225,7 +208,7 @@ E - EVALUATE (3 min) → Time/Space complexity, dry-run edge case
 ## Tips for Success
 
 1. **Consistency > Intensity**: 2 hours daily beats 14 hours on weekends
-2. **Focus on Confidence**: Aim for 70%+ on each pattern for mastery
+2. **Focus on Progress**: Aim for 70%+ on each pattern for mastery
 3. **Speak Aloud**: Practice explaining your thought process
 4. **Review Mistakes**: The mistake journal is your secret weapon
 5. **Trust the System**: The adaptive algorithm prioritizes your weak patterns
