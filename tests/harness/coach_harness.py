@@ -35,7 +35,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from dsa_coach.agent.agent import CoachAgent
+from dsa_coach.agent.sdk_agent import SDKCoachAgent
 from dsa_coach.storage.db import Database
 from dsa_coach.storage.models import (
     ConceptUnderstanding,
@@ -133,7 +133,7 @@ class CoachTestHarness:
         self._auto_hydrate = auto_hydrate
 
         self.db: Database | None = None
-        self.agent: CoachAgent | None = None
+        self.agent: SDKCoachAgent | None = None
         self._conversation_history: list[dict] = []
 
     async def __aenter__(self) -> CoachTestHarness:
@@ -169,7 +169,7 @@ class CoachTestHarness:
             await self.hydrate_test_data()
 
         # Initialize agent
-        self.agent = CoachAgent(self.db, user_id=self._user_id)
+        self.agent = SDKCoachAgent(self.db, user_id=self._user_id)
         await self.agent.initialize()
 
     async def cleanup(self) -> None:

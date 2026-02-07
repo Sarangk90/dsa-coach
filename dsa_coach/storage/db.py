@@ -702,7 +702,7 @@ class Database:
             max_points = quests_total * 15
             progress = min(100, round((earned_points / max_points) * 100))
         else:
-            # Legacy fallback: cap at 100 if quests_total unknown
+            # If quests_total is unknown, use points directly and cap at 100.
             progress = min(100, earned_points)
 
         return {
@@ -1316,50 +1316,3 @@ class Database:
                     }
                 )
         return concepts
-
-    async def build_progress_compat(self, user_id: str = "default") -> dict:
-        """Build a compatibility dict for code that expects the legacy progress dict format.
-
-        This centralizes the progress_compat construction so all code uses
-        consistent data. The returned dict matches the structure expected by
-        curriculum.py and other legacy code.
-
-        Returns:
-            dict with keys: profile, pattern_proficiency, completed_quests,
-            problems_solved, patterns_completed, patterns_in_progress
-        """
-        patterns = await self.get_all_pattern_progress(user_id)
-        completed = await self.get_completed_quests(user_id)
-        profile = await self.get_or_create_profile(user_id)
-        session = await self.get_latest_session(user_id)
-
-        # Build pattern proficiency dict
-        pattern_prof = {}
-        for p in patterns:
-            pattern_prof[p.pattern_id] = {
-                "progress": p.progress,
-                "attempts": p.quests_completed,
-                "successes": p.quests_completed,
-                "avg_time_mins": None,
-            }
-
-        # Derive patterns_completed from mastered flag
-        patterns_completed = [p.pattern_id for p in patterns if p.mastered]
-
-        # Derive patterns_in_progress (has quests but not mastered)
-        patterns_in_progress = [
-            p.pattern_id for p in patterns if p.quests_completed > 0 and not p.mastered
-        ]
-
-        return {
-            "profile": {
-                "name": profile.name,
-                "current_quest": session.current_quest if session else None,
-                "active_mode": getattr(profile, "active_mode", None) or "fast_track",
-            },
-            "pattern_proficiency": pattern_prof,
-            "completed_quests": {c.quest_id: True for c in completed},
-            "problems_solved": {c.quest_id: True for c in completed},
-            "patterns_completed": patterns_completed,
-            "patterns_in_progress": patterns_in_progress,
-        }

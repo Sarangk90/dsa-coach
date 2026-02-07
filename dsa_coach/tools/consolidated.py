@@ -165,6 +165,11 @@ def _get_pattern_from_curriculum(
     return None
 
 
+def _get_curriculum(mode: str = "fast_track") -> list[dict]:
+    """Get curriculum patterns for a specific mode."""
+    return _load_quests().get("curriculum", {}).get(mode, [])
+
+
 def _get_all_quests_for_pattern(
     pattern_id: str, mode: str = "fast_track"
 ) -> list[dict]:
@@ -202,6 +207,79 @@ def _count_total_quests_for_pattern(pattern_id: str) -> int:
                     for concept in pattern.get("concepts", [])
                 )
     return 0
+
+
+def _is_pattern_unlocked(
+    pattern: dict,
+    completed_patterns: set[str],
+    mode: str = "fast_track",
+) -> bool:
+    """Check if all prerequisites are satisfied."""
+    prerequisites = pattern.get("prerequisites", [])
+    if not prerequisites:
+        return True
+
+    for prereq_id in prerequisites:
+        if prereq_id in completed_patterns:
+            continue
+
+        prereq_total = _count_total_quests_for_pattern(prereq_id)
+        if prereq_total == 0:
+            # Theory-only prerequisite patterns are considered satisfied.
+            continue
+        return False
+
+    return True
+
+
+async def _recommend_next_quest(
+    db: Database,
+    user_id: str,
+    mode: str = "fast_track",
+) -> dict | None:
+    """Recommend the next quest using DB-native state."""
+    completed = await db.get_completed_quests(user_id)
+    completed_ids = {c.quest_id for c in completed}
+
+    # Priority 1: due review patterns first.
+    due_reviews = await db.get_due_reviews(user_id)
+    for review in due_reviews:
+        for candidate in _get_all_quests_for_pattern(review.pattern_id, mode):
+            candidate_id = candidate.get("id")
+            if candidate_id and candidate_id not in completed_ids:
+                quest = _find_quest(candidate_id, mode)
+                if quest:
+                    return quest
+
+    # Priority 2: weakest unlocked pattern (favor continuing in-progress patterns).
+    all_progress = await db.get_all_pattern_progress(user_id)
+    progress_map = {p.pattern_id: p for p in all_progress}
+    completed_patterns = {p.pattern_id for p in all_progress if p.mastered}
+
+    ranked_patterns = []
+    for pattern in _get_curriculum(mode):
+        pattern_id = pattern.get("pattern_id")
+        if not pattern_id:
+            continue
+        if not _is_pattern_unlocked(pattern, completed_patterns, mode):
+            continue
+        progress = progress_map.get(pattern_id)
+        has_started = progress is not None and progress.quests_completed > 0
+        progress_value = progress.progress if progress is not None else 0
+        sequence_order = pattern.get("sequence_order", 999)
+        ranked_patterns.append(
+            (0 if has_started else 1, progress_value, sequence_order, pattern_id)
+        )
+
+    for _, _, _, pattern_id in sorted(ranked_patterns):
+        for candidate in _get_all_quests_for_pattern(pattern_id, mode):
+            candidate_id = candidate.get("id")
+            if candidate_id and candidate_id not in completed_ids:
+                quest = _find_quest(candidate_id, mode)
+                if quest:
+                    return quest
+
+    return None
 
 
 def _get_pattern_concepts(pattern_id: str, mode: str = "fast_track") -> list[str]:
@@ -381,38 +459,22 @@ async def start_quest(
             )
         quest_id = quest["id"]
     else:
-        # Use intelligent recommendation
-        from ..selection import get_next_quest
-
-        progress_compat = await db.build_progress_compat(user_id)
-        recommended = get_next_quest(progress_compat)
-
-        if not recommended:
+        # Use DB-native recommendation logic.
+        quest = await _recommend_next_quest(db, user_id)
+        if not quest:
             return ToolResult(
                 success=False,
                 error="No quests available. Either all complete or prerequisites not met.",
             )
-
-        quest_id = recommended.get("problem_id", recommended.get("id"))
-        quest = _find_quest(quest_id)
-        if not quest:
-            return ToolResult(
-                success=False,
-                error=f"Recommended quest '{quest_id}' not found",
-            )
+        quest_id = quest["id"]
 
     # Update session with current quest
     session = await db.get_latest_session(user_id)
     if session:
-        log.logger.debug(
-            f"SESSION_UPDATE | previous_quest={session.current_quest} "
-            f"new_quest={quest_id} session_id={session.id}"
-        )
         session.current_quest = quest_id
         session.current_pattern = quest.get("pattern")
         await db.update_session(session)
     else:
-        log.logger.debug(f"SESSION_CREATE | new_quest={quest_id}")
         session = await db.create_session(
             user_id=user_id,
             session_type="practice",
@@ -504,14 +566,6 @@ async def complete_quest(
 
     # Get current quest from session
     session = await db.get_latest_session(user_id)
-
-    # Log session state for debugging
-    if session:
-        log.logger.debug(
-            f"SESSION_STATE | current_quest={session.current_quest} session_id={session.id}"
-        )
-    else:
-        log.logger.debug("SESSION_STATE | no_session_found")
 
     if not session or not session.current_quest:
         error_msg = "No quest currently assigned. Use start_quest first."
@@ -605,16 +659,13 @@ async def complete_quest(
 
     # Update timestamp (not a counter, still needed)
     pattern_progress.last_practiced = datetime.now()
-    # Sync derived values to cached columns for backward compatibility
+    # Sync derived values into pattern_progress for fast reads.
     pattern_progress.quests_completed = derived_quests_completed
     pattern_progress.progress = derived_progress
 
     await db.upsert_pattern_progress(pattern_progress)
 
     # Clear current quest
-    log.logger.debug(
-        f"SESSION_CLEAR | quest_completed={quest_id} session_id={session.id}"
-    )
     session.current_quest = None
     await db.update_session(session)
 

@@ -22,7 +22,7 @@ def create_solution_file(problem: dict[str, Any]) -> Path:
     target_dir = paths.SOLUTIONS_DIR / pattern_dir
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    # Use problem_id for V2, fall back to 'id' for V1 compatibility
+    # Prefer problem_id; fall back to id if needed.
     problem_id = problem.get("problem_id", problem.get("id", "unknown"))
     filename = f"{problem_id}.py"
     filepath = target_dir / filename

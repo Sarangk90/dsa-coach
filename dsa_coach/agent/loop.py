@@ -6,19 +6,14 @@ This is the entry point for the interactive coaching experience.
 from __future__ import annotations
 
 import asyncio
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from ..storage.db import Database
 from ..storage.migrations import check_migration_needed, migrate_from_json
-from .agent import CoachAgent
-from .sdk_agent import create_coach_agent
+from .sdk_agent import SDKCoachAgent
 from .terminal import TerminalUI, format_time_ago
-
-# Feature flag for using SDK agent (set via env or default True)
-USE_SDK_AGENT = os.environ.get("DSA_COACH_USE_SDK", "1").lower() in ("1", "true", "yes")
 
 # Exit commands
 EXIT_COMMANDS = {"quit", "exit", "bye", "q"}
@@ -59,11 +54,8 @@ async def run_agent_loop(db_path: Path | None = None) -> None:
             elif result.get("status") == "error":
                 ui.render_error(f"Migration error: {result.get('reason')}")
 
-        # Initialize agent (SDK or legacy based on feature flag)
-        if USE_SDK_AGENT:
-            agent = create_coach_agent(db, use_sdk=True)
-        else:
-            agent = CoachAgent(db)
+        # Initialize SDK agent (single supported runtime agent)
+        agent = SDKCoachAgent(db)
         await agent.initialize()
 
         # Show dashboard

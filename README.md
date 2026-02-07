@@ -46,71 +46,24 @@ python coach.py
 
 The agent provides natural conversation-based coaching with automatic tool use for progress tracking, quest management, hints, and more.
 
-### CLI Commands
+### Commands
 
-You can also use direct CLI commands:
+The project now uses an agent-first interface:
 
 | Command | Description |
 |---------|-------------|
-| `python coach.py start` | Initialize your profile |
-| `python coach.py status` | View your progress, confidence, and weak patterns |
-| `python coach.py today` | **Daily schedule** - what to focus on today |
-| `python coach.py next` | Get your next optimal quest |
-| `python coach.py done` | Mark current quest complete and build confidence |
-| `python coach.py hint` | Get an adaptive hint (adjusts to your confidence) |
-| `python coach.py review <file>` | Request AI code review |
-| `python coach.py recall` | **Spaced repetition** - practice due items |
-| `python coach.py learn [pattern]` | **Interactive learning session** (Socratic teaching) |
-| `python coach.py design [name]` | Start interactive system design interview |
-| `python coach.py summary` | Full progress dump for debugging |
-| `python coach.py sessions` | List and manage saved conversation sessions |
-| `python coach.py mistakes` | Review your mistake journal |
+| `python coach.py` | Start the interactive AI DSA coach |
+| `python coach.py dashboard` | Open the Streamlit progress dashboard |
+| `python coach.py dashboard --daemon` | Run dashboard in background |
+| `python coach.py dashboard --stop` | Stop background dashboard |
 
-## Interactive Learning Sessions
+### In-Session Controls
 
-The `learn` command starts a conversational session where the AI:
-
-1. **Teaches the pattern** - Concept, visual triggers, code template
-2. **Checks understanding** - Asks comprehension questions
-3. **Guides practice** - Presents a problem and helps you solve it
-4. **Provides feedback** - Reviews your approach
-
-```bash
-# Learn a specific pattern
-python coach.py learn sliding_window
-
-# Or pick from a menu showing your weakest patterns first
-python coach.py learn
-```
-
-The teaching adapts to your confidence level:
-- **Low confidence**: Detailed walkthrough with pseudocode
-- **Medium confidence**: Conceptual explanations with nudges
-- **High confidence**: Socratic questioning, treats you as a peer
-
-### Pause & Resume Sessions
-
-Conversations are automatically saved! You can:
-- Type `pause` to save and exit
-- Press Ctrl+C and it auto-saves
-- Resume next day with `python coach.py learn <pattern>`
-
-```bash
-# Pause a session
-> pause
-💾 Session paused and saved!
-Resume with: python coach.py learn sliding_window
-
-# Next day, just run the same command to resume
-python coach.py learn sliding_window
-# 📂 Found saved session from 2025-12-23
-# Resume previous conversation? [Y/n] y
-```
-
-View all saved sessions:
-```bash
-python coach.py sessions
-```
+Inside the agent session:
+- `help` shows available commands
+- `dashboard` refreshes and shows your current dashboard state
+- `/resume` lists previous sessions and lets you resume one
+- `quit` (or `Ctrl+D`) exits
 
 ## Confidence-Based Learning System
 
@@ -180,19 +133,13 @@ Each pattern includes:
 
 ```
 dsa-coach/
-├── coach.py              # Main CLI
-├── mentor.py             # AI integration
-├── quests.json           # All problems and system designs
+├── coach.py              # Agent entrypoint
+├── dsa_coach/            # Core package (agent, tools, storage, web)
+├── quests.json           # Pattern curriculum and problems
 ├── coach.db              # Your progress (SQLite database, auto-generated)
-├── requirements.txt      # Dependencies
+├── pyproject.toml        # Dependencies and project config
 ├── env.example           # API key template
-├── .gitignore
-├── solutions/            # Your code (auto-created)
-│   ├── day1/
-│   ├── day2/
-│   └── ...
-├── final-plan.md         # The synthesized 7-day plan
-├── execution-framework.md # Detailed daily templates
+├── solutions/            # Auto-created solution files by pattern
 └── scripts/
     └── hydrate_test_data.py  # Test data management
 ```
@@ -202,7 +149,7 @@ dsa-coach/
 ### Test Data Management
 
 Test data is isolated from your real progress using separate user IDs:
-- `default` - Your real progress (used by CLI commands)
+- `default` - Your real progress (used by the agent)
 - `test` - Isolated test data for development/testing
 
 ```bash

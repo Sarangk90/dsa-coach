@@ -229,7 +229,7 @@ def interactive_learning_session(
     Args:
         pattern: Pattern to learn
         progress: User progress dict
-        quests: List of all quests (legacy parameter, not used)
+        quests: List of all quests (currently unused)
         mode: Optional initial mode ("teach_first" or "diagnose_first")
     """
 
@@ -379,7 +379,7 @@ def interactive_learning_session(
                 # Ctrl+D → exit session
                 save_conversation("learn", pattern, messages, _session_meta(messages))
                 print("\\n💾 Session saved!")
-                print(f"Resume with: python coach.py learn {pattern}\\n")
+                print("Resume by starting `python coach.py` and using `/resume`.\\n")
                 break
 
             if user_input_raw is None:
@@ -396,7 +396,7 @@ def interactive_learning_session(
             if user_input.lower() in ["pause", "exit", "quit", "save"]:
                 save_conversation("learn", pattern, messages, _session_meta(messages))
                 print("\\n💾 Session paused and saved!")
-                print(f"Resume with: python coach.py learn {pattern}\\n")
+                print("Resume by starting `python coach.py` and using `/resume`.\\n")
                 break
 
             if user_input.strip().lower() in {":editor", ":e"}:
@@ -419,4 +419,4 @@ def interactive_learning_session(
         # Fallback: auto-save on unexpected Ctrl+C
         save_conversation("learn", pattern, messages, _session_meta(messages))
         print("\\n\\n💾 Session auto-saved!")
-        print(f"Resume with: python coach.py learn {pattern}\\n")
+        print("Resume by starting `python coach.py` and using `/resume`.\\n")

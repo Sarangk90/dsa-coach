@@ -1,9 +1,8 @@
-"""Smoke tests for basic CLI functionality."""
+"""Smoke tests for basic entrypoint functionality."""
 
 import coach
 
 
-def test_status_no_profile(clean_progress):
-    """Test status command when no profile exists."""
-    # Should print error but not crash
-    coach.cmd_status()
+def test_coach_entrypoint_exposes_main():
+    """Entry module should expose a callable main function."""
+    assert callable(coach.main)

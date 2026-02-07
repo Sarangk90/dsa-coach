@@ -235,7 +235,7 @@ class SessionManager:
                     ]
                     result.append({"role": "assistant", "content": blocks})
                 else:
-                    # Legacy or no thinking - use plain string (still valid with thinking enabled)
+                    # Plain string content remains valid when thinking is enabled.
                     result.append({"role": "assistant", "content": content})
 
         return result

@@ -6,8 +6,6 @@ Run with: streamlit run dsa_coach/web/dashboard.py
 
 from __future__ import annotations
 
-from datetime import date
-
 import plotly.graph_objects as go
 import streamlit as st
 
@@ -18,7 +16,43 @@ st.set_page_config(
     page_title="Google L6 DSA Dashboard",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
+)
+
+# Compact CSS to reduce padding and margins
+st.markdown(
+    """
+<style>
+    /* Reduce main container padding */
+    .main .block-container {
+        padding-top: 1rem;
+        padding-bottom: 0rem;
+        max-width: 100%;
+    }
+    /* Reduce header size */
+    h1 { font-size: 1.5rem !important; margin-bottom: 0.5rem !important; }
+    h2 { font-size: 1.2rem !important; margin-bottom: 0.3rem !important; }
+    h3 { font-size: 1rem !important; margin-bottom: 0.2rem !important; }
+    h4 { font-size: 0.9rem !important; margin-bottom: 0.2rem !important; }
+    /* Reduce metric spacing */
+    [data-testid="stMetric"] {
+        padding: 0.3rem 0;
+    }
+    [data-testid="stMetricLabel"] { font-size: 0.75rem !important; }
+    [data-testid="stMetricValue"] { font-size: 1.2rem !important; }
+    /* Tighter dataframes */
+    [data-testid="stDataFrame"] { font-size: 0.8rem; }
+    /* Reduce column gaps */
+    [data-testid="column"] { padding: 0 0.5rem; }
+    /* Compact alerts */
+    [data-testid="stAlert"] { padding: 0.3rem 0.5rem; margin: 0.2rem 0; }
+    /* Smaller captions */
+    .stCaption { font-size: 0.7rem !important; }
+    /* Reduce expander padding */
+    [data-testid="stExpander"] { margin-bottom: 0.3rem; }
+</style>
+""",
+    unsafe_allow_html=True,
 )
 
 
@@ -27,159 +61,77 @@ def main():
     # Load data
     data = get_dashboard_data()
 
-    # Sidebar
-    render_sidebar(data)
+    # Compact header with title and key stats inline
+    col_title, col_stats = st.columns([2, 3])
+    with col_title:
+        st.title("Google L6 Interview Prep")
+    with col_stats:
+        render_compact_stats(data)
 
-    # Main content
-    st.title("Google L6 Interview Prep")
-    st.markdown("---")
+    # Row 1: Slice Progress (compact)
+    render_slice_progress_compact(data)
 
-    # Section 1: Interview Readiness Header
-    render_readiness_header(data)
-
-    st.markdown("---")
-
-    # Section 2: Slice Progress
-    render_slice_progress(data)
-
-    st.markdown("---")
-
-    # Section 3: Pattern Confidence (two columns)
-    col1, col2 = st.columns([2, 1])
+    # Row 2: Pattern table + Due Reviews + Activity (3 columns)
+    col1, col2, col3 = st.columns([2, 1, 1.5])
     with col1:
-        render_pattern_table(data)
+        render_pattern_table_compact(data)
     with col2:
-        render_due_reviews(data)
-
-    st.markdown("---")
-
-    # Section 4: Velocity & Projections
-    render_velocity_section(data)
-
-    st.markdown("---")
-
-    # Section 5: Problem Table
-    render_problem_table(data)
-
-
-def render_sidebar(data: dict):
-    """Render sidebar with filters and info."""
-    with st.sidebar:
-        st.header("Dashboard Controls")
-
-        # Refresh button
-        if st.button("🔄 Refresh Data", use_container_width=True):
-            st.rerun()
-
-        st.markdown("---")
-
-        # Stats summary
-        st.subheader("Quick Stats")
-        st.metric("Current Streak", f"{data['streak']} days")
-        st.metric("Due Reviews", len(data["due_reviews"]))
-        st.metric("Avg Pace", f"{data['velocity']['avg_per_week']}/week")
-
-        st.markdown("---")
-
-        # Filter controls (stored in session state)
-        st.subheader("Filters")
-
-        # Slice filter
-        slice_options = ["All", "Slice 1", "Slice 2", "Slice 3", "Foundation"]
-        st.session_state.slice_filter = st.selectbox(
-            "Filter by Slice",
-            slice_options,
-            index=0,
-            key="slice_select",
-        )
-
-        # Pattern filter
-        pattern_ids = ["All"] + [p["pattern_id"] for p in data["patterns"]]
-        st.session_state.pattern_filter = st.selectbox(
-            "Filter by Pattern",
-            pattern_ids,
-            index=0,
-            key="pattern_select",
-        )
-
-        # Status filter
-        status_options = ["All", "Done", "Todo"]
-        st.session_state.status_filter = st.selectbox(
-            "Filter by Status",
-            status_options,
-            index=0,
-            key="status_select",
-        )
-
-        st.markdown("---")
-        st.caption(f"Last updated: {date.today().strftime('%Y-%m-%d')}")
-
-
-def render_readiness_header(data: dict):
-    """Render the interview readiness header section."""
-    col1, col2, col3 = st.columns([2, 2, 1])
-
-    # Foundation progress
-    with col1:
-        st.subheader("Foundation (Completed)")
-        foundation = data["foundation"]
-        st.metric(
-            "Basic Problems",
-            f"{foundation['completed']} complete",
-            help="Problems completed before starting Google L6 slices",
-        )
-        patterns_str = ", ".join(foundation["patterns_touched"][:5])
-        if len(foundation["patterns_touched"]) > 5:
-            patterns_str += "..."
-        st.caption(f"Patterns: {patterns_str}")
-
-    # Google L6 Slices progress
-    with col2:
-        st.subheader("Google L6 Slices (Focus)")
-        total = data["total_slice_problems"]
-        done = data["total_slice_completed"]
-        pct = done / total if total > 0 else 0
-
-        st.metric(
-            "Slice Problems",
-            f"{done}/{total}",
-            delta=f"{pct * 100:.0f}% complete" if done > 0 else None,
-        )
-        st.progress(pct, text=f"{pct * 100:.0f}% toward interview ready")
-
-        # Readiness status
-        if done == 0:
-            st.warning("Not started - complete Slice 1 for 70% readiness")
-        elif data["slices"][0]["completed"] == data["slices"][0]["total"]:
-            if data["slices"][1]["completed"] == data["slices"][1]["total"]:
-                st.success("93% Interview Ready!")
-            else:
-                st.info("70% Interview Ready - working on Slice 2")
-        else:
-            remaining_s1 = data["slices"][0]["total"] - data["slices"][0]["completed"]
-            st.info(f"Complete {remaining_s1} more for 70% readiness")
-
-    # Velocity summary
+        render_due_reviews_compact(data)
     with col3:
-        st.subheader("Velocity")
-        velocity = data["velocity"]
-        st.metric("Pace", f"{velocity['avg_per_week']}/week")
-        st.metric("Best Week", f"{velocity['best_week']} problems")
-        if velocity["power_day"]:
-            st.caption(f"Power day: {velocity['power_day']}")
+        render_activity_compact(data)
+
+    # Row 3: Problem table (in expander)
+    with st.expander(
+        f"📋 Problem List ({len(data['problems'])} problems)", expanded=False
+    ):
+        render_problem_table(data)
 
 
-def render_slice_progress(data: dict):
-    """Render the 3-column slice progress section."""
-    st.subheader("Slice Progress")
+def render_compact_stats(data: dict):
+    """Render compact stats row at the top."""
+    cols = st.columns(6)
 
+    # Foundation
+    with cols[0]:
+        st.metric("Foundation", f"{data['foundation']['completed']} done")
+
+    # Slice progress
+    total = data["total_slice_problems"]
+    done = data["total_slice_completed"]
+    pct = int(done / total * 100) if total > 0 else 0
+    with cols[1]:
+        st.metric("Slices", f"{done}/{total}", delta=f"{pct}%")
+
+    # Readiness status
+    with cols[2]:
+        if data["slices"][0]["completed"] == data["slices"][0]["total"]:
+            readiness = (
+                "85%"
+                if data["slices"][1]["completed"] == data["slices"][1]["total"]
+                else "70%"
+            )
+        else:
+            readiness = f"{pct}%"
+        st.metric("Readiness", readiness)
+
+    # Velocity
+    with cols[3]:
+        st.metric("Pace", f"{data['velocity']['avg_per_week']}/wk")
+
+    # Due reviews
+    with cols[4]:
+        due_count = len(data["due_reviews"])
+        st.metric("Due", due_count, delta="⚠️" if due_count > 5 else None)
+
+    # Streak
+    with cols[5]:
+        st.metric("Streak", f"{data['streak']}d")
+
+
+def render_slice_progress_compact(data: dict):
+    """Render compact slice progress as single row."""
     cols = st.columns(3)
     slice_colors = ["🟢", "🔵", "🟣"]
-    slice_descriptions = [
-        "Core DP, graphs, trees",
-        "Backtracking, heaps, linked lists",
-        "Advanced patterns, edge cases",
-    ]
 
     for i, (col, slice_data) in enumerate(zip(cols, data["slices"], strict=True)):
         with col:
@@ -188,41 +140,22 @@ def render_slice_progress(data: dict):
                 if slice_data["total"] > 0
                 else 0
             )
-
-            st.markdown(
-                f"### {slice_colors[i]} Slice {slice_data['slice']}: {slice_data['name']}"
+            label = f"{slice_colors[i]} S{slice_data['slice']}: {slice_data['name']}"
+            st.progress(
+                pct,
+                text=f"{label} — {slice_data['completed']}/{slice_data['total']} ({slice_data['readiness_pct']}% ready)",
             )
-            st.caption(f"{slice_data['readiness_pct']}% interview-ready")
-            st.progress(pct)
-            st.metric(
-                "Progress",
-                f"{slice_data['completed']}/{slice_data['total']}",
-                delta=f"{pct * 100:.0f}%" if slice_data["completed"] > 0 else None,
-            )
-            st.caption(slice_descriptions[i])
-
-            # Estimate time remaining
-            if slice_data["completed"] < slice_data["total"]:
-                remaining = slice_data["total"] - slice_data["completed"]
-                weeks = estimate_completion_weeks(
-                    remaining, data["velocity"]["avg_per_week"]
-                )
-                if weeks:
-                    st.caption(f"~{weeks} weeks at current pace")
 
 
-def render_pattern_table(data: dict):
-    """Render the pattern progress table."""
-    st.subheader("Pattern Progress")
+def render_pattern_table_compact(data: dict):
+    """Render compact pattern progress table."""
+    st.markdown("**Patterns**")
 
-    # Prepare data for display
     patterns = data["patterns"]
-
-    # Create the table
     table_data = []
     for p in patterns:
-        progress_bar = "█" * (p["progress"] // 10) + "░" * (10 - p["progress"] // 10)
-        status_icon = (
+        bar = "█" * (p["progress"] // 20) + "░" * (5 - p["progress"] // 20)
+        icon = (
             "✅"
             if p["status"] == "MASTERED"
             else "⚠️"
@@ -231,249 +164,165 @@ def render_pattern_table(data: dict):
             if p["status"] == "In Progress"
             else "⬜"
         )
-
         table_data.append(
             {
-                "Pattern": p["pattern_name"],
-                "Progress": f"{progress_bar} {p['progress']}%",
-                "Problems": f"{p['completed']}/{p['total']}",
-                "Status": f"{status_icon} {p['status']}",
+                "Pattern": p["pattern_name"][:15],
+                "Progress": f"{bar} {p['progress']}%",
+                "Done": f"{p['completed']}/{p['total']}",
+                "": icon,
             }
         )
 
-    st.dataframe(
-        table_data,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "Pattern": st.column_config.TextColumn("Pattern", width="medium"),
-            "Progress": st.column_config.TextColumn("Progress", width="large"),
-            "Problems": st.column_config.TextColumn("Problems", width="small"),
-            "Status": st.column_config.TextColumn("Status", width="medium"),
-        },
-    )
+    st.dataframe(table_data, use_container_width=True, hide_index=True, height=200)
 
-    # Highlight critical gaps
     critical_gaps = [p for p in patterns if p["is_critical_gap"]]
     if critical_gaps:
-        st.warning(
-            f"⚠️ Critical gaps: {', '.join(p['pattern_name'] for p in critical_gaps)}"
-        )
+        st.caption(f"⚠️ Gaps: {', '.join(p['pattern_name'] for p in critical_gaps)}")
 
 
-def render_due_reviews(data: dict):
-    """Render the due reviews section."""
-    st.subheader("Due Reviews")
+def render_due_reviews_compact(data: dict):
+    """Render compact due reviews."""
+    st.markdown("**Due Reviews**")
 
     due = data["due_reviews"]
     if not due:
-        st.success("No reviews due!")
+        st.success("None due!")
         return
 
-    st.warning(f"⚠️ {len(due)} problems need review")
+    # Show as compact list
+    for review in due[:6]:
+        name = review["quest_id"].replace("_", " ").title()[:25]
+        st.caption(f"• {name} ({review['days_since']}d)")
 
-    for review in due[:5]:  # Show top 5
-        st.markdown(
-            f"- **{review['quest_id'].replace('_', ' ').title()}** "
-            f"({review['pattern_id']}) - {review['days_since']} days ago"
-        )
-
-    if len(due) > 5:
-        st.caption(f"...and {len(due) - 5} more")
+    if len(due) > 6:
+        st.caption(f"...+{len(due) - 6} more")
 
 
-def render_velocity_section(data: dict):
-    """Render velocity charts and projections."""
-    st.subheader("Velocity & Projections")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        # Weekly activity bar chart
-        st.markdown("#### Weekly Activity")
-        weekly = data["velocity"]["weekly"]
-        if weekly:
-            bar_weeks = list(weekly.keys())
-            counts = list(weekly.values())
-
-            fig = go.Figure(
-                data=[
-                    go.Bar(
-                        x=bar_weeks,
-                        y=counts,
-                        marker_color=[
-                            "#4CAF50" if c >= 7 else "#2196F3" for c in counts
-                        ],
-                    )
-                ]
-            )
-            fig.update_layout(
-                height=250,
-                margin={"l": 20, "r": 20, "t": 20, "b": 40},
-                xaxis_title="",
-                yaxis_title="Problems",
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("No activity data yet")
-
-    with col2:
-        # Completion projections
-        st.markdown("#### Completion Projections")
-        remaining = data["total_slice_problems"] - data["total_slice_completed"]
-        avg_pace = data["velocity"]["avg_per_week"]
-
-        if remaining > 0:
-            projections = [
-                ("Current pace", avg_pace),
-                ("Moderate (7/wk)", 7),
-                ("Sprint (14/wk)", 14),
-            ]
-
-            for name, pace in projections:
-                est_weeks = estimate_completion_weeks(remaining, pace)
-                if est_weeks:
-                    st.metric(
-                        name, f"{est_weeks} weeks", delta=f"{remaining} remaining"
-                    )
-        else:
-            st.success("All slice problems completed!")
-
-    # Activity Calendar (Heatmap)
-    st.markdown("#### Activity Calendar (Last 6 Weeks)")
+def render_activity_compact(data: dict):
+    """Render compact activity heatmap."""
+    st.markdown("**Activity (6 weeks)**")
 
     calendar_data = data["velocity"]["calendar_data"]
-    if calendar_data:
-        # Build heatmap data
-        # Group by week and day
-        calendar_weeks: dict[int, dict[str, int]] = {}
-        for entry in calendar_data:
-            week = entry["iso_week"]
-            if week not in calendar_weeks:
-                calendar_weeks[week] = {
-                    "Mon": 0,
-                    "Tue": 0,
-                    "Wed": 0,
-                    "Thu": 0,
-                    "Fri": 0,
-                    "Sat": 0,
-                    "Sun": 0,
-                }
-            calendar_weeks[week][entry["weekday"]] = entry["count"]
+    if not calendar_data:
+        st.info("No data yet")
+        return
 
-        # Convert to arrays for plotly
-        week_labels = [f"W{w}" for w in sorted(calendar_weeks.keys())]
-        days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    # Build heatmap
+    calendar_weeks: dict[int, dict[str, int]] = {}
+    for entry in calendar_data:
+        week = entry["iso_week"]
+        if week not in calendar_weeks:
+            calendar_weeks[week] = {
+                "Mon": 0,
+                "Tue": 0,
+                "Wed": 0,
+                "Thu": 0,
+                "Fri": 0,
+                "Sat": 0,
+                "Sun": 0,
+            }
+        calendar_weeks[week][entry["weekday"]] = entry["count"]
 
-        z_data = []
-        for day in days:
-            row = [calendar_weeks[w].get(day, 0) for w in sorted(calendar_weeks.keys())]
-            z_data.append(row)
+    week_labels = [f"W{w}" for w in sorted(calendar_weeks.keys())]
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    z_data = [
+        [calendar_weeks[w].get(day, 0) for w in sorted(calendar_weeks.keys())]
+        for day in days
+    ]
 
-        # Create heatmap
-        fig = go.Figure(
-            data=go.Heatmap(
-                z=z_data,
-                x=week_labels,
-                y=days,
-                colorscale=[
-                    [0, "#ebedf0"],
-                    [0.25, "#9be9a8"],
-                    [0.5, "#40c463"],
-                    [0.75, "#30a14e"],
-                    [1, "#216e39"],
-                ],
-                showscale=False,
-                hovertemplate="Week %{x}<br>%{y}: %{z} problems<extra></extra>",
-            )
+    fig = go.Figure(
+        data=go.Heatmap(
+            z=z_data,
+            x=week_labels,
+            y=days,
+            colorscale=[
+                [0, "#ebedf0"],
+                [0.25, "#9be9a8"],
+                [0.5, "#40c463"],
+                [0.75, "#30a14e"],
+                [1, "#216e39"],
+            ],
+            showscale=False,
+            hovertemplate="%{y} W%{x}: %{z}<extra></extra>",
         )
+    )
+    fig.update_layout(
+        height=150, margin={"l": 40, "r": 10, "t": 10, "b": 10}, xaxis={"side": "top"}
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
-        fig.update_layout(
-            height=200,
-            margin={"l": 60, "r": 20, "t": 20, "b": 20},
-            xaxis={"side": "top"},
+    # Projections inline
+    remaining = data["total_slice_problems"] - data["total_slice_completed"]
+    if remaining > 0:
+        weeks_est = estimate_completion_weeks(
+            remaining, data["velocity"]["avg_per_week"]
         )
-
-        st.plotly_chart(fig, use_container_width=True)
-
-        # Day of week summary
-        daily = data["velocity"]["daily"]
-        if daily:
-            power_day = data["velocity"]["power_day"]
-            st.caption(
-                f"Most productive day: **{power_day}** ({daily.get(power_day, 0)} problems)"
-            )
-    else:
-        st.info("Complete some problems to see activity data")
+        st.caption(
+            f"Est. {weeks_est} weeks @ current pace | Best day: {data['velocity']['power_day']}"
+        )
 
 
 def render_problem_table(data: dict):
-    """Render the filterable problem table."""
-    st.subheader("Problem List")
-
-    # Apply filters
+    """Render the filterable problem table with inline filters."""
     problems = data["problems"]
 
-    # Filter by slice
-    slice_filter = getattr(st.session_state, "slice_filter", "All")
-    if slice_filter == "Slice 1":
+    # Inline filters
+    col1, col2, col3, col4 = st.columns([1, 1, 1, 2])
+    with col1:
+        slice_filter = st.selectbox(
+            "Slice",
+            ["All", "S1", "S2", "S3", "Foundation"],
+            key="slice_f",
+            label_visibility="collapsed",
+        )
+    with col2:
+        pattern_ids = ["All"] + list({p["pattern_id"] for p in data["patterns"]})
+        pattern_filter = st.selectbox(
+            "Pattern", pattern_ids, key="pattern_f", label_visibility="collapsed"
+        )
+    with col3:
+        status_filter = st.selectbox(
+            "Status",
+            ["All", "Done", "Todo"],
+            key="status_f",
+            label_visibility="collapsed",
+        )
+
+    # Apply filters
+    if slice_filter == "S1":
         problems = [p for p in problems if p["slice"] == 1]
-    elif slice_filter == "Slice 2":
+    elif slice_filter == "S2":
         problems = [p for p in problems if p["slice"] == 2]
-    elif slice_filter == "Slice 3":
+    elif slice_filter == "S3":
         problems = [p for p in problems if p["slice"] == 3]
     elif slice_filter == "Foundation":
         problems = [p for p in problems if p["slice"] == 0]
 
-    # Filter by pattern
-    pattern_filter = getattr(st.session_state, "pattern_filter", "All")
     if pattern_filter != "All":
         problems = [p for p in problems if p["pattern_id"] == pattern_filter]
 
-    # Filter by status
-    status_filter = getattr(st.session_state, "status_filter", "All")
     if status_filter != "All":
         problems = [p for p in problems if p["status"] == status_filter]
 
-    # Prepare table data
+    # Compact table
     table_data = []
     for i, p in enumerate(problems, 1):
-        status_icon = "✅" if p["status"] == "Done" else "⬜"
-        time_str = f"{p['time_minutes']}m" if p["time_minutes"] else "-"
-        link = f"[🔗]({p['leetcode_url']})" if p["leetcode_url"] else ""
-
+        icon = "✅" if p["status"] == "Done" else "⬜"
         table_data.append(
             {
                 "#": i,
                 "Problem": p["problem_name"],
-                "Pattern": p["pattern_name"],
-                "Slice": str(p["slice"]) if p["slice"] > 0 else "-",
-                "Difficulty": p["difficulty"].capitalize(),
-                "Status": f"{status_icon} {p['status']}",
-                "Time": time_str,
-                "Link": link,
+                "Pattern": p["pattern_name"][:12],
+                "S": p["slice"] if p["slice"] > 0 else "-",
+                "D": p["difficulty"][0].upper(),
+                "": icon,
             }
         )
 
     if table_data:
-        st.dataframe(
-            table_data,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "#": st.column_config.NumberColumn("#", width="small"),
-                "Problem": st.column_config.TextColumn("Problem", width="large"),
-                "Pattern": st.column_config.TextColumn("Pattern", width="medium"),
-                "Slice": st.column_config.TextColumn("Slice", width="small"),
-                "Difficulty": st.column_config.TextColumn("Difficulty", width="small"),
-                "Status": st.column_config.TextColumn("Status", width="small"),
-                "Time": st.column_config.TextColumn("Time", width="small"),
-                "Link": st.column_config.LinkColumn("Link", width="small"),
-            },
-        )
-        st.caption(f"Showing {len(table_data)} problems")
+        st.dataframe(table_data, use_container_width=True, hide_index=True, height=300)
     else:
-        st.info("No problems match the current filters")
+        st.info("No problems match filters")
 
 
 if __name__ == "__main__":

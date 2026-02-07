@@ -1,15 +1,11 @@
-"""Agent core module for DSA Coach.
-
-This module contains the CoachAgent class and related components
-for the AI-powered coaching experience.
-"""
+"""Agent core module for DSA Coach."""
 
 
-# Defer imports to avoid circular dependencies at module load time
 def get_coach_agent():
-    from .agent import CoachAgent
+    """Return the primary agent class."""
+    from .sdk_agent import SDKCoachAgent
 
-    return CoachAgent
+    return SDKCoachAgent
 
 
 def get_session_manager():

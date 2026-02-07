@@ -8,14 +8,9 @@ This module provides data persistence through two mechanisms:
 - AI conversation sessions and messages
 - Concept understanding tracking
 
-**JSON Files** - Used by legacy CLI and static data:
+**JSON Files** - Used for static and file-based data:
 - quests.json: Static curriculum data (read-only)
-- progress.json: Legacy user progress (V1 CLI commands)
 - conversations/*.json: AI session persistence (optional backup)
-
-The dual system exists during migration from V1 (JSON) to V2 (SQLite).
-Legacy CLI commands use JSON for simplicity and backward compatibility.
-Agent mode uses SQLite for better concurrency and querying.
 """
 
 import contextlib
@@ -35,7 +30,7 @@ from .models import (
     UserProfile,
 )
 
-# ==================== JSON Storage (Legacy & Static Data) ====================
+# ==================== JSON Storage ====================
 
 
 def load_json(filepath: Path) -> dict[str, Any]:
@@ -43,7 +38,6 @@ def load_json(filepath: Path) -> dict[str, Any]:
 
     Used for:
     - quests.json (static curriculum data)
-    - progress.json (legacy V1 CLI progress)
     - conversations/*.json (AI session backups)
 
     Args:
@@ -65,7 +59,6 @@ def save_json(filepath: Path, data: dict[str, Any]) -> None:
     This reduces the risk of partially-written or corrupted data.
 
     Used for:
-    - progress.json (legacy V1 CLI progress)
     - conversations/*.json (AI session persistence)
 
     Args:
@@ -100,7 +93,7 @@ __all__ = [
     "PatternProgress",
     "QuestCompletion",
     "ConceptUnderstanding",
-    # Legacy JSON storage
+    # JSON helpers
     "load_json",
     "save_json",
 ]

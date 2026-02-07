@@ -1288,10 +1288,10 @@ def get_agent_system_prompt(
     dashboard_state: dict | None = None, student_context: str | None = None
 ) -> str:
     """
-    Get the system prompt for the CoachAgent with student context.
+    Get the system prompt for the coaching agent with student context.
 
     Args:
-        dashboard_state: Legacy dashboard state (deprecated, kept for compatibility)
+        dashboard_state: Dashboard state used as contextual fallback
         student_context: Comprehensive student context string from build_student_context()
 
     Returns:
@@ -1303,7 +1303,7 @@ def get_agent_system_prompt(
     if student_context:
         return base + "\n\n" + student_context
 
-    # Legacy fallback to dashboard_state
+    # Fallback to dashboard_state if student_context is unavailable
     if dashboard_state:
         profile = dashboard_state.get("profile", {})
         current = dashboard_state.get("current_quest")

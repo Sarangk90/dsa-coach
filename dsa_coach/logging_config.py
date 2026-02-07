@@ -8,7 +8,7 @@ Provides structured logging for:
 
 Logs are written to:
 - Console (INFO level by default)
-- File: logs/coach.log (DEBUG level, rotated daily)
+- File: logs/coach.log (INFO level, rotated daily)
 - File: logs/errors.log (ERROR level only)
 """
 
@@ -69,7 +69,7 @@ def setup_logging(
             backupCount=5,
             encoding="utf-8",
         )
-        main_handler.setLevel(logging.DEBUG)
+        main_handler.setLevel(logging.INFO)
         main_handler.setFormatter(logging.Formatter(FILE_FORMAT))
         logger.addHandler(main_handler)
 

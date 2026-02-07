@@ -336,7 +336,7 @@ def get_problem_by_id(problem_id: str, mode: str) -> dict[str, Any] | None:
 
 
 def get_all_problems(mode: str) -> list[dict[str, Any]]:
-    """Get flat list of all problems for a mode (for backward compatibility)."""
+    """Get a flat list of all problems for a mode."""
     curriculum = get_curriculum(mode)
     all_problems = []
 

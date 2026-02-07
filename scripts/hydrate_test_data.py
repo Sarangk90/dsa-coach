@@ -778,12 +778,14 @@ def verify_data(db: SyncDatabase, user_id: str = "test") -> None:
     milestones = db.get_recent_milestones(user_id, days=30)
     print(f"\n🏆 Recent Milestones: {len(milestones)}")
 
-    # build_progress_compat test
-    compat = db.build_progress_compat(user_id)
-    print("\n🔄 build_progress_compat():")
-    print(f"   patterns_completed: {compat['patterns_completed']}")
-    print(f"   patterns_in_progress: {compat['patterns_in_progress']}")
-    print(f"   problems_solved: {len(compat['problems_solved'])} quests")
+    mastered = [p.pattern_id for p in patterns if p.mastered]
+    in_progress = [
+        p.pattern_id for p in patterns if p.quests_completed > 0 and not p.mastered
+    ]
+    print("\n🔄 Pattern status:")
+    print(f"   patterns_completed: {mastered}")
+    print(f"   patterns_in_progress: {in_progress}")
+    print(f"   problems_solved: {len(completions)} quests")
 
 
 # =============================================================================
@@ -906,11 +908,8 @@ def main():
     print("✅ Test data hydration complete!")
     print("=" * 60)
     print("\nYou can now test:")
-    print("  python coach.py status")
-    print("  python coach.py next")
-    print("  python coach.py recall")
-    print("  python coach.py mistakes")
-    print("  python coach.py summary")
+    print("  python coach.py")
+    print("  python coach.py dashboard")
 
 
 if __name__ == "__main__":

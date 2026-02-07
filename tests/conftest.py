@@ -34,10 +34,6 @@ def mock_workspace(tmp_path):
     dsa_coach.paths.SOLUTIONS_DIR = temp_solutions
     dsa_coach.paths.CONVERSATIONS_DIR = temp_conversations
 
-    import dsa_coach.quests
-
-    dsa_coach.quests.QUESTS_FILE = tmp_path / "quests.json"  # type: ignore[attr-defined]
-
     yield tmp_path
 
     # Restore paths
@@ -64,7 +60,7 @@ def populated_progress(mock_workspace):
     """
     import json
 
-    # Inline default progress data (replaces deprecated get_default_progress)
+    # Inline default progress data for tests.
     from datetime import datetime
 
     now = datetime.now().isoformat()

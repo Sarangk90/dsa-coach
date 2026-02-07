@@ -1,6 +1,6 @@
 """Test harness for DSA Coach.
 
-This module provides a programmatic interface for testing the CoachAgent,
+This module provides a programmatic interface for testing the SDK agent,
 including conversation management and state inspection.
 """
 

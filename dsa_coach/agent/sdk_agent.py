@@ -59,12 +59,10 @@ class SDKCoachAgent:
         db: Database,
         user_id: str = "default",
         max_tool_iterations: int = 5,
-        use_consolidated_tools: bool = True,
     ):
         self.db = db
         self.user_id = user_id
         self.max_tool_iterations = max_tool_iterations
-        self.use_consolidated_tools = use_consolidated_tools
 
         self.tools = ToolRegistry()
         self.session = SessionManager(db, user_id)
@@ -113,33 +111,8 @@ class SDKCoachAgent:
         )
 
     def get_tools_for_llm(self) -> list[dict]:
-        """Get tool definitions filtered by current workflow mode."""
-        all_tools = self.tools.to_anthropic_tools()
-
-        if not self.use_consolidated_tools:
-            return all_tools
-
-        # Filter to consolidated tools only
-        consolidated_names = {
-            "get_dashboard",
-            "start_quest",
-            "complete_quest",
-            "get_hint",
-            "list_patterns",
-            "get_pattern_details",
-            "diagnose_understanding",
-            "record_learning",
-            "get_teaching_context",
-            "get_progress_summary",
-            "record_review",
-            "manage_solution",
-            "review_code",
-            "create_note",
-            "update_note",
-        }
-
-        filtered = [t for t in all_tools if t["name"] in consolidated_names]
-        return filtered if filtered else all_tools
+        """Get tool definitions for the SDK agent."""
+        return self.tools.to_anthropic_tools()
 
     async def _create_post_tool_hook(
         self,
@@ -233,7 +206,7 @@ class SDKCoachAgent:
             get_ai_response_with_tools,
         )
 
-        # Thinking stays enabled - legacy messages use plain string format (handled in session)
+        # Thinking stays enabled; session formatting handles replay requirements.
         try:
             response = await get_ai_response_with_tools(
                 messages=messages,
@@ -509,30 +482,3 @@ class SDKCoachAgent:
     def current_mode(self) -> SessionMode:
         """Get the current workflow mode."""
         return self.workflow.state.mode
-
-
-# Factory function to choose agent implementation
-def create_coach_agent(
-    db: Database,
-    user_id: str = "default",
-    use_sdk: bool = True,
-    **kwargs,
-) -> SDKCoachAgent | Any:
-    """Create a coach agent, optionally using SDK features.
-
-    Args:
-        db: Database connection
-        user_id: User identifier
-        use_sdk: Whether to use SDKCoachAgent (default True)
-        **kwargs: Additional arguments for agent
-
-    Returns:
-        Agent instance (SDKCoachAgent or legacy CoachAgent)
-    """
-    if use_sdk:
-        return SDKCoachAgent(db, user_id, **kwargs)
-
-    # Fall back to legacy agent
-    from .agent import CoachAgent
-
-    return CoachAgent(db, user_id, **kwargs)
