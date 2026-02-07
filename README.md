@@ -134,11 +134,22 @@ Each pattern includes:
 ```
 dsa-coach/
 ├── coach.py              # Agent entrypoint
-├── dsa_coach/            # Core package (agent, tools, storage, web)
+├── Makefile              # Common dev tasks (make check, make run, etc.)
 ├── quests.json           # Pattern curriculum and problems
 ├── coach.db              # Your progress (SQLite database, auto-generated)
 ├── pyproject.toml        # Dependencies and project config
 ├── env.example           # API key template
+├── dsa_coach/            # Core package
+│   ├── constants.py      # Business-rule constants
+│   ├── curriculum.py     # Cached curriculum data access
+│   ├── agent/            # AI agent (sdk_agent, loop, session, workflows, terminal)
+│   ├── tools/            # 13 agent tools split by category + registry
+│   ├── storage/          # SQLite DB with domain mixins + schema + models
+│   ├── ai/               # LLM client + system prompt + student context
+│   ├── mcp/              # MCP Obsidian integration
+│   └── web/              # Streamlit dashboard
+├── tests/                # Test suite (~157 tests)
+├── docs/                 # Design documentation (Google L6 curriculum, slices, journey)
 ├── solutions/            # Auto-created solution files by pattern
 └── scripts/
     └── hydrate_test_data.py  # Test data management

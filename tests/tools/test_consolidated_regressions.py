@@ -10,9 +10,9 @@ import pytest_asyncio
 
 from dsa_coach.storage.db import Database
 from dsa_coach.storage.models import PatternProgress, QuestCompletion
-from dsa_coach.tools import consolidated
+from dsa_coach.tools import progress_review as progress_review_mod
+from dsa_coach.tools import session_quest as session_quest_mod
 from dsa_coach.tools.consolidated import (
-    _get_all_quests_for_pattern,
     get_hint,
     get_teaching_context,
     manage_solution,
@@ -20,6 +20,7 @@ from dsa_coach.tools.consolidated import (
     record_review,
     start_quest,
 )
+from dsa_coach.tools.quest_helpers import _get_all_quests_for_pattern
 
 
 @pytest_asyncio.fixture
@@ -110,7 +111,7 @@ async def test_get_hint_auto_uses_progress_and_missing_level_falls_back(
     def fake_find_quest(_quest_id: str, _mode: str = "fast_track") -> dict | None:
         return monkeypatch_quest
 
-    monkeypatch.setattr(consolidated, "_find_quest", fake_find_quest)
+    monkeypatch.setattr(session_quest_mod, "_find_quest", fake_find_quest)
 
     await test_db.upsert_pattern_progress(
         PatternProgress(
@@ -194,7 +195,9 @@ async def test_manage_solution_round_trip_and_required_argument_checks(
     test_db: Database, tmp_path: Path, monkeypatch
 ):
     solutions_dir = tmp_path / "solutions"
-    monkeypatch.setattr(consolidated, "_get_solutions_dir", lambda: solutions_dir)
+    monkeypatch.setattr(
+        progress_review_mod, "_get_solutions_dir", lambda: solutions_dir
+    )
 
     listed_empty = await manage_solution(db=test_db, action="list")
     assert listed_empty.success

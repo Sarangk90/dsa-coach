@@ -50,6 +50,9 @@ conversations/
 # Backup files (migration artifacts)
 *.bak
 
+# Archive (research artifacts, backup files)
+archive/
+
 # OS
 .DS_Store
 Thumbs.db

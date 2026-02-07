@@ -38,46 +38,6 @@ def mock_workspace(tmp_path):
     dsa_coach.paths.SOLUTIONS_DIR = orig_solutions
 
 
-@pytest.fixture
-def clean_progress(mock_workspace):
-    """Returns a clean progress state (no file on disk yet).
-
-    DEPRECATED: Use coach_harness or hydrated_harness fixtures instead.
-    """
-    return mock_workspace / "progress.json"
-
-
-@pytest.fixture
-def populated_progress(mock_workspace):
-    """Creates a progress.json with some pre-filled data.
-
-    DEPRECATED: Use coach_harness or hydrated_harness fixtures instead.
-    """
-    import json
-
-    # Inline default progress data for tests.
-    from datetime import datetime
-
-    now = datetime.now().isoformat()
-    data = {
-        "profile": {
-            "name": "Test User",
-            "started": now,
-            "last_session": now,
-            "current_quest": None,
-            "active_mode": "fast_track",
-        },
-        "pattern_proficiency": {},
-        "completed_quests": {},
-    }
-
-    progress_path = mock_workspace / "progress.json"
-    with open(progress_path, "w") as f:
-        json.dump(data, f)
-
-    return progress_path
-
-
 # =============================================================================
 # AGENT TEST HARNESS FIXTURES
 # =============================================================================

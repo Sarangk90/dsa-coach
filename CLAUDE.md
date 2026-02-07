@@ -29,6 +29,12 @@ python test_harness.py hydrate     # Populate test data
 ruff check . --fix                 # Lint + auto-fix
 ruff format .                      # Format (88 char lines, double quotes)
 mypy dsa_coach/                    # Type check
+
+# Makefile shortcuts
+make check                         # lint + format + typecheck + test
+make run                           # python coach.py
+make dashboard                     # python coach.py dashboard
+make clean                         # Remove __pycache__, .pytest_cache, etc.
 ```
 
 **pytest config:** `asyncio_mode = "auto"`, integration tests marked with `@pytest.mark.integration` (skipped by default), harness tests in `tests/harness/` ignored by default.
@@ -80,22 +86,37 @@ User Input → prompt_toolkit → Agent Loop → SDKCoachAgent.run()
 ### Module Boundaries
 
 - **`coach.py`** — Thin CLI entrypoint. Two modes: agent (default) or `dashboard`.
+- **`dsa_coach/constants.py`** — Named business-rule constants (thresholds, intervals, validation sets).
+- **`dsa_coach/curriculum.py`** — Canonical curriculum data access (cached). Single source for quest/pattern lookup from `quests.json`.
 - **`dsa_coach/agent/`** — AI agent system
   - `sdk_agent.py`: `SDKCoachAgent` — sole agent implementation using Claude Agent SDK. Handles tool orchestration loop (up to 5 iterations), extended thinking with signature replay, workflow state persistence.
   - `loop.py`: Main interactive loop. Special commands: `quit/exit`, `help`, `dashboard`, `/resume`. Uses `prompt_toolkit` for multiline input (Ctrl+J newline, Enter submit).
   - `session.py`: `SessionManager` — always starts fresh sessions. `/resume` explicitly restores previous sessions. Stores thinking + thinking_signature for extended thinking replay.
   - `workflows.py`: Session mode state machine (GREETING → PRACTICING/LEARNING/REVIEWING/SIMULATING). Mode-specific tool availability sets.
-  - `hooks.py`: Hook type definitions (not currently imported — all hooks are internal to tools).
   - `terminal.py`: Rich terminal UI. Session timer, token usage tracking (with 75%+ warning), session picker for `/resume`, conversation history rendering.
-- **`dsa_coach/tools/`** — Agent-callable functions
-  - `consolidated.py`: 13 workflow-level tools (all async, `category="consolidated"`). Hooks are INTERNAL to tools (deterministic follow-ups like logging, milestone checks, note suggestions).
+- **`dsa_coach/tools/`** — Agent-callable functions (13 tools, all async, `category="consolidated"`)
+  - `consolidated.py`: Re-export facade — imports all tools from the category modules below.
+  - `session_quest.py`: 4 tools — `get_dashboard`, `start_quest`, `complete_quest`, `get_hint`.
+  - `pattern_learning.py`: 5 tools — `list_patterns`, `get_pattern_details`, `diagnose_understanding`, `record_learning`, `get_teaching_context`.
+  - `progress_review.py`: 4 tools — `get_progress_summary`, `record_review`, `manage_solution`, `review_code`.
+  - `quest_helpers.py`: Shared helpers — quest lookup, ID normalization, recommendation engine, `should_create_note()`.
   - `registry.py`: `@tool` decorator, `ToolRegistry`, `ToolResult`. Auto-injects `db` and `user_id` params.
 - **`dsa_coach/mcp/`** — MCP integration for Obsidian notes (`client.py`: spawns `mcp-obsidian` server, discovers tools, routes calls). Gracefully disabled when `OBSIDIAN_API_KEY` not set.
-- **`dsa_coach/storage/`** — Database module (`db.py` async, `sync.py` sync wrapper, `models.py` Pydantic models, `migrations.py` JSON→SQLite migration)
-- **`dsa_coach/domain/`** — Pure business logic (no I/O). Spaced repetition scheduling only.
-- **`dsa_coach/ai/`** — LLM provider abstraction (`client.py`: Anthropic `claude-sonnet-4-5` default, OpenAI `gpt-5.2`, extended thinking with configurable budget) and system prompts (`prompts.py`: Google L6 interview prep, 13 teaching pillars, slice progression).
+- **`dsa_coach/storage/`** — Database module (mixin-based architecture)
+  - `db.py`: `Database` class composed from 5 domain mixins + connection management + migrations.
+  - `db_sessions.py`: `SessionMixin` — session and message CRUD.
+  - `db_profiles.py`: `ProfileMixin` — user profile CRUD.
+  - `db_progress.py`: `ProgressMixin` — pattern progress and derived stats.
+  - `db_quests.py`: `QuestMixin` — quest completion CRUD.
+  - `db_learning.py`: `LearningMixin` — concepts, mistakes, milestones, teaching history, daily logs.
+  - `schema.py`: SQL schema definition (`SCHEMA_SQL` constant).
+  - `sync.py`: `SyncDatabase` sync wrapper, `models.py`: Pydantic models, `migrations.py`: JSON→SQLite migration.
+- **`dsa_coach/ai/`** — LLM provider and system prompts
+  - `client.py`: Anthropic `claude-sonnet-4-5` default, OpenAI `gpt-5.2`, extended thinking with configurable budget.
+  - `system_prompt.py`: Static `COACH_AGENT_SYSTEM_PROMPT` (~740 lines, 13 teaching pillars).
+  - `student_context.py`: `build_student_context()` + format helpers for dynamic context injection.
+  - `prompts.py`: Re-export facade + `get_agent_system_prompt()` composition function.
 - **`dsa_coach/web/`** — Streamlit dashboard (uses `SyncDatabase`)
-- **`dsa_coach/obsidian/`** — Obsidian note analysis only (`analyzer.py`: `should_create_note()` used by `complete_quest` hook)
 
 ### Consolidated Tools (13 local + MCP)
 
@@ -134,7 +155,7 @@ async def my_tool(db: Database, user_id: str = "default", my_param: str = "") ->
     return ToolResult(success=True, data={"key": "value"})
 ```
 
-- Add to `consolidated.py` as workflow-level operations
+- Add to the appropriate category file (`session_quest.py`, `pattern_learning.py`, or `progress_review.py`) and re-export from `consolidated.py`
 - Handle ID normalization for backward compatibility (`id_mappings.py`)
 - Return structured data in `ToolResult.data` — never print directly
 - `db` and `user_id` params are injected by the registry executor (skip in schema)
@@ -160,4 +181,3 @@ async def my_tool(db: Database, user_id: str = "default", my_param: str = "") ->
 
 - Single user support (hardcoded `user_id="default"`)
 - AI features require external API keys
-- `PROGRESS_FILE` constant in `paths.py` is legacy (unused, kept for migration code)

@@ -7,9 +7,19 @@ from typing import Any
 from . import paths
 from .storage import load_json
 
+# Module-level cache for curriculum data
+_curriculum_cache: dict[str, Any] | None = None
+
 
 def get_curriculum_data() -> dict[str, Any]:
-    """Load the full curriculum data from quests.json (V2 structure only)."""
+    """Load the full curriculum data from quests.json (V2 structure only).
+
+    Data is cached after first load for performance.
+    """
+    global _curriculum_cache
+    if _curriculum_cache is not None:
+        return _curriculum_cache
+
     data = load_json(paths.QUESTS_FILE)
 
     # Ensure V2 structure
@@ -17,6 +27,7 @@ def get_curriculum_data() -> dict[str, Any]:
     assert "quests" not in data, "V1 'quests' array no longer supported"
     assert "days" not in data, "V1 'days' structure no longer supported"
 
+    _curriculum_cache = data
     return data
 
 

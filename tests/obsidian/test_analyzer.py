@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dsa_coach.obsidian.analyzer import should_create_note
+from dsa_coach.tools.quest_helpers import should_create_note
 
 
 def test_should_create_note_rejects_short_sessions():

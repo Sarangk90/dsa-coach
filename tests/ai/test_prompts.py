@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import pytest
 
 from dsa_coach.ai import prompts
+from dsa_coach.ai import student_context as student_context_mod
 
 
 def test_format_mastery_snapshot_sorts_and_labels_levels():
@@ -67,10 +68,10 @@ def test_format_helpers_cover_none_and_mixed_input_shapes():
 
 @pytest.mark.asyncio
 async def test_compute_slice_progress_handles_missing_file(monkeypatch, tmp_path):
-    fake_prompts = tmp_path / "pkg" / "dsa_coach" / "ai" / "prompts.py"
+    fake_prompts = tmp_path / "pkg" / "dsa_coach" / "ai" / "student_context.py"
     fake_prompts.parent.mkdir(parents=True, exist_ok=True)
     fake_prompts.write_text("# placeholder")
-    monkeypatch.setattr(prompts, "__file__", str(fake_prompts))
+    monkeypatch.setattr(student_context_mod, "__file__", str(fake_prompts))
 
     class FakeDB:
         async def get_completed_quests(self, _user_id):
@@ -86,7 +87,7 @@ async def test_compute_slice_progress_handles_missing_file(monkeypatch, tmp_path
 
 @pytest.mark.asyncio
 async def test_compute_slice_progress_reads_slice_tags(monkeypatch, tmp_path):
-    fake_prompts = tmp_path / "dsa_coach" / "ai" / "prompts.py"
+    fake_prompts = tmp_path / "dsa_coach" / "ai" / "student_context.py"
     fake_prompts.parent.mkdir(parents=True, exist_ok=True)
     fake_prompts.write_text("# placeholder")
 
@@ -113,7 +114,7 @@ async def test_compute_slice_progress_reads_slice_tags(monkeypatch, tmp_path):
 """.strip()
     )
 
-    monkeypatch.setattr(prompts, "__file__", str(fake_prompts))
+    monkeypatch.setattr(student_context_mod, "__file__", str(fake_prompts))
 
     class FakeDB:
         async def get_completed_quests(self, _user_id):
@@ -173,7 +174,9 @@ async def test_build_student_context_includes_key_sections(monkeypatch):
             "slice-3": {"done": 0, "total": 5},
         }
 
-    monkeypatch.setattr(prompts, "_compute_slice_progress", fake_slice_progress)
+    monkeypatch.setattr(
+        student_context_mod, "_compute_slice_progress", fake_slice_progress
+    )
 
     context = await prompts.build_student_context(FakeDB(), "u1")
     assert "YOUR STUDENT: Alice" in context

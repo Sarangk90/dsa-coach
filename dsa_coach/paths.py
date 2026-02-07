@@ -13,5 +13,4 @@ def get_repo_root() -> Path:
 
 BASE_DIR: Path = get_repo_root()
 QUESTS_FILE: Path = BASE_DIR / "quests.json"
-PROGRESS_FILE: Path = BASE_DIR / "progress.json"
 SOLUTIONS_DIR: Path = BASE_DIR / "solutions"
