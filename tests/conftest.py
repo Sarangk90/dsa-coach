@@ -14,8 +14,6 @@ def mock_workspace(tmp_path):
     # Create temp directories
     temp_solutions = tmp_path / "solutions"
     temp_solutions.mkdir()
-    temp_conversations = tmp_path / "conversations"
-    temp_conversations.mkdir()
 
     # Copy quests.json (read-only reference)
     shutil.copy(paths.QUESTS_FILE, tmp_path / "quests.json")
@@ -27,12 +25,10 @@ def mock_workspace(tmp_path):
     orig_base_dir = dsa_coach.paths.BASE_DIR
     orig_quests = dsa_coach.paths.QUESTS_FILE
     orig_solutions = dsa_coach.paths.SOLUTIONS_DIR
-    orig_conversations = dsa_coach.paths.CONVERSATIONS_DIR
 
     dsa_coach.paths.BASE_DIR = tmp_path
     dsa_coach.paths.QUESTS_FILE = tmp_path / "quests.json"
     dsa_coach.paths.SOLUTIONS_DIR = temp_solutions
-    dsa_coach.paths.CONVERSATIONS_DIR = temp_conversations
 
     yield tmp_path
 
@@ -40,7 +36,6 @@ def mock_workspace(tmp_path):
     dsa_coach.paths.BASE_DIR = orig_base_dir
     dsa_coach.paths.QUESTS_FILE = orig_quests
     dsa_coach.paths.SOLUTIONS_DIR = orig_solutions
-    dsa_coach.paths.CONVERSATIONS_DIR = orig_conversations
 
 
 @pytest.fixture

@@ -33,7 +33,7 @@ def get_vault_path() -> Path | None:
     return path if path.exists() else None
 
 
-def ensure_vault_structure() -> dict[str, Path | None | str]:
+def _ensure_vault_structure() -> dict[str, Path | None | str]:
     """Ensure Patterns/ and Problems/ subdirectories exist.
 
     Returns:
@@ -79,7 +79,7 @@ def write_note(
     Returns:
         (success: bool, message: str, filepath: Path | None)
     """
-    structure = ensure_vault_structure()
+    structure = _ensure_vault_structure()
 
     if not structure["vault"]:
         return (False, "OBSIDIAN_VAULT_PATH not configured in .env", None)
@@ -106,51 +106,6 @@ def write_note(
         return (True, f"Note created: {filepath}", filepath)
     except Exception as e:
         return (False, f"Failed to write note: {e}", None)
-
-
-def list_existing_notes(
-    note_type: Literal["pattern", "problem", "all"] = "all",
-) -> list[dict[str, str]]:
-    """List existing notes in vault.
-
-    Args:
-        note_type: "pattern", "problem", or "all"
-
-    Returns:
-        List of dicts with 'name', 'type', 'path'
-    """
-    structure = ensure_vault_structure()
-
-    if not structure["vault"]:
-        return []
-
-    notes = []
-
-    if note_type in ("pattern", "all") and structure["patterns"]:
-        patterns_dir = structure["patterns"]
-        for path in patterns_dir.rglob("*.md"):
-            notes.append(
-                {
-                    "name": path.stem,
-                    "type": "pattern",
-                    "path": str(path),
-                    "relative_path": str(path.relative_to(structure["vault"])),
-                }
-            )
-
-    if note_type in ("problem", "all") and structure["problems"]:
-        problems_dir = structure["problems"]
-        for path in problems_dir.glob("*.md"):
-            notes.append(
-                {
-                    "name": path.stem,
-                    "type": "problem",
-                    "path": str(path),
-                    "relative_path": str(path.relative_to(structure["vault"])),
-                }
-            )
-
-    return sorted(notes, key=lambda x: x["name"])
 
 
 def update_note(
@@ -194,7 +149,7 @@ def note_exists(
     filename: str, note_type: Literal["pattern", "problem"] = "pattern"
 ) -> bool:
     """Check if a note already exists."""
-    structure = ensure_vault_structure()
+    structure = _ensure_vault_structure()
     target_dir = (
         structure["patterns"] if note_type == "pattern" else structure["problems"]
     )

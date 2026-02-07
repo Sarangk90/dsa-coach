@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DSA Coach is an adaptive CLI tool for mastering Data Structures, Algorithms, and System Design for Principal Engineer interviews. Features AI-powered mentorship, spaced repetition, confidence-based learning (0-100), and a comprehensive pattern-first curriculum.
+DSA Coach is an adaptive CLI tool for mastering Data Structures, Algorithms, and System Design for Principal Engineer interviews. Features AI-powered mentorship, spaced repetition, progress-based learning (0-100), and a comprehensive pattern-first curriculum.
 
 ## Core Development Principles
 
@@ -12,7 +12,7 @@ DSA Coach is an adaptive CLI tool for mastering Data Structures, Algorithms, and
 - Prefer small, reversible changes over large refactors
 - Optimize for clarity and future maintainability
 - Keep user-facing CLI output stable and readable
-- Preserve backward compatibility for persisted data (SQLite schema, conversation files)
+- Preserve backward compatibility for persisted data (SQLite schema)
 - Avoid introducing new dependencies without clear UX or maintenance payoff
 
 **Code Organization:**
@@ -23,7 +23,6 @@ DSA Coach is an adaptive CLI tool for mastering Data Structures, Algorithms, and
 
 **Data Safety:**
 - `coach.db` is user data - never manually edit to "make things work"
-- `conversations/*.json` are user data - preserve forward/backward compatibility
 - `quests.json` is versioned content - keep schema consistent
 - When schema changes are needed, implement safe migrations with fallbacks
 
@@ -41,33 +40,30 @@ DSA Coach is an adaptive CLI tool for mastering Data Structures, Algorithms, and
 
 ### ALWAYS Use the Right Database Class
 
-1. **ALWAYS use `SyncDatabase`** for CLI commands (synchronous code)
-2. **ALWAYS use `Database`** for agent tools (async code)
+1. **ALWAYS use `Database`** for agent tools (async code) — this is the primary interface
+2. **ALWAYS use `SyncDatabase`** for synchronous code (web dashboard, scripts)
 
 ### Quick Reference
 
 ```python
-# For CLI commands (synchronous)
-from dsa_coach.storage.sync import SyncDatabase
-
-def my_command():
-    with SyncDatabase() as db:
-        profile = db.get_or_create_profile()
-        patterns = db.get_all_pattern_progress()
-        completed = db.get_completed_quests()
-        due_reviews = db.get_due_reviews()
-
-        # For functions expecting legacy progress dict format:
-        progress_compat = db.build_progress_compat()
-
-# For agent tools (async)
+# For agent tools (async) — primary interface
 from dsa_coach.storage.db import Database
 
 @tool(name="my_tool", description="...", category="...")
 async def my_tool(db: Database, user_id: str = "default") -> ToolResult:
     profile = await db.get_or_create_profile(user_id)
-    progress_compat = await db.build_progress_compat(user_id)
+    patterns = await db.get_all_pattern_progress(user_id)
     return ToolResult(success=True, data={...})
+
+# For synchronous code (dashboard, scripts)
+from dsa_coach.storage.sync import SyncDatabase
+
+def load_data():
+    with SyncDatabase() as db:
+        profile = db.get_or_create_profile()
+        patterns = db.get_all_pattern_progress()
+        completed = db.get_completed_quests()
+        due_reviews = db.get_due_reviews()
 ```
 
 ### Key Database Methods
@@ -80,20 +76,17 @@ async def my_tool(db: Database, user_id: str = "default") -> ToolResult:
 | `get_due_reviews()` | Get quests due for spaced repetition |
 | `upsert_pattern_progress(progress)` | Create/update pattern progress |
 | `upsert_quest_completion(completion)` | Create/update quest completion |
-| `build_progress_compat()` | Build legacy-compatible progress dict |
 
-## ⚠️ CRITICAL: Recent Major Changes (January 2025)
+## Agent Architecture
 
-### Claude Agent SDK Integration
+### Claude Agent SDK
 
-The project now uses the **Claude Agent SDK** for improved tool orchestration:
+The project uses the **Claude Agent SDK** for tool orchestration:
 
-- **Feature Flag**: `DSA_COACH_USE_SDK` environment variable (default: enabled)
-- **New Agent**: `SDKCoachAgent` in `dsa_coach/agent/sdk_agent.py`
-- **Legacy Agent**: `CoachAgent` in `dsa_coach/agent/agent.py` (fallback)
-- **Tool Consolidation**: Reduced from 41 atomic tools to **15 workflow-level tools**
+- **Agent**: `SDKCoachAgent` in `dsa_coach/agent/sdk_agent.py` (sole agent implementation)
+- **Tools**: 15 workflow-level tools in `dsa_coach/tools/consolidated.py`
 
-### Consolidated Tools Architecture
+### Consolidated Tools
 
 The agent uses 15 high-level workflow tools (`dsa_coach/tools/consolidated.py`):
 
@@ -142,16 +135,11 @@ cp env.example .env
 ### Running the Application
 
 ```bash
-# Launch the interactive AI coaching agent (default)
+# Launch the interactive AI coaching agent
 python coach.py
 
-# Force use of legacy agent (without SDK)
-DSA_COACH_USE_SDK=0 python coach.py
-
-# Legacy CLI commands (use --legacy flag)
-python coach.py --legacy status
-python coach.py --legacy next
-python coach.py --legacy done
+# Launch the Streamlit progress dashboard
+python coach.py dashboard
 ```
 
 ### Testing
@@ -172,54 +160,44 @@ python test_harness.py hydrate  # Populate test data
 
 ### Core Components
 
-**coach.py** - Main CLI orchestrator
-- Command dispatcher, progress tracking (SQLite), quest selection algorithm
+**coach.py** - Thin CLI entrypoint
+- Launches the agent interactive loop or Streamlit dashboard
 
 **quests.json** - Quest database
 - Hierarchical: curriculum → patterns → concepts → problems
 - Human-readable IDs: `sliding_window_minimum_window_substring`
 
 **coach.db** - SQLite database (SINGLE SOURCE OF TRUTH)
-- Tables: user_profiles, pattern_progress, quest_completions, concept_understanding, sessions, daily_logs, mistakes, milestones, teaching_history
+- Tables: sessions, messages, user_profiles, pattern_progress, quest_completions, concept_understanding, mistakes, daily_logs, milestones, teaching_history, schema_version
 
 **Storage Module** (`dsa_coach/storage/`)
 - **db.py**: Async `Database` class for agent tools
-- **sync.py**: Sync `SyncDatabase` wrapper for CLI commands
+- **sync.py**: Sync `SyncDatabase` wrapper for dashboard/scripts
 - **models.py**: Pydantic models for all entities
 
 ### Module Boundaries & Architecture Patterns
 
 **Separation of Concerns:**
 
-- **Commands** (`dsa_coach/commands/`): CLI handlers
-  - Use `SyncDatabase` for data operations
-  - Handle terminal output and side effects
-
 - **Tools** (`dsa_coach/tools/`): Agent-callable functions
-  - **consolidated.py**: 15 workflow-level tools (PREFERRED)
+  - **consolidated.py**: 15 workflow-level tools
   - **registry.py**: Tool registration with `@tool` decorator
   - All tools are async, use `Database` class
   - Return `ToolResult` with structured data
 
 - **Domain** (`dsa_coach/domain/`): Pure business logic
   - No I/O, no printing, no API calls
-  - Quest selection, spaced repetition scheduling, XP calculations
+  - Spaced repetition scheduling, XP calculations
 
 - **Agent** (`dsa_coach/agent/`): AI agent system
-  - `sdk_agent.py`: SDKCoachAgent (default)
-  - `agent.py`: CoachAgent (legacy fallback)
+  - `sdk_agent.py`: SDKCoachAgent (sole agent implementation)
+  - `loop.py`: Main interactive loop
+  - `session.py`: Session management
   - `workflows.py`: Session modes and state machine
   - `hooks.py`: PostToolUse hooks for deterministic follow-ups
   - `terminal.py`: Rich terminal UI rendering
 
-**Data Flow Pattern:**
-```
-User Input → CLI Command → Domain Logic → Database Operations → Side Effects
-                    ↓
-              Return Result → Format Output → Display to User
-```
-
-**Agent Flow Pattern:**
+**Data Flow:**
 ```
 User Message → Agent → Tool Selection → Database Operations → Return ToolResult
                  ↓
@@ -230,52 +208,75 @@ User Message → Agent → Tool Selection → Database Operations → Return Too
 
 ```
 dsa-coach/
-├── coach.py              # CLI entrypoint (agent mode default)
-├── mentor.py             # AI mentorship layer (legacy)
+├── coach.py              # Thin CLI entrypoint (agent + dashboard)
 ├── coach.db              # SQLite database - SINGLE SOURCE OF TRUTH
+├── test_harness.py       # Agent testing CLI
+├── quests.json           # Quest database
 ├── dsa_coach/
+│   ├── main.py           # Package CLI entrypoint
+│   ├── agent/            # AI agent system
+│   │   ├── sdk_agent.py  # SDKCoachAgent (sole agent)
+│   │   ├── loop.py       # Main interactive loop
+│   │   ├── session.py    # Session management
+│   │   ├── terminal.py   # Rich terminal UI
+│   │   ├── hooks.py      # PostToolUse hooks
+│   │   └── workflows.py  # Session modes & state machine
+│   ├── tools/            # Agent-callable tools
+│   │   ├── consolidated.py  # 15 workflow-level tools
+│   │   └── registry.py     # Tool registration & execution
 │   ├── storage/          # Database module
 │   │   ├── db.py         # Async Database (agent tools)
-│   │   ├── sync.py       # SyncDatabase (CLI commands)
-│   │   └── models.py     # Pydantic models
-│   ├── commands/         # CLI handlers (use SyncDatabase)
-│   ├── tools/            # Agent tools (use Database)
-│   │   ├── consolidated.py  # 15 workflow tools (PREFERRED)
-│   │   └── registry.py   # Tool registration
-│   ├── agent/            # AI agent system
-│   │   ├── sdk_agent.py  # SDKCoachAgent (default)
-│   │   ├── agent.py      # CoachAgent (fallback)
-│   │   └── workflows.py  # Session modes
+│   │   ├── sync.py       # SyncDatabase (dashboard, scripts)
+│   │   ├── models.py     # Pydantic models
+│   │   └── migrations.py # JSON→SQLite migration
+│   ├── ai/               # AI client & system prompts
+│   │   ├── client.py     # LLM provider abstraction
+│   │   └── prompts.py    # System prompts & student context
 │   ├── domain/           # Pure business logic
-│   └── ai/               # Legacy AI layer
-├── scripts/
-│   └── hydrate_test_data.py  # Test data population
-├── test_harness.py       # Agent testing CLI
+│   │   └── scheduling.py # Spaced repetition
+│   ├── obsidian/         # Obsidian note integration
+│   │   ├── analyzer.py   # Solution analysis
+│   │   ├── note_generator.py # Note content generation
+│   │   └── writer.py     # File writing
+│   ├── web/              # Streamlit dashboard
+│   │   ├── dashboard.py  # Dashboard app
+│   │   └── data.py       # Data loading
+│   ├── curriculum.py     # Quest loading & lookup
+│   ├── id_mappings.py    # Legacy→slug ID conversion
+│   ├── solution.py       # Solution file management
+│   ├── paths.py          # Path constants
+│   ├── ui.py             # CLI formatting utilities
+│   └── logging_config.py # Logging setup
+├── scripts/              # Maintenance scripts
+│   ├── hydrate_test_data.py  # Test data population
+│   └── cleanup_db.py        # Database cleanup
 ├── tests/                # Test suite
-├── quests.json           # Quest database
 └── solutions/            # User solution files
 ```
 
-### Key Patterns (Fast Track Mode)
+### Key Patterns (Fast Track — Google L6 Sprint)
 
-9 patterns, 80 hours:
-- **big_o_analysis**, **arrays_hashing**, **two_pointers**, **sliding_window**, **binary_search**, **recursion**, **trees**, **graphs**, **dynamic_programming**
+16 patterns, 120 hours, 85 problems:
+- **big_o_analysis**, **arrays_hashing**, **two_pointers**, **sliding_window**, **binary_search**, **recursion**, **trees**, **graphs**, **dynamic_programming**, **design**, **backtracking**, **heaps**, **linked_lists**, **monotonic_stack**, **intervals**, **trie**
 
 ### Adaptive Learning Algorithm
 
 Quest selection priority:
 1. Spaced repetition items due today
-2. Patterns with lowest confidence scores
+2. Patterns with lowest progress scores
 3. Next unstarted quest in curriculum order
 
-Confidence updates: +15 (no hints), +10 (with hints), capped at 100
+Progress = `(earned_points / (quests_total * 15)) * 100`, where each quest earns 15 points (no hints) or 10 points (with hints), capped at 100
 
 ### Spaced Repetition Schedule
 
+Intervals: `[1, 3, 7, 14, 30]` days, indexed by `review_count`:
 - 1st review: 1 day after completion
 - 2nd review: 3 days later
 - 3rd review: 7 days later
-- Long-term: 14 day intervals
+- 4th review: 14 days later
+- Long-term: 30 day intervals
+- Failed review resets to 1 day
 
 ## Development Conventions
 
@@ -341,7 +342,7 @@ async def my_tool(
 ```
 
 **Tool Best Practices:**
-- Prefer adding to `consolidated.py` as workflow-level operations
+- Add to `consolidated.py` as workflow-level operations
 - Include deterministic follow-ups (logging, milestones) within the tool
 - Handle ID normalization for backward compatibility
 - Return structured data in `ToolResult.data`
@@ -350,7 +351,6 @@ async def my_tool(
 ## Environment Variables
 
 **Agent Configuration:**
-- `DSA_COACH_USE_SDK`: "1" (default) or "0" for legacy agent
 - `LLM_PROVIDER`: "anthropic" (default) or "openai"
 - `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`: API keys
 
@@ -364,6 +364,4 @@ async def my_tool(
 - SQLite database not backed up automatically
 - Single user support (hardcoded `user_id="default"`)
 - AI features require external API keys
-- Legacy `curriculum.py` functions expect progress dict (use `build_progress_compat()`)
 - ID migration is backward compatible (old `ft_*` IDs auto-converted)
-- Feature flag `DSA_COACH_USE_SDK` controls agent implementation (SDK by default)
