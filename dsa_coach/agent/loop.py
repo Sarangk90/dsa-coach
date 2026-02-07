@@ -41,6 +41,7 @@ async def run_agent_loop(db_path: Path | None = None) -> None:
 
     # Initialize database
     db = Database(db_path) if db_path else Database()
+    agent: SDKCoachAgent | None = None
 
     try:
         await db.connect()
@@ -205,6 +206,8 @@ async def run_agent_loop(db_path: Path | None = None) -> None:
         ui.render_goodbye()
 
     finally:
+        if agent:
+            await agent._mcp.close()
         await db.close()
 
 

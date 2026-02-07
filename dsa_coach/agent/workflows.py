@@ -70,12 +70,11 @@ TOOL_AVAILABILITY: dict[SessionMode, set[str]] = {
 }
 
 # Universal tools available in all modes
+# Note: Obsidian note tools are now provided via MCP (not in this set)
 UNIVERSAL_TOOLS: set[str] = {
     "get_dashboard",
     "list_patterns",
     "get_pattern_details",
-    "create_note",
-    "update_note",
 }
 
 

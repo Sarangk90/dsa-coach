@@ -148,7 +148,7 @@ class ToolRegistry:
         return tools
 
     def list_consolidated_tools(self) -> list[RegisteredTool]:
-        """List only the 15 consolidated workflow-level tools."""
+        """List only the 13 consolidated workflow-level tools."""
         return self.list_tools(category="consolidated")
 
     def list_categories(self) -> list[str]:

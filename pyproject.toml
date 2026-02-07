@@ -18,6 +18,7 @@ dependencies = [
     "pydantic>=2.0.0",
     "aiosqlite>=0.21.0",
     "claude-agent-sdk>=0.1.19",
+    "mcp>=1.0.0",
     "streamlit>=1.32.0",
     "plotly>=5.18.0",
 ]

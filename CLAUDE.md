@@ -88,22 +88,23 @@ User Input → prompt_toolkit → Agent Loop → SDKCoachAgent.run()
   - `hooks.py`: Hook type definitions (not currently imported — all hooks are internal to tools).
   - `terminal.py`: Rich terminal UI. Session timer, token usage tracking (with 75%+ warning), session picker for `/resume`, conversation history rendering.
 - **`dsa_coach/tools/`** — Agent-callable functions
-  - `consolidated.py`: 15 workflow-level tools (all async, `category="consolidated"`). Hooks are INTERNAL to tools (deterministic follow-ups like logging, milestone checks, note suggestions).
+  - `consolidated.py`: 13 workflow-level tools (all async, `category="consolidated"`). Hooks are INTERNAL to tools (deterministic follow-ups like logging, milestone checks, note suggestions).
   - `registry.py`: `@tool` decorator, `ToolRegistry`, `ToolResult`. Auto-injects `db` and `user_id` params.
+- **`dsa_coach/mcp/`** — MCP integration for Obsidian notes (`client.py`: spawns `mcp-obsidian` server, discovers tools, routes calls). Gracefully disabled when `OBSIDIAN_API_KEY` not set.
 - **`dsa_coach/storage/`** — Database module (`db.py` async, `sync.py` sync wrapper, `models.py` Pydantic models, `migrations.py` JSON→SQLite migration)
 - **`dsa_coach/domain/`** — Pure business logic (no I/O). Spaced repetition scheduling only.
 - **`dsa_coach/ai/`** — LLM provider abstraction (`client.py`: Anthropic `claude-sonnet-4-5` default, OpenAI `gpt-5.2`, extended thinking with configurable budget) and system prompts (`prompts.py`: Google L6 interview prep, 13 teaching pillars, slice progression).
 - **`dsa_coach/web/`** — Streamlit dashboard (uses `SyncDatabase`)
-- **`dsa_coach/obsidian/`** — Obsidian note integration (analysis, generation, file writing)
+- **`dsa_coach/obsidian/`** — Obsidian note analysis only (`analyzer.py`: `should_create_note()` used by `complete_quest` hook)
 
-### Consolidated Tools (15 total)
+### Consolidated Tools (13 local + MCP)
 
 - **Session & Quest (4)**: `get_dashboard`, `start_quest`, `complete_quest`, `get_hint`
 - **Pattern (2)**: `list_patterns`, `get_pattern_details`
 - **Learning (3)**: `diagnose_understanding`, `record_learning`, `get_teaching_context`
 - **Progress (2)**: `get_progress_summary`, `record_review`
 - **Code (2)**: `manage_solution`, `review_code`
-- **Notes (2)**: `create_note`, `update_note`
+- **Notes**: Provided by `mcp-obsidian` MCP server when `OBSIDIAN_API_KEY` is set
 
 ### Workflow State Machine
 
@@ -114,7 +115,7 @@ Session modes in `dsa_coach/agent/workflows.py`:
 - **REVIEWING**: Spaced repetition review
 - **SIMULATING**: Mock interview mode
 
-Tool availability is mode-specific. Universal tools (available in all modes): `get_dashboard`, `list_patterns`, `get_pattern_details`, `create_note`, `update_note`.
+Tool availability is mode-specific. Universal tools (available in all modes): `get_dashboard`, `list_patterns`, `get_pattern_details`. Obsidian MCP tools are available in all modes when connected.
 
 ### ID Migration
 
@@ -152,6 +153,8 @@ async def my_tool(db: Database, user_id: str = "default", my_param: str = "") ->
 - `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`: API keys
 - `COACH_WIDTH`: Terminal width (default: 88)
 - `THINKING_BUDGET`: Extended thinking token budget (default: 10000)
+- `OBSIDIAN_API_KEY`: Obsidian Local REST API key (enables MCP note tools)
+- `OBSIDIAN_MCP_COMMAND`: Command to run mcp-obsidian (default: "uvx")
 
 ## Known Limitations
 

@@ -152,11 +152,17 @@ class FakeSessionManager:
         return self._messages
 
 
+class FakeMCP:
+    async def close(self):
+        pass
+
+
 class FakeAgent:
     def __init__(self, db: FakeDB):
         self.db = db
         self.dashboard = {"profile": {"quests_completed": 0}}
         self.session = FakeSessionManager()
+        self._mcp = FakeMCP()
         self.initialize_called = False
         self.refresh_dashboard_calls = 0
         self.refresh_context_calls = 0

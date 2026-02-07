@@ -25,6 +25,7 @@ from claude_agent_sdk import (
 
 from ..ai.client import PREFERRED_PROVIDER, TokenUsage
 from ..ai.prompts import build_student_context, get_agent_system_prompt
+from ..mcp.client import MCPObsidianClient
 from ..storage.db import Database
 from ..tools.registry import ToolRegistry, ToolResult
 from .session import SessionManager
@@ -72,6 +73,7 @@ class SDKCoachAgent:
         self._student_context: str | None = None
         self._token_usage: TokenUsage | None = None
         self._sdk_client: ClaudeSDKClient | None = None
+        self._mcp: MCPObsidianClient = MCPObsidianClient()
 
     async def initialize(self) -> None:
         """Initialize the agent, starting or resuming a session."""
@@ -81,6 +83,9 @@ class SDKCoachAgent:
         # Initialize token usage tracking
         context_limit = 200_000 if PREFERRED_PROVIDER == "anthropic" else 128_000
         self._token_usage = TokenUsage(context_limit=context_limit)
+
+        # Connect MCP Obsidian (gracefully degrades if unavailable)
+        await self._mcp.connect()
 
         # Restore workflow state from session metadata if available
         db_session = await self.db.get_latest_session(self.user_id)
@@ -111,8 +116,10 @@ class SDKCoachAgent:
         )
 
     def get_tools_for_llm(self) -> list[dict]:
-        """Get tool definitions for the SDK agent."""
-        return self.tools.to_anthropic_tools()
+        """Get tool definitions for the SDK agent (local + MCP)."""
+        tools = self.tools.to_anthropic_tools()
+        tools.extend(self._mcp.get_tools_for_llm())
+        return tools
 
     async def _create_post_tool_hook(
         self,
@@ -344,6 +351,33 @@ class SDKCoachAgent:
 
         for tc in tool_calls:
             await self.session.add_tool_call(tc.name, tc.arguments)
+
+            # Route MCP tool calls separately (no workflow hooks)
+            if self._mcp.is_mcp_tool(tc.name):
+                try:
+                    content = await self._mcp.call_tool(tc.name, tc.arguments)
+                    results.append(
+                        LLMToolResult(
+                            tool_use_id=tc.id,
+                            content=content,
+                            is_error=False,
+                        )
+                    )
+                    await self.session.add_tool_result(tc.name, content)
+                except Exception as e:
+                    error_msg = f"MCP tool failed: {e}"
+                    errors_for_ui.append({"tool": tc.name, "error": str(e)})
+                    results.append(
+                        LLMToolResult(
+                            tool_use_id=tc.id,
+                            content=error_msg,
+                            is_error=True,
+                        )
+                    )
+                    await self.session.add_tool_result(
+                        tc.name, error_msg, is_error=True
+                    )
+                continue
 
             kwargs = {**tc.arguments, "db": self.db, "user_id": self.user_id}
 
