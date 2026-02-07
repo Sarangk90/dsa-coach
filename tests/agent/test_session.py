@@ -117,7 +117,6 @@ async def test_add_tool_call(session_manager):
     message = await session_manager.add_tool_call(
         tool_name="list_patterns",
         tool_args={"limit": 5},
-        tool_id="call_123",
     )
 
     assert message.role == "tool_call"
@@ -129,7 +128,6 @@ async def test_add_tool_result(session_manager):
     """Test recording a tool result."""
     message = await session_manager.add_tool_result(
         tool_name="list_patterns",
-        tool_id="call_123",
         result='{"patterns": []}',
     )
 

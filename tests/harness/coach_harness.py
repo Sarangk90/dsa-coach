@@ -141,7 +141,7 @@ class CoachTestHarness:
         await self.setup()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+    async def __aexit__(self, _exc_type, _exc_val, _exc_tb) -> None:
         """Async context manager exit."""
         await self.cleanup()
 
@@ -691,7 +691,7 @@ class SyncCoachTestHarness:
         self._loop.run_until_complete(self._harness.setup())
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(self, _exc_type, _exc_val, _exc_tb) -> None:
         if self._loop:
             self._loop.run_until_complete(self._harness.cleanup())
             self._loop.close()

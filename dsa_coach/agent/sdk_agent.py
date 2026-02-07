@@ -343,7 +343,7 @@ class SDKCoachAgent:
         errors_for_ui = []
 
         for tc in tool_calls:
-            await self.session.add_tool_call(tc.name, tc.arguments, tc.id)
+            await self.session.add_tool_call(tc.name, tc.arguments)
 
             kwargs = {**tc.arguments, "db": self.db, "user_id": self.user_id}
 
@@ -374,7 +374,7 @@ class SDKCoachAgent:
                 )
 
                 await self.session.add_tool_result(
-                    tc.name, tc.id, content, is_error=not result.success
+                    tc.name, content, is_error=not result.success
                 )
 
                 # === WORKFLOW HOOK: Update state based on tool ===
@@ -390,9 +390,7 @@ class SDKCoachAgent:
                         is_error=True,
                     )
                 )
-                await self.session.add_tool_result(
-                    tc.name, tc.id, error_msg, is_error=True
-                )
+                await self.session.add_tool_result(tc.name, error_msg, is_error=True)
 
         return results, errors_for_ui
 

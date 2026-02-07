@@ -78,11 +78,13 @@ class SessionManager:
                     }
                 )
             elif msg.role == "tool_result":
-                # Format tool results for context
+                # Preserve tool results as a distinct role so display filtering
+                # can exclude them while LLM formatting can still include them.
                 self._messages.append(
                     {
-                        "role": "user",
-                        "content": f"[Tool Result: {msg.tool_name}]\n{msg.content}",
+                        "role": "tool_result",
+                        "tool_name": msg.tool_name,
+                        "content": msg.content,
                     }
                 )
 
@@ -138,7 +140,6 @@ class SessionManager:
         self,
         tool_name: str,
         tool_args: dict,
-        tool_id: str,
     ) -> Message:
         """Record a tool call."""
         if not self._current_session:
@@ -155,7 +156,6 @@ class SessionManager:
     async def add_tool_result(
         self,
         tool_name: str,
-        tool_id: str,
         result: str,
         is_error: bool = False,
     ) -> Message:
@@ -237,6 +237,15 @@ class SessionManager:
                 else:
                     # Plain string content remains valid when thinking is enabled.
                     result.append({"role": "assistant", "content": content})
+            elif role == "tool_result":
+                tool_name = m.get("tool_name") or "tool"
+                tool_content = m.get("content", "")
+                result.append(
+                    {
+                        "role": "user",
+                        "content": f"[Tool Result: {tool_name}]\n{tool_content}",
+                    }
+                )
 
         return result
 
