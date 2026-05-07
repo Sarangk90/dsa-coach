@@ -43,13 +43,15 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 PREFERRED_PROVIDER = os.getenv("LLM_PROVIDER", "anthropic")  # or "openai"
 
 # Model settings
-OPENAI_MODEL = "gpt-5.2"
-ANTHROPIC_MODEL = "claude-sonnet-4-5"  # Claude 3.5 Sonnet (latest)
+OPENAI_MODEL = "gpt-5.4"
+ANTHROPIC_MODEL = "claude-sonnet-4-6"
 
 # Extended Thinking (Anthropic only)
 # Default: 10000 tokens - good for DSA problem-solving
 # Set to 0 to disable, or higher (up to 32000) for complex tasks
 THINKING_BUDGET = int(os.getenv("THINKING_BUDGET", "10000"))
+
+DEFAULT_MAX_TOKENS = 4096  # Raised from 4096. (20k is possible for high-context models like Claude 2/3 and GPT-4o)
 
 
 @dataclass
@@ -322,7 +324,7 @@ async def call_anthropic_with_tools(
     effective_max_tokens = max_tokens
     if use_thinking and THINKING_BUDGET > 0:
         # Ensure max_tokens > THINKING_BUDGET (add buffer for actual response)
-        effective_max_tokens = max(max_tokens, THINKING_BUDGET + 4096)
+        effective_max_tokens = max(max_tokens, THINKING_BUDGET + DEFAULT_MAX_TOKENS)
 
     # Build request kwargs
     kwargs: dict[str, Any] = {
